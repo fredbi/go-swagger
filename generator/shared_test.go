@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
@@ -446,6 +447,7 @@ func TestShared_MangleFileName(t *testing.T) {
 	// standard : swag.ToFileName()
 	o := LanguageOpts{}
 	o.Init()
+	// TODO(fredbi): assert here not just log
 	res := o.MangleFileName("aFileEndingInOsNameWindows")
 	assert.True(t, strings.HasSuffix(res, "_windows"))
 
@@ -490,4 +492,48 @@ func TestShared_Issue1614(t *testing.T) {
 	t.Logf("path: %s", specDoc.SpecFilePath())
 	_, err = validateAndFlattenSpec(&opts, specDoc)
 	assert.NoError(t, err)
+}
+
+// Test special character handling by pascalize
+type testPascalizeT struct {
+	input  string
+	result string
+}
+
+func TestShared_Pascalize(t *testing.T) {
+	pascalizeTests := []testPascalizeT{
+		{input: "pascal", result: "Pascal"},
+		{input: "+pascal", result: "PlusPascal"},
+		{input: "pascal++", result: "Pascal"},
+		{input: "!pascal", result: "NrBangPascal"},
+		{input: "pascal!", result: "PascalBang"},
+		{input: "6For9!", result: "Nr6For9Bang"},
+		{input: "==", result: ""},
+		{input: ">=", result: ""},
+		{input: "<=", result: ""},
+		{input: "()", result: "Nr"},
+	}
+	for _, test := range pascalizeTests {
+		assert.Equal(t, test.result, pascalize(test.input), " for input %s", test.input)
+	}
+}
+
+func TestShared_NameFromValueFunc(t *testing.T) {
+	opts := GenOpts{}
+	opts.LanguageOpts = GoLangOpts()
+
+	f := opts.LanguageOpts.NameFromValue
+	assert.Equal(t, "AString", f("aString"))
+	assert.Equal(t, "AString", f([]byte("aString")))
+	assert.Equal(t, "A", f(byte('a')))
+	assert.Equal(t, "A", f('a'))
+	assert.Equal(t, "True", f(true))
+	assert.Equal(t, "False", f(false))
+	assert.Equal(t, "Null", f(nil))
+	assert.Equal(t, "Nr100ns", f(time.Duration(100)))
+	assert.Equal(t, "", f(1))
+	assert.Equal(t, "Nr1", f("1"))
+	assert.Equal(t, "NrBang1", f("!1"))
+	assert.Equal(t, "", f("=="))
+	assert.Equal(t, "", f("!="))
 }

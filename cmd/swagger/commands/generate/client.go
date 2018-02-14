@@ -61,6 +61,14 @@ func (c *Client) getOpts() (*generator.GenOpts, error) {
 		DumpData:          c.DumpData,
 		ExistingModels:    c.ExistingModels,
 		IsClient:          true,
+
+		// Enum generation options
+		ExcludeConst:        c.NoEnumConst,
+		ExportConst:         !c.NoEnumExport,
+		IsEnumCI:            c.WithEnumCI,
+		WithEnumSimple:      c.WithEnumSimple,
+		WithEnumExportSlice: c.WithEnumExportSlice,
+		SkipEnumConflict:    c.SkipEnumConflict,
 	}, nil
 }
 

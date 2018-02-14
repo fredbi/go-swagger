@@ -1,0 +1,44 @@
+{{ define "debug" -}}
+/*{{/* DEBUG template for GenSchema objects
+    This displays most flags used in templates
+*/}}
+DEBUG info for: {{ .Name }}
+
+GoType: {{ .GoType }}
+SwaggerType: {{ .SwaggerType }}
+
+HasValidations: {{ .HasValidations }}
+
+HasAdditionalItems: {{ .HasAdditionalItems }}
+HasAdditionalProperties: {{ .HasAdditionalProperties }}
+IsAdditionalProperties: {{ .IsAdditionalProperties }}
+has Enum: {{ if .Enum}}true{{ else }}false{{ end }}
+has GenEnum: {{ if .GenEnum}}true{{ else }}false{{ end }}
+
+IsAliased: {{ .IsAliased }}
+AliasedType: {{ if .IsAliased }}{{ .AliasedType }}{{ end }}
+
+IsNullable: {{ .IsNullable }}
+IsMapNullOverride: {{ .IsMapNullOverride }}
+Required: {{ .Required }}
+
+IsAnonymous: {{ .IsAnonymous }}
+IsComplexObject: {{ .IsComplexObject }}
+IsPrimitive: {{ .IsPrimitive }}
+IsTuple: {{ .IsTuple }}
+IsBaseType: {{ .IsBaseType }}
+IsExported: {{ .IsExported }}
+
+IsMap: {{ .IsMap }}
+IsArray: {{ .IsArray }}
+IsStream: {{ .IsStream }}
+IsInterface: {{ .IsInterface }}
+
+IsCustomFormatter: {{ .IsCustomFormatter }}
+SwaggerFormat: {{ .SwaggerFormat }}
+
+ReceiverName: {{ .ReceiverName }}
+Suffix: {{ .Suffix }}
+ValueExpression: {{ .ValueExpression }}
+*/
+{{- end }}

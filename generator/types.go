@@ -51,6 +51,12 @@ const (
 	xOmitEmpty   = "x-omitempty"
 	xSchemes     = "x-schemes" // additional schemes supported for operations (server generation)
 	xOrder       = "x-order"   // sort order for properties (or any schema)
+
+	// enum customization
+	xConstNames     = "x-go-const-names" // explicit naming of enum values (as const or vars)
+	xEnumName       = "x-go-enum-name"   // name of the generated enum slice variable
+	xEnumCI         = "x-go-enum-ci"     // enum check on string value is case-insensitive
+	xEnumSimpleType = "x-go-enum-type"   // generates a separate type for primitive enum types
 )
 
 // swaggerTypeMapping contains a mapping from go type to swagger type or format
@@ -756,7 +762,10 @@ func (rt *resolvedType) Zero() string {
 		return zr
 	}
 	// map and slice initializer
-	if rt.IsMap || rt.IsArray {
+	if rt.IsMap && !rt.IsInterface {
+		return "make(" + rt.GoType + ", 50)"
+	}
+	if rt.IsArray {
 		return "make(" + rt.GoType + ", 0, 50)"
 	}
 	// object initializer

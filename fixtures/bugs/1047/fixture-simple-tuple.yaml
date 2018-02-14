@@ -1,0 +1,77 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: enums more additional items
+  description: |
+    A basic test of enum validation generation for tuples and additionalItems.
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  trueTupleThing:
+    type: array
+    additionalItems: true
+    items:
+      - type: number 
+      - type: string 
+  falseTupleThing:
+    type: array
+    additionalItems: false
+    items:
+      - type: number 
+      - type: string 
+  tupleThing:
+    type: array
+    # This array defines a tuple
+    # with 2 different levels of enums
+    items:
+      # P0
+      - type: string 
+        enum: 
+          - 'CONST1'
+          - 'CONST2'
+      # P1
+      - type: string
+        enum: 
+          - 'CONST3'
+          - 'CONST4'
+    enum:
+      - 
+        - 'CONST1'
+        - 'CONST3'
+      - 
+        - 'CONST2'
+        - 'CONST4'
+  tupleThingWithAdditionalItems:
+    type: array
+    uniqueItems: true
+    items:
+      # P0
+      - type: string 
+        enum: 
+          - 'CONST5'
+          - 'CONST6'
+      # P1
+      - type: string
+        enum: 
+          - 'CONST7'
+          - 'CONST8'
+    additionalItems:
+      # Additional item type #1
+      type: integer
+      enum:
+      - 1
+      - 2

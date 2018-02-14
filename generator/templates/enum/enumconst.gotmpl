@@ -1,0 +1,28 @@
+{{ define "enumconst" }}{{/* 
+    Generates enum constants or vars, reusable in API code
+    */}}
+  {{- if .AllowsConstEnum }} 
+    {{- if or .IsComplexValue .IsArray }} 
+var ( 
+    {{- else }} 
+const ( 
+    {{- end }} 
+    {{- range .EnumList }}
+      // {{ if $.IsExported }}{{ .Name }}{{ else }}{{ camelize .Name }}{{ end }} captures enum {{ if $.IsEnumCI }}for CI {{ end }}value "{{ printf "%v" .Value }}"
+      {{ if $.IsExported }}{{ .Name }}{{ else }}{{ camelize .Name }}{{ end }} {{ if not $.IsInterface }}={{ end }} {{ .ValueExpression }}
+    {{- end }}
+)
+    {{- if .IsComplexValue }}
+
+func init() { 
+      {{- range .EnumList }}{{/*  
+       For complex values, use an unmarshaller at runtime init  
+       */}}
+      // initializes {{ if $.IsExported }}{{ .Name }}{{ else }}{{ camelize .Name }}{{ end }} with complex value "{{printf "%v" .Value}}"
+      if err := json.Unmarshal([]byte(`{{ json .Value }}`), {{ if and $.IsAliased (not $.IsAnonymous) }}(*{{ $.AliasedType }})({{ end }}&{{ if $.IsExported }}{{ .Name }}{{ else }}{{ camelize .Name }}{{ end }}{{ if and $.IsAliased (not $.IsAnonymous) }}){{ end }}) ; err != nil {
+        panic(err)
+    } {{- end }}
+}
+    {{- end }}
+  {{- end }}
+{{- end }}

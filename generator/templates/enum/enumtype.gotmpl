@@ -1,0 +1,29 @@
+{{define "enumtype" }}{{/* 
+    Constructs a slice from named enum values to be used by validator.
+    */}}
+  {{ if .GenEnum -}}
+    // {{ .GenEnum.EnumSliceVar }} represents the list of allowed enum values for this {{ humanize .Name }}
+    {{ if and (not .GenEnum.IsComplexValue) (ne .GenEnum.EnumSliceFromConst "" ) -}}{{- /* idiomatic codegen, using a slice of consts or vars */ -}}
+var {{ .GenEnum.EnumSliceVar }} = []{{ template "dereffedSchemaType" . }}{{ .GenEnum.EnumSliceFromConst }}
+    {{- else if and (.GenEnum.IsComplexValue) (ne .GenEnum.EnumSliceFromConst "" ) -}}{{- /* declaring uninitialized var to be inititialized at runtime */ -}}
+var {{ .GenEnum.EnumSliceVar }} []{{ template "dereffedSchemaType" . }}
+
+func init() {
+{{ .GenEnum.EnumSliceVar }} = []{{ template "dereffedSchemaType" . }}{{ .GenEnum.EnumSliceFromConst }}
+}
+    {{- else -}}{{- /* resort to initializing a var with unmarshaller */ -}}
+var {{ .GenEnum.EnumSliceVar }} []{{ template "dereffedSchemaType" . }}
+
+func init() {
+  // initializes slice of enum values
+  var res []{{ template "dereffedSchemaType" . }}
+  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
+    panic(err)
+  }
+  for _, v := range res {
+    {{ .GenEnum.EnumSliceVar }}= append({{ .GenEnum.EnumSliceVar }}, v)
+  }
+}
+    {{ end -}}
+  {{- end }} 
+{{- end }}

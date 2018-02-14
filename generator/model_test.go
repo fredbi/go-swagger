@@ -304,7 +304,6 @@ func TestGenerateModel_Zeroes(t *testing.T) {
 			k.GoType = "myAliasedType"
 			rex = regexp.MustCompile(regexp.QuoteMeta(k.GoType+"("+k.AliasedType) + `\(\[\]byte.*\)` + `\)`)
 			assert.True(t, rex.MatchString(k.Zero()))
-			// t.Logf("Zero for %s: %s", k.GoType, k.Zero())
 		case "interface{}":
 			assert.Equal(t, `nil`, v.Value.Zero())
 		case "io.ReadCloser":
@@ -2029,6 +2028,7 @@ func TestImports_ExistingModel(t *testing.T) {
 }
 
 func TestGenModel_Issue786(t *testing.T) {
+	resolvedSymbols.reset()
 	specDoc, err := loads.Spec("../fixtures/bugs/786/swagger.yml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions
@@ -2272,6 +2272,7 @@ func TestGenModel_Issue1397a(t *testing.T) {
 
 // This tests that an enum of object values validates properly.
 func TestGenModel_Issue1397b(t *testing.T) {
+	resolvedSymbols.reset()
 	specDoc, err := loads.Spec("../fixtures/bugs/1397/fixture-1397b.yaml")
 	if assert.NoError(t, err) {
 		definitions := specDoc.Spec().Definitions

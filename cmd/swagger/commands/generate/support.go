@@ -44,6 +44,14 @@ func (s *Support) getOpts() (*generator.GenOpts, error) {
 		DefaultScheme: s.DefaultScheme,
 		Template:      s.Template,
 		TemplateDir:   string(s.TemplateDir),
+
+		// Enum generation options
+		ExcludeConst:        s.NoEnumConst,
+		ExportConst:         !s.NoEnumExport,
+		IsEnumCI:            s.WithEnumCI,
+		WithEnumSimple:      s.WithEnumSimple,
+		WithEnumExportSlice: s.WithEnumExportSlice,
+		SkipEnumConflict:    s.SkipEnumConflict,
 	}, nil
 }
 

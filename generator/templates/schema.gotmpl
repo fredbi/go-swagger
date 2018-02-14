@@ -12,39 +12,43 @@
     {{ range .AllOf }}
       {{ if .IsAnonymous }}
         {{ range .Properties }}
-          {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{template "structfieldIface" . }}{{ end }}
+          {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{ template "structfieldIface" . }}{{ end }}
         {{ end }}
         {{- if .HasAdditionalProperties }}
           {{- if .AdditionalProperties -}}
-            // {{- template "docstring" .AdditionalProperties }}
-            {{- template "propertyValidationDocString" .AdditionalProperties}} {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}
-          {{end}}
-        {{ end}}
-        {{ if .AdditionalItems -}}
-          // {{- template "docstring" .AdditionalItems }}
-          {{- template "propertyValidationDocString" .AdditionalItems}} {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-        {{ end }}
-      {{ else }}
+            // {{ template "docstring" .AdditionalProperties }}
+            {{- template "propertyValidationDocString" .AdditionalProperties }}{{/* AdditionalProperties in base type is moved to subtype */}}
+            // {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}
+          {{- end }}
+        {{- end }}
+        {{- if .AdditionalItems -}}
+          // {{ template "docstring" .AdditionalItems }}
+          {{- template "propertyValidationDocString" .AdditionalItems }}{{/* AdditionalItems in base type is moved to subtype */}}
+          // {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
+        {{- end }}
+      {{- else }}
         {{ .GoType }}
-      {{ end }}
+      {{- end }}
     {{ end }}
-  {{range .Properties}}
-    {{ if $.IsTuple }}
+  {{ range .Properties }}
+    {{- if $.IsTuple }}
       {{ template "tuplefieldIface" . }}
-    {{ else }}
-      {{template "structfieldIface" . }}
+    {{- else }}
+      {{ template "structfieldIface" . }}
     {{ end }}
-  {{end}}
-  {{ if .HasAdditionalProperties }}
+  {{ end }}
+  {{- if .HasAdditionalProperties }}
     {{- if .AdditionalProperties -}}
-      // {{- template "docstring" .AdditionalProperties }}
-      {{- template "propertyValidationDocString" .AdditionalProperties}} {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}
-    {{ end }}
-  {{ end }}
-  {{ if .AdditionalItems -}}
-    // {{- template "docstring" .AdditionalItems }}
-    {{- template "propertyValidationDocString" .AdditionalItems}} {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
-  {{ end }}
+      // {{ template "docstring" .AdditionalProperties }}
+      {{- template "propertyValidationDocString" .AdditionalProperties }}{{/* AdditionalProperties in base type is moved to subtype */}}
+      // {{ pascalize .AdditionalProperties.Name }}() map[string]{{ template "schemaType" .AdditionalProperties }}
+    {{- end }}
+  {{- end }}
+  {{- if .AdditionalItems -}}
+    // {{ template "docstring" .AdditionalItems }}
+    {{- template "propertyValidationDocString" .AdditionalItems }}{{/* AdditionalItems in base type is moved to subtype */}}
+    // {{ pascalize .AdditionalItems.Name }}() []{{ template "schemaType" .AdditionalItems }}
+  {{- end }}
 }
 
   type {{ camelize .Name }} {{ template "schemaBody" . }}

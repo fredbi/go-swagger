@@ -47,6 +47,61 @@ func (g GenDefinitions) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
 // version control and such
 type GenSchemaList []GenSchema
 
+func (g GenSchemaList) Len() int      { return len(g) }
+func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
+func (g GenSchemaList) Less(i, j int) bool {
+	a, ok := g[i].Extensions[xOrder].(float64)
+	if ok {
+		b, ok := g[j].Extensions[xOrder].(float64)
+		if ok {
+			return a < b
+		}
+	}
+	return g[i].Name < g[j].Name
+}
+
+// GenEnum contains all the information needed to generate the code
+// for a list of enum values
+type GenEnum struct {
+	// AllowsConstEnum tells if the generation of const is allowed for a schema.
+	// It is false when:
+	//   - generation option --skip-enum-const disabled the default generation of consts for enum values
+	//   - no Enum is defined for this schema
+	//   - enum values are not strings
+	//   - generated names are not unique within the list
+	AllowsConstEnum bool
+	// Resolution of all const (name,value) pairs for generator
+	EnumList GenEnumNameValueList
+	// Indicates when const definition is replaced by a global var initialized at runtime
+	IsComplexValue bool
+	// A clean slice initializer based on const definitions (go specific)
+	EnumSliceFromConst string
+	// The name of the enum slice var or const used to validate
+	EnumSliceVar string
+	// Export status of generated consts (default true)
+	IsExported bool
+	/// ModelName is the name of the current model
+	ModelName string
+	// IsEnumCI validates string enum values as case insensitive (default false)
+	IsEnumCI bool
+	// All type resolution indicators from parent type
+	resolvedType
+}
+
+// GenEnumNameValue is a (name,value, value expression) tuple for generator
+type GenEnumNameValue struct {
+	Name            string
+	Value           interface{}
+	ValueExpression string
+}
+
+// GenEnumNameValueList is a sortable array of (name,value) pairs
+type GenEnumNameValueList []GenEnumNameValue
+
+func (g GenEnumNameValueList) Len() int           { return len(g) }
+func (g GenEnumNameValueList) Swap(i, j int)      { g[i], g[j] = g[j], g[i] }
+func (g GenEnumNameValueList) Less(i, j int) bool { return g[i].Name < g[j].Name }
+
 // GenSchema contains all the information needed to generate the code
 // for a schema
 type GenSchema struct {
@@ -89,19 +144,7 @@ type GenSchema struct {
 	IncludeValidator        bool
 	IncludeModel            bool
 	Default                 interface{}
-}
-
-func (g GenSchemaList) Len() int      { return len(g) }
-func (g GenSchemaList) Swap(i, j int) { g[i], g[j] = g[j], g[i] }
-func (g GenSchemaList) Less(i, j int) bool {
-	a, ok := g[i].Extensions[xOrder].(float64)
-	if ok {
-		b, ok := g[j].Extensions[xOrder].(float64)
-		if ok {
-			return a < b
-		}
-	}
-	return g[i].Name < g[j].Name
+	GenEnum                 *GenEnum
 }
 
 type sharedValidations struct {
@@ -120,8 +163,7 @@ type sharedValidations struct {
 	ExclusiveMinimum bool
 	ExclusiveMaximum bool
 
-	Enum      []interface{}
-	ItemsEnum []interface{}
+	Enum []interface{}
 
 	// Slice validations
 	MinItems            *int64
@@ -503,7 +545,7 @@ type GenApp struct {
 	Consumes            GenSerGroups
 	Produces            GenSerGroups
 	SecurityDefinitions GenSecuritySchemes
-	Models              []GenDefinition
+	Models              GenDefinitions
 	Operations          GenOperations
 	OperationGroups     GenOperationGroups
 	SwaggerJSON         string

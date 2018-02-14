@@ -43,12 +43,13 @@ import (
 
 // LanguageOpts to describe a language to the code generator
 type LanguageOpts struct {
-	ReservedWords    []string
-	BaseImportFunc   func(string) string `json:"-"`
-	reservedWordsSet map[string]struct{}
-	initialized      bool
-	formatFunc       func(string, []byte) ([]byte, error)
-	fileNameFunc     func(string) string
+	ReservedWords     []string
+	BaseImportFunc    func(string) string `json:"-"`
+	reservedWordsSet  map[string]struct{}
+	initialized       bool
+	formatFunc        func(string, []byte) ([]byte, error)
+	fileNameFunc      func(string) string
+	nameFromValueFunc func(interface{}) string
 }
 
 // Init the language option
@@ -93,6 +94,14 @@ func (l *LanguageOpts) FormatContent(name string, content []byte) ([]byte, error
 		return l.formatFunc(name, content)
 	}
 	return content, nil
+}
+
+// NameFromValue returns a variable or constant name inferred from a value expression
+func (l *LanguageOpts) NameFromValue(value interface{}) string {
+	if l.nameFromValueFunc != nil {
+		return l.nameFromValueFunc(value)
+	}
+	return ""
 }
 
 func (l *LanguageOpts) baseImport(tgt string) string {
@@ -157,6 +166,7 @@ func GoLangOpts() *LanguageOpts {
 		"const", "fallthrough", "if", "range", "type",
 		"continue", "for", "import", "return", "var",
 	}
+
 	opts.formatFunc = func(ffn string, content []byte) ([]byte, error) {
 		opts := new(imports.Options)
 		opts.TabIndent = true
@@ -165,6 +175,7 @@ func GoLangOpts() *LanguageOpts {
 		opts.Comments = true
 		return imports.Process(ffn, content, opts)
 	}
+
 	opts.fileNameFunc = func(name string) string {
 		// whenever a generated file name ends with a suffix
 		// that is meaningful to go build, adds a "swagger"
@@ -176,6 +187,36 @@ func GoLangOpts() *LanguageOpts {
 			parts = append(parts, "swagger")
 		}
 		return strings.Join(parts, "_")
+	}
+
+	opts.nameFromValueFunc = func(value interface{}) string {
+		// a name from value inference function for golang
+		var s string
+		switch v := value.(type) {
+		case string:
+			s = pascalize(v)
+		case []byte:
+			s = pascalize(string(v))
+		case byte:
+			s = pascalize(string(v))
+		case rune:
+			s = pascalize(string(v))
+		case bool:
+			s = pascalize(fmt.Sprintf("%t", v))
+		case nil:
+			s = "Null"
+		default:
+			if aStringer, isStringer := value.(fmt.Stringer); isStringer {
+				s = pascalize(aStringer.String())
+			} else {
+				s = ""
+			}
+		}
+		if (s == "Nr") || (s == "Bang") || (s == "NrBang") {
+			// excludes non significant names
+			s = ""
+		}
+		return s
 	}
 
 	opts.BaseImportFunc = func(tgt string) string {
@@ -549,6 +590,14 @@ type GenOpts struct {
 	CompatibilityMode      string
 	ExistingModels         string
 	Copyright              string
+
+	// Enum generation options (see ../docs/use/enum.md)
+	ExcludeConst        bool
+	ExportConst         bool
+	IsEnumCI            bool
+	WithEnumSimple      bool
+	WithEnumExportSlice bool
+	SkipEnumConflict    bool
 }
 
 // TargetPath returns the target generation path relative to the server package

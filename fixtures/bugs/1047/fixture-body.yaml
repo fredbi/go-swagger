@@ -1,0 +1,93 @@
+swagger: '2.0'
+info:
+  version: v1
+  title: bodyEnum
+  description: test enum validation and const gen on body param
+host: www.example.com
+basePath: /v1
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+definitions:
+  myenum:
+    type: string
+    enum:       # <-- here generate consts but naming is incorrect
+      - val1
+      - val2
+parameters:
+  user-id:
+    name: user-id
+    in: path
+    description: The user identifier number
+    type: number
+    required: true
+paths:
+  '/users/{user-id}/relationship':
+    parameters:
+      - $ref: '#/parameters/user-id'
+    post:
+      description: |
+        Modify the relationship between the current user and thetarget user.
+      parameters:
+        - name: action
+          in: body
+          description: One of follow/unfollow/block/unblock/approve/ignore.
+          schema:
+            type: string
+            enum:               # <-- bug to fix: this enum is not validated
+              - follow
+              - unfollow
+              - block
+              - unblock
+              - approve
+      responses:
+        '200':
+          description: OK
+  '/users/{user-id}/second':
+    parameters:
+      - $ref: '#/parameters/user-id'
+    post:
+      description: |
+        Modify the relationship between the current user and thetarget user.
+      parameters:
+        - name: action
+          in: body
+          schema:
+            $ref: '#/definitions/myenum'
+      responses:
+        '200':
+          description: OK
+  '/users/{user-id}/third':
+    parameters:
+      - $ref: '#/parameters/user-id'
+    post:
+      description: |
+        Modify the relationship between the current user and thetarget user.
+      parameters:
+        - name: action
+          in: body
+          schema:
+            type: object
+            properties:
+              prop1:
+                type: string
+                format: date
+              prop2:
+                type: integer
+                format: uint32
+                maximum: 30
+                minimum: 1
+                enum:
+                  - 1
+                  - 2
+                  - 3
+                x-go-const-names:
+                  - First
+                  - Second
+                  - Third
+      responses:
+        '200':
+          description: OK

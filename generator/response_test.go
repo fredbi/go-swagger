@@ -491,8 +491,8 @@ func TestGenResponses_Issue1013(t *testing.T) {
 			var buf bytes.Buffer
 			opts := opts()
 			if assert.NoError(t, templates.MustGet("serverResponses").Execute(&buf, op)) {
-				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-				if assert.NoError(t, err) {
+				ff, er2 := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				if assert.NoError(t, er2) {
 					assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
 				} else {
 					fmt.Println(buf.String())

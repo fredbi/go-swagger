@@ -82,6 +82,16 @@ type shared struct {
 	ExistingModels        string         `long:"existing-models" description:"use pre-generated models e.g. github.com/foobar/model"`
 	AdditionalInitialisms []string       `long:"additional-initialism" description:"consecutive capitals that should be considered intialisms"`
 	FlattenCmdOptions
+
+	// Enum generation options
+	NoEnumConst         bool `long:"skip-enum-const" description:"when present, model generation makes no attempt to generate consts for enum values"`
+	NoEnumExport        bool `long:"skip-enum-export" description:"when present, enum constants in a model are not exported as globals"`
+	WithEnumCI          bool `long:"with-enum-ci" description:"validates enum strings as case-insensitive (models only: this is not supported for inline params and headers)"`
+	WithEnumSimple      bool `long:"with-enum-simple-types" description:"generates dedicated types for enums in primitive(models only: this is not supported for inline params and headers)"`
+	WithEnumExportSlice bool `long:"with-enum-export-slice" description:"generates exported variables to hold the list of enum values"`
+	SkipEnumConflict    bool `long:"skip-enum-conflict" description:"disables symbol conflict detection and handling for generated models"`
+
+	genOpts *generator.GenOpts
 }
 
 type sharedCommand interface {

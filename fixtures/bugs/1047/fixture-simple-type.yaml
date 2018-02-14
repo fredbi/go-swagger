@@ -1,0 +1,32 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: ExtensionEnum
+  description: |
+    Enum generation for simple types as custom extension
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK
+definitions:
+  myEnumerableAlias:
+    type: string
+    enum: [ "a", "b", "c" ]
+  myObject:
+    properties:
+      myEnumerable:
+        type: string
+        enum: [ "a", "b", "c" ]
+        x-go-enum-type: true
+      myAliasedEnumerable:
+        $ref: '#/definitions/myEnumerableAlias'

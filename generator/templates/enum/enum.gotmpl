@@ -1,0 +1,69 @@
+{{ define "enum" }}{{/*
+    This template produces helpers for enum validation.
+    There are:
+    - enum value const|vars (cf. "enumconsts")
+    - enum slice of legit values (cf. "enumtype")
+    - enum validation helper method - this one calls the generic
+      go-openapi/validate method validate.Enum() (uses reflect)
+  */}}
+  {{- if and .Enum .GenEnum }}
+    {{ template "enumconst" .GenEnum }}
+    {{ template "enumtype" . }}{{/* TODO: check if HasValidations */}}
+// validate{{ pascalize .GenEnum.EnumSliceVar }} validates against enum for {{ humanize .Name }}
+func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .GenEnum.ModelName }}{{ else }}{{ .GenEnum.ModelName }}{{ end }}) validate{{ pascalize .GenEnum.EnumSliceVar }}(path, location string, value {{ template "dereffedSchemaType" . }}) error {
+    {{- if .GenEnum.IsEnumCI }}
+  // enum check is CI
+  ciValue := strings.ToLower({{ if and .IsAliased .IsCustomFormatter}}{{ .AliasedType }}(value).String(){{ else }}value{{ end }})
+    {{- end }}
+  if err := validate.Enum(path, location, {{ if .GenEnum.IsEnumCI }}ciValue{{ else }}value{{ end }}, {{ .GenEnum.EnumSliceVar }}); err != nil {
+    return err
+  }
+  return nil
+}
+  {{- end }}
+  {{- with .Items }}{{/* validation of enums nested in array Items */}}
+    {{- if .Enum }}
+
+    // enum for items in {{ .Name }}
+    {{- end }}
+    {{ template "enum" . }}
+  {{- end }}
+  {{- with .AdditionalProperties }}{{/* validation of enums nested in AdditionalProperties */}}
+    {{- if .Enum }}
+
+    // enum for additionalProperties in {{ $.Name }}
+    {{- end }}
+    {{ template "enum" . }}
+  {{- end }}
+  {{- with .AdditionalItems }}{{/* validation of enums nested in AdditionalItems */}}
+    {{- if .Enum }}
+
+    // enum for additionalItems in {{ $.Name }}
+    {{- end }}
+    {{ template "enum" .}}
+  {{- end }}
+  {{- if .IsAnonymous }}{{/* validation of enums nested in anoynymous constructs */}}
+     {{- range .AllOf }}
+       {{- range .Properties }}
+         {{ template "enum" . }}
+       {{- end }}
+       {{- with .AdditionalProperties }}{{/* validation of enums nested in AdditionalProperties */}}
+         {{- if .Enum }}
+
+    // enum for additionalProperties in {{ $.Name }}
+         {{- end }}
+         {{ template "enum" . }}
+       {{- end }}
+       {{- with .AdditionalItems }}{{/* validation of enums nested in AdditionalItems */}}
+         {{- if .Enum }}
+
+    // enum for additionalItems in {{ $.Name }}
+         {{- end }}
+         {{ template "enum" .}}
+       {{- end }}
+     {{- end }}
+     {{- range .Properties }}
+       {{ template "enum" . }}
+     {{- end }}
+  {{- end }}
+{{- end }}

@@ -92,6 +92,7 @@ func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts.IncludeModel = true
 	opts.ValidateSpec = false
 	opts.Spec = f.SpecFile
+	opts.ExportConst = true
 	if err := opts.EnsureDefaults(); err != nil {
 		panic(err)
 	}
@@ -245,6 +246,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 		opts.ValidateSpec = false
 		opts.Spec = fixtureSpec
 		opts.ModelPackage = "models"
+		opts.ExportConst = true
 		opts.Target = gendir
 		if err := opts.EnsureDefaults(); err != nil {
 			panic(err)

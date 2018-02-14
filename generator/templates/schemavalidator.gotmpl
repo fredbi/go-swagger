@@ -35,10 +35,16 @@
   }
   {{ end }}
   {{ if .Enum }}
-  // value enum
-  if err := {{.ReceiverName }}.validate{{ pascalize .Name }}{{ pascalize .Suffix }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
+    // primitive enum
+    {{- if .IsNullable }}
+  if {{ .ValueExpression }} != nil {
+    {{- end }}
+  if err := {{.ReceiverName }}.validate{{ pascalize .GenEnum.EnumSliceVar }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
     return err
   }
+    {{- if .IsNullable }}
+    }
+    {{- end }}
   {{ end }}
   {{ if .IsCustomFormatter }}{{/* the .IsStream case (ioReadCloser) is already excluded, since it does not resolve as primitive */}}
     {{ template "validationCustomformat" . }}
@@ -69,9 +75,9 @@
       return err
     }
   {{ end }}
-  {{ if .Enum }}
-    // for slice
-    if err := {{.ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  {{ if .Enum }}{{/* enum as a slice validation */}}
+    // enum for slice
+    if err := {{.ReceiverName }}.validate{{ pascalize .GenEnum.EnumSliceVar }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
       return err
     }
   {{ end }}
@@ -105,11 +111,12 @@
     {{- end }}
   {{- end }}
 {{ end }}
+
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
   {{ if .HasAdditionalProperties }}
     {{- if  .AdditionalProperties.HasValidations }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
-      {{ with .AdditionalProperties }}
+      {{- with .AdditionalProperties }}
         {{- if and (not .Required) .IsNullable }}{{/* skip when nul type is accepted */}}
       if swag.IsZero({{ .ValueExpression }}) { // not required
         continue
@@ -163,8 +170,8 @@
           {{ template "slicevalidator" . }}
         {{ else if .IsMap }}
           {{ template "mapvalidator" . }}
-          {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+          {{ if .Enum }}{{/* TODO(FRED): check for nullability */}}
+      if err := {{ .ReceiverName }}.validate{{ pascalize .GenEnum.EnumSliceVar }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
         return err
       }
           {{- end }}
@@ -191,20 +198,20 @@
               {{ template "propertyvalidator" . }}
             {{- end }}
           {{- end }}
-          {{ if and .IsTuple .AdditionalItems }}
+          {{- if and .IsTuple .AdditionalItems }}
       // TODO: validating additional items should go here, if you see this raise an issue
       // at https://github.com/go-swagger/go-swagger/issues
-          {{ end }}
-        {{ end }}
+          {{- end }}
+        {{- end }}
     }
       {{ end }}
     {{ end }}
-    {{ if .Enum }}
-    // from map
-    if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+    {{- if .Enum }}{{/* TODO(FRED): check for nullability */}}
+    // enum for map
+    if err := {{ .ReceiverName }}.validate{{ pascalize .GenEnum.EnumSliceVar }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
       return err
     }
-    {{ end }}
+    {{- end }}
   {{- else if .IsAliased }}
     {{- if and .Required .IsInterface }}
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
@@ -214,7 +221,7 @@
     {{- if and .IsMap .HasValidations }}{{/* validation of aliased maps but does not know about AdditionalProperties: e.g. it comes from a $ref */}}
       {{- if not .IsAnonymous }}
         {{- if $.IsMap }}{{/* we come from a map range */}}
-      if val, ok := {{ .ValueExpression }}; ok {  
+      if val, ok := {{ .ValueExpression }}; ok {
         {{- end }}
         {{- if and .IsNullable (not .IsMapNullOverride) }}
           {{- if $.IsMap }}
@@ -229,7 +236,7 @@
         {{- if and .IsNullable (not .IsMapNullOverride) }}
         }
         {{- end }}
-        {{- if or $.IsMap }} 
+        {{- if or $.IsMap }}
      }
         {{- end }}
       {{- end }}
@@ -319,83 +326,28 @@
 {{ end }}
 
 {{define "schemavalidator" }}
-  {{ if .Enum }}
-    {{ if (eq .SwaggerType "string") }}
-      {{ $gotype := .GoType }}
-const (
-      {{ range .Enum }}
-  // {{ $gotype }}{{ pascalize . }} captures enum value {{ printf "%q" . }}
-	{{ $gotype }}{{ pascalize . }} {{ $gotype }} = {{ printf "%q" . }}
-      {{ end }}
-)
-    {{ end }}
-
-// for schema
-var {{ camelize .Name }}Enum []interface{}
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize .Name }}Enum = append({{ camelize .Name }}Enum, v)
-  }
-}
-
-func ({{ .ReceiverName }} {{ if not .IsPrimitive }}*{{ end }}{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize .Name }}Enum); err != nil {
-    return err
-  }
-  return nil
-}
-  {{ end }}
-  {{ if .ItemsEnum }}
-var {{ camelize .Name }}ItemsEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{  $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize .Name }}ItemsEnum); err != nil {
-    return err
-  }
-  return nil
-}
-  {{ end }}
-  {{ with .AdditionalProperties }}
-    {{ if .Enum }}
-// for additional props
-var {{ camelize .Name }}ValueEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize .Name }}ValueEnum = append({{ camelize .Name }}ValueEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize .Name }}ValueEnum); err != nil {
-    return err
-  }
-  return nil
-}
-    {{- end }}
-  {{ end }}
-// Validate validates this {{ humanize .Name }}
+  {{- if .Enum }}
+    // enum for schema {{ .Name }}
+  {{- end }}
+  {{ template "enum" . }}
+// Validate validates this {{ humanize .Name }}{{/* main Validate() method */}}
 func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   var res []error
 
+  {{ if .Enum -}}{{/* TODO(FRED): copy as fieldvalidator? */}}
+    {{- if and (not .IsPrimitive) (not .IsMap) (not .IsArray) }}{{- /* validation for primitives, maps and slices is already carried on*/ -}}
+      {{- if .IsNullable }}{{/* TODO: check IsMapNullOverride */}}
+      if {{ .ReceiverName }} != nil {
+      {{- end }}
+    // value enum for this {{ humanize .Name }}
+    if err := {{ .ReceiverName }}.validate{{ pascalize .GenEnum.EnumSliceVar }}("", "body", {{- if or .IsNullable .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ .ReceiverName }}); err != nil {
+      res = append(res, err)
+    }
+      {{- if .IsNullable }}
+      }
+      {{- end }}
+    {{- end -}}
+  {{ end }}
   {{ range .AllOf }}
     {{- if not .Properties }}
       // validation for a type composition with {{ .GoType }}
@@ -404,7 +356,7 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       {{ template "fieldvalidator" . }}
 
       {{ range .Properties }}
-        {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
+        {{- if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
           if err := {{.ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
             res = append(res, err)
           }
@@ -413,11 +365,11 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       {{- if and .HasAdditionalProperties (not .IsMap) }}{{/* validates additionalProperties in an object which is not itself a map */}}
         {{ template "mapvalidator" . }}
       {{- end }}
-      {{ if and .IsTuple .AdditionalItems }}
+      {{- if and .IsTuple .AdditionalItems }}
       if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
         res = append(res, err)
       }
-      {{ end }}
+      {{- end }}
     {{- else if (or .Required .HasValidations) }}
       if err := {{ .ReceiverName }}.{{ pascalize (dropPackage .GoType) }}.Validate(formats); err != nil {
         res = append(res, err)
@@ -435,122 +387,31 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
   {{- if and .HasAdditionalProperties (not .IsMap) }}{{/* validates additionalProperties in an object which is not itself a map */}}
     {{ template "mapvalidator" . }}
   {{- end }}
-  {{ if and .IsTuple .AdditionalItems }}{{/* validates additionalItems in a tuple */}}
+  {{- if and .IsTuple .AdditionalItems }}{{/* validates additionalItems in a tuple */}}
     if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Items(formats); err != nil {
       res = append(res, err)
     }
-  {{ end }}
-  {{ if and .Enum (not .IsPrimitive) (not .IsMap) }}
+  {{- end }}
+  {{- if eq 1 0 }}{{/* TODO FRED what is this for? */}}
+    {{- if and .Enum (not .IsPrimitive) (not .IsMap) }}
     // value enum
     if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}Enum("", "body", {{ .ReceiverName }}); err != nil {
       res = append(res, err)
     }
-  {{ end }}
+    {{- end }}
+  {{- end }}
 
   if len(res) > 0 {
     return errors.CompositeValidationError(res...)
   }
   return nil
 }
-
-  {{ range .Properties }}
-    {{ if or .Required .HasValidations }}
-      {{ if .Enum }}
-var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-  }
-}
-
-        {{ if (eq .SwaggerType "string") }}
-          {{ $gotype := .GoType }}
-          {{ $propname := .Name }}
-const (
-          {{ range .Enum }}
-  // {{ pascalize $.Name }}{{ pascalize $propname }}{{ pascalize . }} captures enum value {{ printf "%q" . }}
-	{{ pascalize $.Name }}{{ pascalize $propname }}{{ pascalize . }} {{ $gotype }} = {{ printf "%q" . }}
-          {{ end }}
-)
-        {{ end }}
-
-// prop value enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
-    return err
-  }
-  return nil
-}
-      {{ end }}
-      {{ if .ItemsEnum }}
-var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
-func init() {
-  var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .Items.IsTuple .Items.IsComplexObject .Items.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum); err != nil {
-    return err
-  }
-  return nil
-}
-      {{ end }}
-      {{ if .AdditionalItems }}
-        {{ if .AdditionalItems.Enum }}
-var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
-    return err
-  }
-  return nil
-}
-        {{ end }}
-      {{ end }}
-      {{ with .AdditionalProperties }}
-        {{ if .Enum }}
-// additional properties value enum
-var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
-    return err
-  }
-  return nil
-}
-        {{ end }}
-      {{ end }}
+  {{ range .Properties }}{{/* property validation methods */}}
+    {{- if or .Required .HasValidations }}
+      {{- if .Enum }}
+        // enum for property {{ .Name }}
+      {{- end }}
+      {{ template "enum" . }}
 
       {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
 func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
@@ -564,145 +425,44 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
     return err
   }
         {{- end }}
-        {{template "propertyvalidator" . }}
+        {{ template "propertyvalidator" . }}
 
   return nil
 }
-      {{ end }}
-    {{ end }}
-  {{ end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
   {{ range .AllOf }}
     {{ range .Properties }}
       {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
-        {{ if .Enum }}
-var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
+        {{- if .Enum }}
+        // enum for allOf properties
+        {{- end }}
+        {{ template "enum" . }}
 
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-  }
-}
-
-// property enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
-    return err
-  }
-  return nil
-}
-        {{ end }}
-        {{ if .ItemsEnum }}
-var {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" .Items }}
-  if err := json.Unmarshal([]byte(`{{ json .ItemsEnum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .Items.IsTuple .Items.IsComplexObject .Items.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .Items }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ItemsEnum); err != nil {
-    return err
-  }
-  return nil
-}
-        {{ end }}
-        {{ if .AdditionalItems }}
-          {{ if .AdditionalItems.Enum }}
-var {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum = append({{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}Enum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}Type{{ pascalize .Name }}PropEnum); err != nil {
-    return err
-  }
-  return nil
-}
-          {{ end }}
-        {{ end }}
-        {{ with .AdditionalProperties }}
-          {{ if .Enum }}
-var {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum []interface{}
-func init() {
-  var res []{{ template "dereffedSchemaType" . }}
-  if err := json.Unmarshal([]byte(`{{ json .Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum = append({{ camelize $.Name }}{{ pascalize .Name }}ValueEnum, v)
-  }
-}
-
-// additional properties value enum
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ValueEnum(path, location string, value {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" . }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize $.Name }}{{ pascalize .Name }}ValueEnum); err != nil {
-    return err
-  }
-  return nil
-}
-          {{ end }}
-        {{ end }}
-
-
+// validate{{ pascalize .Name }} validates allOf property {{ .Name }}
 func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}(formats strfmt.Registry) error {
-        {{ if not .Required }}
+        {{- if not .Required }}
   if swag.IsZero({{ .ValueExpression }}) { // not required
     return nil
   }
-        {{ end }}
+        {{- end }}
         {{template "propertyvalidator" . }}
 
   return nil
 }
-      {{ end }}
-    {{ end }}
+      {{- end }}
+    {{- end }}
   {{ end }}
-
-  {{ if .HasAdditionalItems }}
-    {{ if .AdditionalItems.Enum }}
-var {{ camelize .Name }}ItemsEnum []interface{}
-
-func init() {
-  var res []{{ template "dereffedSchemaType" .AdditionalItems }}
-  if err := json.Unmarshal([]byte(`{{ json .AdditionalItems.Enum }}`), &res); err != nil {
-    panic(err)
-  }
-  for _, v := range res {
-    {{ camelize .Name }}ItemsEnum = append({{ camelize .Name }}ItemsEnum, v)
-  }
-}
-
-func ({{ .ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else if $.IsExported }}{{ pascalize $.Name }}{{ else }}{{ $.Name }}{{ end }}) validate{{ pascalize .Name }}ItemsEnum(path, location string, value {{ if or .AdditionalItems.IsTuple .AdditionalItems.IsComplexObject .AdditionalItems.IsAdditionalProperties }}*{{ end }}{{ template "dereffedSchemaType" .AdditionalItems }}) error {
-  if err := validate.Enum(path, location, value, {{ camelize .Name }}ItemsEnum); err != nil {
-    return err
-  }
-  return nil
-}
-    {{ end }}
+  {{- if .HasAdditionalItems }}
+// validate{{ pascalize .Name }}Items validates AdditionalItems for {{ .Name }}
 func ({{.ReceiverName }} *{{ pascalize .Name }}) validate{{ pascalize .Name }}Items(formats strfmt.Registry) error {
-    {{ if or .AdditionalItems.Required .AdditionalItems.HasValidations }}
+    {{- if or .AdditionalItems.Required .AdditionalItems.HasValidations }}
   for {{ .IndexVar }} := range {{ .ValueExpression }}.{{ pascalize .Name }}Items {
       {{template "propertyvalidator" .AdditionalItems }}
   }
-    {{ end }}
+    {{- end }}
   return nil
 }
-  {{ end }}
+  {{- end }}
 {{ end }}

@@ -100,6 +100,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"mediaTypeName": func(orig string) string {
 		return strings.SplitN(orig, ";", 2)[0]
 	},
+	// TODO(fredbi): as language opt
 	"goSliceInitializer": goSliceInitializer,
 	"hasPrefix":          strings.HasPrefix,
 	"stringContains":     strings.Contains,
@@ -125,6 +126,11 @@ var assets = map[string][]byte{
 	"model.gotmpl":                          MustAsset("templates/model.gotmpl"),
 	"header.gotmpl":                         MustAsset("templates/header.gotmpl"),
 	"swagger_json_embed.gotmpl":             MustAsset("templates/swagger_json_embed.gotmpl"),
+	"enumconst.gotmpl":                      MustAsset("templates/enum/enumconst.gotmpl"),
+	"enumtype.gotmpl":                       MustAsset("templates/enum/enumtype.gotmpl"),
+	"enum.gotmpl":                           MustAsset("templates/enum/enum.gotmpl"),
+	// Debug utility for schema templates
+	"debug.gotmpl": MustAsset("templates/debug.gotmpl"),
 
 	"server/parameter.gotmpl":    MustAsset("templates/server/parameter.gotmpl"),
 	"server/urlbuilder.gotmpl":   MustAsset("templates/server/urlbuilder.gotmpl"),

@@ -54,6 +54,14 @@ func (o *Operation) getOpts() (*generator.GenOpts, error) {
 		IncludeURLBuilder: !o.NoURLBuilder,
 		Tags:              o.Tags,
 		ValidateSpec:      !o.SkipValidation,
+
+		// Enum generation options
+		ExcludeConst:        o.NoEnumConst,
+		ExportConst:         !o.NoEnumExport,
+		IsEnumCI:            o.WithEnumCI,
+		WithEnumSimple:      o.WithEnumSimple,
+		WithEnumExportSlice: o.WithEnumExportSlice,
+		SkipEnumConflict:    o.SkipEnumConflict,
 	}, nil
 }
 

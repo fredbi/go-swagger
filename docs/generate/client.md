@@ -29,6 +29,8 @@ Help Options:
       -r, --copyright-file=                                                       copyright file used to add copyright header
           --existing-models=                                                      use pre-generated models e.g. github.com/foobar/model
           --additional-initialism=                                                consecutive capitals that should be considered intialisms
+          --skip-enum-const           when present, model generation makes no attempt to generate consts for enum values
+          --skip-export-enum          when present, enum constants in a model are not exported as globals
           --with-expand                                                           expands all $ref's in spec prior to generation (shorthand to --with-flatten=expand)
           --with-flatten=[minimal|full|expand|verbose|noverbose|remove-unused]    flattens all $ref's in spec prior to generation (default: minimal, verbose)
       -A, --name=                                                                 the name of the application, defaults to a mangled value of info.title
@@ -42,6 +44,7 @@ Help Options:
           --skip-operations                                                       no operations will be generated when this flag is specified
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
           --skip-validation                                                       skips validation of spec prior to generation
+          --with-enum-ci              validates enum strings as case-insensitive (model only)
 ```
 
 ### Build a client

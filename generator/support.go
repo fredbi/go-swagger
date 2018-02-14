@@ -214,8 +214,14 @@ func (a *appGenerator) Generate() error {
 	// templates are now lazy loaded so there is concurrent map access I can't guard
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
+
+		// sort models before rendering
+		sort.Sort(app.Models)
+
 		for _, mod := range app.Models {
 			modCopy := mod
+			// the IncludeValidator CLI option has been desupported as being prone to confusion (e.g. with --skip-validation)
+			// models now always include validation code.
 			modCopy.IncludeValidator = true // a.GenOpts.IncludeValidator
 			modCopy.IncludeModel = true
 			if err := a.GenOpts.renderDefinition(&modCopy); err != nil {
@@ -538,11 +544,18 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 
 	log.Println("planning definitions")
-	for mn, m := range a.Models {
+	modelNames := make([]string, 0, len(a.Models))
+	for k := range a.Models {
+		modelNames = append(modelNames, k)
+	}
+	sort.Strings(modelNames)
+
+	for _, mn := range modelNames {
+		// this generates a model
 		mod, err := makeGenDefinition(
 			mn,
 			a.ModelsPackage,
-			m,
+			a.Models[mn],
 			a.SpecDoc,
 			a.GenOpts,
 		)
@@ -550,7 +563,6 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			return GenApp{}, fmt.Errorf("error in model %s while planning definitions: %v", mn, err)
 		}
 		if mod != nil {
-			//mod.ReceiverName = receiver
 			genMods = append(genMods, *mod)
 		}
 	}

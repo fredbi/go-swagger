@@ -29,6 +29,7 @@ func opts() *GenOpts {
 	var opts GenOpts
 	opts.IncludeValidator = true
 	opts.IncludeModel = true
+	opts.ExportConst = true // export enum var/const
 	if err := opts.EnsureDefaults(); err != nil {
 		panic(err)
 	}

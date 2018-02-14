@@ -46,7 +46,9 @@ Every action that happens tracks the path which is a linked list of refs
 
 */
 
-// GenerateDefinition generates a model file for a schema definition.
+// GenerateDefinition generates models from a list of model names.
+//
+// If no model names are provided, it will take all available definitions in the GenOpt spec.
 func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 	if opts == nil {
 		return errors.New("gen opts are required")
@@ -69,6 +71,8 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 			modelNames = append(modelNames, k)
 		}
 	}
+
+	sort.Strings(modelNames)
 
 	for _, modelName := range modelNames {
 		// lookup schema
@@ -102,6 +106,7 @@ type definitionGenerator struct {
 	opts    *GenOpts
 }
 
+// Generate renders a model definition
 func (m *definitionGenerator) Generate() error {
 
 	mod, err := makeGenDefinition(m.Name, m.Target, m.Model, m.SpecDoc, m.opts)
@@ -126,11 +131,13 @@ func (m *definitionGenerator) Generate() error {
 	return nil
 }
 
+// generateModel renders generated code for a model definition
 func (m *definitionGenerator) generateModel(g *GenDefinition) error {
 	debugLog("rendering definitions for %+v", *g)
 	return m.opts.renderDefinition(g)
 }
 
+// makeGenDefinition produces a GenDefinition object from a spec schema
 func makeGenDefinition(name, pkg string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	gd, err := makeGenDefinitionHierarchy(name, pkg, "", schema, specDoc, opts)
 
@@ -167,7 +174,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 	if sch.Required || sch.IsCustomFormatter && !sch.IsStream {
 		return true
 	}
-	if sch.MaxLength != nil || sch.MinLength != nil || sch.Pattern != "" || sch.MultipleOf != nil || sch.Minimum != nil || sch.Maximum != nil || len(sch.Enum) > 0 || len(sch.ItemsEnum) > 0 {
+	if sch.MaxLength != nil || sch.MinLength != nil || sch.Pattern != "" || sch.MultipleOf != nil || sch.Minimum != nil || sch.Maximum != nil || len(sch.Enum) > 0 {
 		return true
 	}
 	for _, a := range sch.AllOf {
@@ -205,6 +212,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	_, ok := schema.Extensions[xGoType]
 	if ok {
+		// if a go-type is already provided, nothing to generate
 		return nil, nil
 	}
 
@@ -231,6 +239,9 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		Container:        container,
 		IncludeValidator: opts.IncludeValidator,
 		IncludeModel:     opts.IncludeModel,
+
+		// Enum generation options
+		enumResolverOpts: makeEnumResolverOpts(opts),
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
@@ -424,6 +435,9 @@ type schemaGenContext struct {
 	Discriminator  *discor
 	Discriminated  *discee
 	Discrimination *discInfo
+
+	// Enum generation options
+	enumResolverOpts
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
@@ -497,6 +511,8 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 	} else {
 		pg.Path = pg.Path + "+ \".\"+\"" + strconv.Itoa(index) + "\""
 	}
+
+	// tuple elements are named P0, P1, ...
 	pg.ValueExpr = pg.ValueExpr + ".P" + strconv.Itoa(index)
 
 	pg.Required = true
@@ -541,6 +557,7 @@ func (sg *schemaGenContext) shallowClone() *schemaGenContext {
 	pg.IsTuple = false
 	pg.IncludeValidator = sg.IncludeValidator
 	pg.IncludeModel = sg.IncludeModel
+	pg.enumResolverOpts = sg.enumResolverOpts
 	return pg
 }
 
@@ -700,6 +717,7 @@ func (sg *schemaGenContext) buildProperties() error {
 		if tpe.IsComplexObject && tpe.IsAnonymous && len(v.Properties) > 0 {
 			// this is an anonymous complex construct: build a new new type for it
 			pg := sg.makeNewStruct(sg.Name+swag.ToGoName(k), v)
+
 			pg.IsTuple = sg.IsTuple
 			if sg.Path != "" {
 				pg.Path = sg.Path + "+ \".\"+" + fmt.Sprintf("%q", k)
@@ -886,6 +904,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 			name := swag.ToVarName(goName(&sch, sg.Name+"AllOf"+strconv.Itoa(i)))
 			debugLog("building anonymous nested allOf in %s: %s", sg.Name, name)
 			ng := sg.makeNewStruct(name, sch)
+
 			if err := ng.makeGenSchema(); err != nil {
 				return err
 			}
@@ -1340,6 +1359,9 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		Container:        sg.Container,
 		IncludeValidator: sg.IncludeValidator,
 		IncludeModel:     sg.IncludeModel,
+
+		// Enum generation options
+		enumResolverOpts: sg.enumResolverOpts,
 	}
 	if schema.Ref.String() == "" {
 		pg.TypeResolver = sg.TypeResolver.NewWithModelName(name)
@@ -1386,7 +1408,6 @@ func (sg *schemaGenContext) buildArray() error {
 	sg.MergeResult(elProp, false)
 
 	sg.GenSchema.IsBaseType = elProp.GenSchema.IsBaseType
-	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 
 	elProp.GenSchema.IsNullable = tpe.IsNullable && !tpe.HasDiscriminator
@@ -1452,6 +1473,7 @@ func (sg *schemaGenContext) buildItems() error {
 	if sg.Named {
 		sg.GenSchema.Name = sg.Name
 		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name)
+
 		for i, s := range sg.Schema.Items.Schemas {
 			elProp := sg.NewTupleElement(&s, i)
 
@@ -1480,6 +1502,7 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			sg.MergeResult(elProp, false)
 
+			// tuple properties are named P0,P1,...
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			sg.GenSchema.IsTuple = true
@@ -1494,10 +1517,13 @@ func (sg *schemaGenContext) buildItems() error {
 	sch.Typed("object", "")
 	sch.Properties = make(map[string]spec.Schema, len(sg.Schema.Items.Schemas))
 	for i, v := range sg.Schema.Items.Schemas {
+		// tuple properties are named P0,P1,... : all are Required
 		sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
+
 		sch.Properties["P"+strconv.Itoa(i)] = v
 	}
 	sch.AdditionalItems = sg.Schema.AdditionalItems
+
 	tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
 	tup.IsTuple = true
 	if err := tup.makeGenSchema(); err != nil {
@@ -1880,6 +1906,79 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	sg.buildMapOfNullable(nil)
 
+	if err := sg.buildEnums(nil); err != nil {
+		return err
+	}
 	debugLog("finished gen schema for %q", sg.Name)
+	return nil
+}
+
+func (sg *schemaGenContext) buildEnums(sc *GenSchema) error {
+	// build enum validation generation info
+	if sc == nil {
+		sc = &sg.GenSchema
+	}
+
+	// explore schema to get Suffix for Items, AdditionalItems and AdditionalProperties
+	// NOTE: this may be the second time we get in there, but now we have more complete context info (e.g. .Suffix)
+
+	if sc.Items != nil {
+		checkEnumBeenThere(sc.Items)
+		if err := sg.buildEnums(sc.Items); err != nil {
+			return err
+		}
+	}
+
+	if sc.AdditionalProperties != nil && sc.HasAdditionalProperties {
+		checkEnumBeenThere(sc.AdditionalProperties)
+		if err := sg.buildEnums(sc.AdditionalProperties); err != nil {
+			return err
+		}
+	}
+
+	if sc.IsTuple {
+		// for tuple elements (modeled as properties), adopt a special naming convention
+		for i := range sc.Properties {
+			propSchema := &(sc.Properties[i])
+			propSchema.Suffix = "Type" + pascalize(propSchema.Name)
+			checkEnumBeenThere(propSchema)
+			if err := sg.buildEnums(propSchema); err != nil {
+				return err
+			}
+		}
+	}
+
+	if sc.AdditionalItems != nil && sc.HasAdditionalItems {
+		checkEnumBeenThere(sc.AdditionalItems)
+		sc.AdditionalItems.Suffix = "Items"
+		if err := sg.buildEnums(sc.AdditionalItems); err != nil {
+			return err
+		}
+	}
+
+	if len(sc.Enum) > 0 {
+		checkEnumBeenThere(sc)
+		r := makeEnumResolver(sg, sc)
+
+		if sg.GenSchema.IsPrimitive && !sg.GenSchema.IsAliased {
+			if r.isEnumSimpleType() {
+				// optionally creates a dedicated type for anonymous primitive enums
+				// and rewrites current schema
+				pg := sg.makeNewStruct(sg.Name+" Enum", sg.Schema)
+				pg.Container = sg.Name
+				if err := pg.makeGenSchema(); err != nil {
+					return err
+				}
+				sg.MergeResult(pg, false)
+				sg.ExtraSchemas[pg.Name] = pg.GenSchema
+				sg.Schema = *spec.RefProperty("#/definitions/" + pg.Name)
+				sg.IsVirtual = true
+				return sg.makeGenSchema()
+			}
+		}
+
+		sc.GenEnum = r.resolveEnums()
+	}
+
 	return nil
 }

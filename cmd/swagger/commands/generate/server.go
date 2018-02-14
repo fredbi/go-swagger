@@ -75,6 +75,14 @@ func (s *Server) getOpts() (*generator.GenOpts, error) {
 		FlagStrategy:           s.FlagStrategy,
 		CompatibilityMode:      s.CompatibilityMode,
 		ExistingModels:         s.ExistingModels,
+
+		// Enum generation options
+		IsEnumCI:            s.WithEnumCI,
+		ExcludeConst:        s.NoEnumConst,
+		ExportConst:         !s.NoEnumExport,
+		WithEnumSimple:      s.WithEnumSimple,
+		WithEnumExportSlice: s.WithEnumExportSlice,
+		SkipEnumConflict:    s.SkipEnumConflict,
 	}, nil
 }
 

@@ -1068,6 +1068,9 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		IncludeModel:     true,
 		IncludeValidator: true,
 		ExtraSchemas:     make(map[string]GenSchema),
+
+		// Enum generation options
+		enumResolverOpts: makeEnumResolverOpts(b.GenOpts),
 	}
 
 	var (

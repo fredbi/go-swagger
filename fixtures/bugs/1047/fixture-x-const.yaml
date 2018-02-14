@@ -1,0 +1,80 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: ExtensionEnum
+  description: |
+    Enum generation with custom names
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  word:
+    type: string
+    minLength: 1
+    pattern: '^[a-zA-Z0-9_\-\.]+$'
+  wordOrRegex:
+    type: string
+    minLength: 1
+    pattern: '^((\\/[a-zA-Z0-9\\.\\-_]+\/)|([a-zA-Z][a-zA-Z0-9\\.\\-_]+))$'
+  factFilter:
+    type: object
+    required:
+      - fact
+      - operator
+      - operator2
+      - value
+    properties:
+      fact:
+        $ref: '#/definitions/word'
+      operator:
+        type: string
+        enum:
+          - "=="
+          - "=~"
+          - "!="
+          - ">"
+          - "<="
+          - "<"
+        x-go-const-names:            # <- perfect match
+          - Equal
+          - Match
+          - NotEqual
+          - Greater
+          - LessOrEqual
+          - Less
+      operator2:
+        type: string
+        enum: [ "==", "=~", "!=", ">=", ">", "<=", "<", "()", ";;", ",,", ".+.", "/", '\' ]
+        x-go-const-names:            # <- shorter list than enum
+          - StraightEqual
+          - StraightMatch
+      operator3:
+        type: integer
+        enum: [1, 2, 3, 4]
+      operator4:
+        type: string
+        enum: ["aWord", "a_snake", "a-hyphen", "a space"]
+        x-go-const-names:            # <- longer list than enum
+          - PlainWord
+          - Snake
+          - Hyphen
+          - Space
+          - Unused
+          - Unused2
+      value:
+        $ref: '#/definitions/wordOrRegex'
+  factsFilter:
+    type: array
+    items:
+      $ref: '#/definitions/factFilter'
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK

@@ -32,6 +32,9 @@ Help Options:
           --skip-struct                                                           when present will not generate the model struct
           --dump-data                                                             when present dumps the json for the template generator instead of generating files
           --skip-validation                                                       skips validation of spec prior to generation
+          --skip-enum-const           when present, model generation makes no attempt to generate consts for enum values
+          --skip-export-enum          when present, enum constants in a model are not exported as globals
+          --with-enum-ci              validates enum strings as case-insensitive (model only)
 ```
 
 Schema generation rules are detailed [here](../use/model.md).
