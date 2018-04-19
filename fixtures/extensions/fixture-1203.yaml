@@ -1,0 +1,39 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Enum generation in items
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  foo:
+    type: object
+    properties:
+      name:
+        type: string
+      organizationId:
+        format: int32
+        type: integer
+      roles:
+        type: array
+        items:
+          type: string
+          enum:
+            - Admin
+            - User
+            - SuperAdmin
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/foo'

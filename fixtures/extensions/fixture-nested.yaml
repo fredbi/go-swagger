@@ -1,0 +1,93 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: nested
+  description: |
+    Test const generation on enums with nested constructs in models
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  SliceOnly:
+    type: array
+    items:
+      type: string
+    enum:
+      - [ "sparrow", "dove", "chicken" ]
+      - [ "cod", "salmon", "shark" ]
+      - [ "monkey", "tiger", "elephant" ]
+    x-go-enum-name: fred
+  ItemsOnly:
+    type: array
+    items:
+      type: string
+      enum: ["sparrow", "dove", "chicken", "cod", "salmon", "shark", "monkey", "tiger", "elephant"]
+  SliceAndItemsThing:
+    type: array
+    enum:
+     - [ "sparrow", "dove", "chicken" ]
+     - [ "cod", "salmon", "shark" ]
+     - [ "monkey", "tiger", "elephant" ]
+    items:
+      type: string
+      enum: ["sparrow", "dove", "chicken", "cod", "salmon", "shark", "monkey", "tiger", "elephant"]
+  # Nested arrays
+  NestedOnDef:
+    type: array 
+    maxItems: 12
+    items:
+      $ref: "#/definitions/SliceOnly"
+    enum:
+    -
+      - [ "sparrow", "dove", "chicken" ]
+      - [ "cod", "salmon", "shark" ]
+      - [ "monkey", "tiger", "elephant" ]
+  NestedInLine:
+    type: array 
+    minItems: 2
+    items:
+      type: array
+      maxItems: 2
+      items:
+        type: string
+        pattern: '^\w+$'
+        enum:
+          - LabelOne
+          - LabelTwo
+      enum:
+        -
+          - LabelOne
+          - LabelTwo
+        -
+          - LabelTwo
+          - LabelOne
+    enum:
+      -
+        -
+          - LabelOne
+          - LabelTwo
+        -
+          - LabelTwo
+          - LabelOne
+        -
+          - LabelTwo
+          - LabelOne
+        -
+          - LabelOne
+          - LabelTwo
+
+

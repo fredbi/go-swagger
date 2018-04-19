@@ -1,0 +1,173 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Enum generation - test on the CI validation feature
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  yesNo:
+    type: boolean
+    enum:
+      - true
+      - false
+    x-go-const-names:
+      - 'Yes' 
+      - 'No'
+    x-go-enum-ci: true          # <- this should be ignored
+  assessment:
+    type: array
+    items:
+      type: number
+      format: float
+      enum:
+        - 0
+        - 0.5
+        - 1
+        - 1.5
+        - 2
+      x-go-const-names: 
+        - GradeF
+        - GradeE
+        - GradeD
+        - GradeB
+        - GradeA
+      x-go-enum-ci: true          # <- this should be ignored
+  arithObject:
+    type: object
+    required: [smallPrimeNumber]
+    properties:
+      smallPrimeNumber:
+        type: integer
+        format: int32
+        enum:
+          - 1
+          - 2
+          - 3
+          - 5
+          - 7
+          - 11
+          - 13
+        x-go-const-names:
+          - PrimeOne
+          - PrimeTwo
+          - PrimeThree
+          - PrimeFive
+          - PrimeSeven
+          - PrimeEleven
+          - PrimeThirteen
+  quarterlyClosing:
+    type: string
+    format: date
+    enum:
+      - 2018-03-31
+      - 2018-06-30
+      - 2018-09-30
+      - 2018-12-31
+    x-go-const-names:
+      - EndQ1
+      - EndQ2
+      - EndQ3
+      - EndQ4
+    x-go-enum-ci: true          # <- this should be ignored
+  bossId:
+    type: string
+    format: uuid
+    enum:
+      - 'a8098c1a-f86e-11da-bd1a-00112444be1e'
+      - 'a8098d1a-f86e-11da-bd1a-00112444be1e'
+      - 'a8098e1b-f86e-11db-bd1a-00112444be1e'
+    x-go-const-names:
+      - BossMasterID
+      - HeadMasterID
+      - ChiefID
+    x-go-enum-ci:          # <- this should generate CI specific code
+  intervals:
+    type: string
+    format: duration
+    enum:
+      - 1d
+      - 1w
+      - 4w
+  elapsed:
+    type: string
+    format: duration
+    enum:
+      - 1s
+      - 1m
+      - 1h
+    x-go-const-names: 
+      - OneSecond
+    x-go-enum-ci:          # <- this should be ignored
+  word:
+    type: string
+    minLength: 1
+    pattern: '^[a-zA-Z0-9_\-\.]+$'
+  wordOrRegex:
+    type: string
+    minLength: 1
+    pattern: '^((\\/[a-zA-Z0-9\\.\\-_]+\/)|([a-zA-Z][a-zA-Z0-9\\.\\-_]+))$'
+  factFilter:
+    type: object
+    required:
+      - fact
+      - operator
+      - operator2
+      - value
+    properties:
+      fact:
+        $ref: '#/definitions/word'
+      operator:
+        type: string
+        enum:
+          - "=="
+          - "=~"
+          - "!="
+          - ">="
+          - ">"
+          - "<="
+          - "<"
+        x-go-const-names:            # <- perfect match
+          - Equal
+          - Match
+          - NotEqual
+          - Greater
+          - LessOrEqual
+          - Less
+        x-go-enum-ci:          # <- this should generate CI specific code
+      operator2:
+        type: string
+        enum: [ "==", "=~", "!=", ">=", ">", "<=", "<", "()", ";;", ",,", ".+.", "/", '\' ]
+      operator3:
+        type: integer
+        enum: [1, 2, 3, 4]
+      operator4:
+        type: string
+        enum: ["aWord", "a_Snake", "a-hyphen", "a Space"]
+        x-go-enum-ci:          # <- this should generate CI specific code
+      operator5:
+        type: string
+        enum: ["anotherWord", "another_Snake", "another-hyPhen", "another Space"]
+      operator6:
+        type: string
+        enum: ["someWord", "some_Snake", "some-hyPhen", "some Space"]
+        x-go-enum-ci: false          # <- this should disable CI specific code
+      value:
+        $ref: '#/definitions/wordOrRegex'
+  factsFilter:
+    type: array
+    items:
+      $ref: '#/definitions/factFilter'
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK

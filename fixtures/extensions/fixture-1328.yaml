@@ -1,0 +1,29 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum-1328'
+  description: |
+    Enum generation
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  enum_type_one: { type: string, enum: [ '1' ] }
+  included:
+    type: array
+    items:
+      type: object
+      properties:
+        ida: { type: string, enum: [ '1' ] }
+        idb: { $ref: '#/definitions/enum_type_one' }
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK

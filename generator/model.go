@@ -205,6 +205,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema, specDoc *loads.Document, opts *GenOpts) (*GenDefinition, error) {
 	_, ok := schema.Extensions[xGoType]
 	if ok {
+		// if a go-type is already provided, nothing to generate
 		return nil, nil
 	}
 
@@ -212,8 +213,8 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	// models are resolved in the current package
 	resolver := newTypeResolver("", specDoc)
 	resolver.ModelName = name
-	analyzed := analysis.New(specDoc.Spec())
 
+	analyzed := analysis.New(specDoc.Spec())
 	di := discriminatorInfo(analyzed)
 
 	pg := schemaGenContext{
@@ -235,6 +236,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %v", name, err)
 	}
+
 	dsi, ok := di.Discriminators["#/definitions/"+name]
 	if ok {
 		// when these 2 are true then the schema will render as an interface
@@ -464,7 +466,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 
 	pg := sg.shallowClone()
 	indexVar := pg.IndexVar
-	pg.Name = sg.Name + " items"
+	pg.Name = goName(schema, sg.Name+" items")
 	itemsLen := 0
 	if sg.Schema.Items != nil {
 		itemsLen = sg.Schema.Items.Len()
@@ -479,7 +481,7 @@ func (sg *schemaGenContext) NewAdditionalItems(schema *spec.Schema) *schemaGenCo
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + mod + ")"
 	}
 	pg.IndexVar = indexVar
-	pg.ValueExpr = sg.ValueExpr + "." + pascalize(sg.GoName()) + "Items[" + indexVar + "]"
+	pg.ValueExpr = sg.ValueExpr + "." + pascalize(goName(schema, sg.GoName())+"Items") + "[" + indexVar + "]"
 	pg.Schema = spec.Schema{}
 	if schema != nil {
 		pg.Schema = *schema
@@ -497,6 +499,7 @@ func (sg *schemaGenContext) NewTupleElement(schema *spec.Schema, index int) *sch
 	} else {
 		pg.Path = pg.Path + "+ \".\"+\"" + strconv.Itoa(index) + "\""
 	}
+	// tuple elements are named P0, P1, ...
 	pg.ValueExpr = pg.ValueExpr + ".P" + strconv.Itoa(index)
 
 	pg.Required = true
@@ -851,6 +854,7 @@ func (sg *schemaGenContext) buildProperties() error {
 }
 
 func (sg *schemaGenContext) buildAllOf() error {
+	// TODO: resolve x-go-name
 	if len(sg.Schema.AllOf) == 0 {
 		return nil
 	}
@@ -1450,11 +1454,14 @@ func (sg *schemaGenContext) buildItems() error {
 
 	// This is a tuple, build a new model that represents this
 	if sg.Named {
+		// support x-go-name in tuples
+		// TODO(fredbi): origName := sg.Name
+		sg.Name = goName(&sg.Schema, sg.Name)
 		sg.GenSchema.Name = sg.Name
 		sg.GenSchema.GoType = sg.TypeResolver.goTypeName(sg.Name)
+		// TODO(fredbi): isContainerRenamed := origName != sg.Name
 		for i, s := range sg.Schema.Items.Schemas {
 			elProp := sg.NewTupleElement(&s, i)
-
 			if s.Ref.String() == "" {
 				tpe, err := sg.TypeResolver.ResolveSchema(&s, s.Ref.String() == "", true)
 				if err != nil {
@@ -1472,6 +1479,30 @@ func (sg *schemaGenContext) buildItems() error {
 				}
 			}
 
+			// if the container has been renamed and the schema of this element has not,
+			// follow naming conventions based on the new container's name.
+			// This way, tuple properties are kept consistent with their container's naming
+			/*
+				TODO(fredbi):
+					if isContainerRenamed && strings.HasPrefix(elProp.TypeResolver.ModelName, origName) {
+						sch := &elProp.Schema
+						if elProp.Schema.Ref.String() != "" {
+							// if flatten did a proper job, we should have a $ref for this type
+							swsp := sg.TypeResolver.Doc.Spec()
+							rsch, err := spec.ResolveRef(swsp, &elProp.Schema.Ref)
+							if err != nil {
+								return err
+							}
+							sch = rsch
+						}
+						if _, alreadyNamed := sch.Extensions.GetString(xGoName); !alreadyNamed {
+							// TODO: default naming convention should be exported by analysis flatten,
+							// so we would be garanteed we are consistent
+							sch.VendorExtensible.AddExtension(xGoName, sg.Name+"Items"+strconv.Itoa(i))
+						}
+						// if the definition has been processed before, rewrite it
+					}
+			*/
 			if err := elProp.makeGenSchema(); err != nil {
 				return err
 			}
@@ -1480,10 +1511,12 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			sg.MergeResult(elProp, false)
 
+			// tuple properties are named P0,P1,...
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
 			sg.GenSchema.Properties = append(sg.GenSchema.Properties, elProp.GenSchema)
 			sg.GenSchema.IsTuple = true
 		}
+		//sg.TypeResolver.ModelName = sg.Name
 		return nil
 	}
 
@@ -1494,11 +1527,12 @@ func (sg *schemaGenContext) buildItems() error {
 	sch.Typed("object", "")
 	sch.Properties = make(map[string]spec.Schema, len(sg.Schema.Items.Schemas))
 	for i, v := range sg.Schema.Items.Schemas {
+		// tuple properties are named P0,P1,... : all are Required
 		sch.Required = append(sch.Required, "P"+strconv.Itoa(i))
 		sch.Properties["P"+strconv.Itoa(i)] = v
 	}
 	sch.AdditionalItems = sg.Schema.AdditionalItems
-	tup := sg.makeNewStruct(sg.GenSchema.Name+"Tuple"+strconv.Itoa(sg.Index), sch)
+	tup := sg.makeNewStruct(goName(&sg.Schema, sg.GenSchema.Name)+"Tuple"+strconv.Itoa(sg.Index), sch)
 	tup.IsTuple = true
 	if err := tup.makeGenSchema(); err != nil {
 		return err
@@ -1530,7 +1564,7 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 			return err
 		}
 		if tpe.IsComplexObject && tpe.IsAnonymous {
-			pg := sg.makeNewStruct(sg.Name+" Items", *sg.Schema.AdditionalItems.Schema)
+			pg := sg.makeNewStruct(goName(&sg.Schema, sg.Name+" Items"), *sg.Schema.AdditionalItems.Schema)
 			if err := pg.makeGenSchema(); err != nil {
 				return err
 			}

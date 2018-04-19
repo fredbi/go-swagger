@@ -1,0 +1,40 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: fixture for enums with additional 
+  description: |
+    A test of enum validation generation for tuples and additionalItems.
+    Derived from fixtures/codegen/todolist.enum.yml
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      tags:
+        - testcgen
+      responses:
+        default:
+          description: Generic Out
+definitions:
+  Comics:
+    type: object 
+    properties:
+      prop1: 
+        type: integer
+      prop2:
+        $ref: '#/definitions/ref1'
+  ref1:
+    x-go-name: goNamedRef
+    type: object 
+    properties: 
+      propref:
+        type: string
+
+
+

@@ -1,0 +1,49 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Enum generation
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  ad_profile:
+    type: object
+    required:
+      - id
+      - member_id
+    properties:
+      id:
+        type: integer
+      member_id:
+        type: integer
+      members:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          required:
+            - member_id
+            - status
+          properties:
+            member_id:
+              type: integer
+              format: uint32
+              multipleOf: 3 
+            status:
+              type: string
+              enum:
+                - Available 
+                - OnLeave
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK

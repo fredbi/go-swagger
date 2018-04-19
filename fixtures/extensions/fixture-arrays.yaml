@@ -1,0 +1,144 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: 'Enum'
+  description: |
+    Enum generation for arrays, with various validation schemes
+  contact:
+    name: API Support
+    url: http://www.example.com
+    email: contact@github.com
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions:
+  simple:
+    type: array
+    items:
+      type: string
+  simpleFormat:
+    type: array
+    items:
+      type: string
+      format: uri
+  simpleEnumFormat:
+    type: array
+    items:
+      type: string
+      format: uri
+      enum: [ 'http://x.y.z', 'https://u.v.w' ]
+  nonStringFormat:
+    type: string
+    format: date
+    enum:
+      - 2000-01-01
+      - 2000-02-01
+  byteFormat:
+    type: string
+    format: byte 
+    enum: 
+      - base64toMajorTom
+      - majorTomToBase64
+  nonStringFormatWithValidations:
+    type: array
+    uniqueItems: true
+    items:
+      type: string
+      format: date
+      enum: [ 1970-01-01, 1972-01-01, 1992-01-01 ]
+  assessment:
+    type: array
+    maxItems: 6
+    items:
+      type: number
+      format: float
+      enum:
+        - 0
+        - 0.5
+        - 1
+        - 1.5
+        - 2
+      x-go-const-names: 
+        - GradeF
+        - GradeE
+        - GradeD
+        - GradeB
+        - GradeA
+    enum:
+      -
+        - 0
+        - 2
+      -
+        - 1
+        - 1.5
+    x-go-const-names:
+      - LowerGrades
+      - HigherGrades
+  intervalSets:
+    type: array
+    uniqueItems: true
+    items: 
+      type: string
+      format: duration
+      enum:
+        - 1d
+        - 1w
+        - 1h
+      x-go-const-names:
+        - Day
+        - Week
+        - Hour
+    enum:
+      - 
+        - 1d
+        - 1w
+      - 
+        - 1h
+    x-go-const-names:
+      - LongIntervals
+      - ShortIntervals
+  factFilter:
+    type: object
+    required:
+      - fact
+      - operator
+      - operator2
+      - value
+    properties:
+      operator:
+        type: string
+        enum:
+          - "=="
+          - "=~"
+          - "!="
+          - ">="
+          - ">"
+          - "<="
+          - "<"
+        x-go-const-names:            # <- perfect match
+          - Equal
+          - Match
+          - NotEqual
+          - Greater
+          - LessOrEqual
+          - Less
+      operator2:
+        type: string
+        enum: [ "==", "=~", "!=", ">=", ">", "<=", "<", "()", ";;", ",,", ".+.", "/", '\' ]
+      operator3:
+        type: integer
+        enum: [1, 2, 3, 4]
+      operator4:
+        type: string
+        enum: ["aWord", "a_snake", "a-hyphen", "a space"]
+  factsFilter:
+    type: array
+    items:
+      $ref: '#/definitions/factFilter'
+paths:
+  /fixture:
+    get:
+      responses:
+        200:
+          description: OK
