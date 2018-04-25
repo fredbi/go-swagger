@@ -224,3 +224,25 @@ var customFormatters = map[string]struct{}{
 	"io.Writer":     {}, // for "format": "binary" (client side)
 	// NOTE: runtime.File is not a customFormatter
 }
+
+// Swagger types with are excluded from validation.
+// Aliases on such types will create model objects
+// which do not implement the validatable interface.
+var notValidatedSwaggerTypes = map[string]struct{}{
+	"file": struct{}{},
+}
+
+// Rendered types with are excluded from validation.
+// Aliases on such types will create model objects
+// which do not implement the validatable interface.
+var notValidatedRenderedTypes = map[string]struct{}{
+	iface: struct{}{},
+}
+
+// Formats with are excluded from validation
+// (i.e are excluded from .IsCustomFormatter).
+// Aliases on such types will create model objects
+// which do not implement the validatable interface.
+var notValidatedFormats = map[string]struct{}{
+	"binary": struct{}{},
+}

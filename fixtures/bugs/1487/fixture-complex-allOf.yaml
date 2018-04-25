@@ -5,7 +5,7 @@ info:
   version: "1.0.0"
   title: fixture for nested allOf with ref
   description: |
-    We check that validation bubbles up properly, with various compounds of 
+    We check that validation bubbles up properly, with various compounds of
     complex structures, as well as no validation is generated when not necessary.
 produces:
   - application/json
@@ -27,10 +27,9 @@ definitions:
     type: array
     uniqueItems: true
     items:
-      # this one should issue a warning
       allOf:
-        - type: object 
-          properties: 
+        - type: object
+          properties:
             prop0:
               type: string
               format: uuid
@@ -38,13 +37,13 @@ definitions:
   sliceOfInterfaces:
     type: array
     items:
-      type: object 
+      type: object
       additionalProperties: true
   sliceOfInterfacesWithValidation:
     type: array
     maxItems: 10
     items:
-      type: object 
+      type: object
       additionalProperties: true
   allOfAliases:
     allOf:
@@ -53,17 +52,17 @@ definitions:
   allOfSlicesOfAliases:
     type: object
     allOf:
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop1:
-            type: array 
+            type: array
             maxItems: 10
             items:
               $ref: '#/definitions/aliasedDate'
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop2:
-            type: array 
+            type: array
             maxItems: 20
             items:
               $ref: '#/definitions/aliasedNullableDate'

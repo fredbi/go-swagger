@@ -818,6 +818,10 @@ func (sg *schemaGenContext) buildProperties() error {
 					emprop.GenSchema.HasValidations = true
 				}
 			}
+			if ttpe.IsMap && sch.AdditionalProperties != nil && sch.AdditionalProperties.Schema != nil {
+				// when AdditionalProperties specifies a Schema, there is a validation
+				emprop.GenSchema.HasValidations = true
+			}
 		}
 
 		if sg.Schema.Discriminator == k {
@@ -826,11 +830,19 @@ func (sg *schemaGenContext) buildProperties() error {
 			// since we never fill it with a zero-value
 			// TODO: when no other property than discriminator, there is no validation
 			emprop.GenSchema.IsNullable = false
+
+			/* FRED XP
+			// no validations occur on the discriminator of the base type
+			//emprop.GenSchema.HasValidations = false
+			//emprop.Required = true
+			*/
 		}
 		if emprop.GenSchema.IsBaseType {
 			sg.GenSchema.HasBaseType = true
 		}
 		sg.MergeResult(emprop, false)
+
+		// TODO: when no other property than discriminator, no validation
 
 		// when discriminated, data is accessed via a getter func
 		if emprop.GenSchema.HasDiscriminator {
@@ -935,6 +947,12 @@ func (sg *schemaGenContext) buildAllOf() error {
 			comprop.GenSchema.HasValidations = true
 		}
 		sg.MergeResult(comprop, true)
+
+		// lift validations when complex or ref'ed
+		if comprop.GenSchema.IsComplexObject || comprop.Schema.Ref.String() != "" {
+			sg.GenSchema.HasValidations = true
+			comprop.GenSchema.HasValidations = true
+		}
 		sg.GenSchema.AllOf = append(sg.GenSchema.AllOf, comprop.GenSchema)
 	}
 
@@ -946,7 +964,6 @@ func (sg *schemaGenContext) buildAllOf() error {
 
 	// prevent IsAliased to bubble up (e.g. when a single branch is itself aliased)
 	sg.GenSchema.IsAliased = sg.GenSchema.IsAliased && len(sg.GenSchema.AllOf) < 2
-
 	return nil
 }
 
@@ -1172,7 +1189,7 @@ func (sg *schemaGenContext) buildAdditionalProperties() error {
 			// additionalProperties: true is rendered as: map[string]interface{}
 			addp.Schema = &spec.Schema{}
 
-			addp.Schema.Typed("object", "")
+			addp.Schema.Typed("object", "") // TODO(fredbi): verifies the same technique is used for allOf
 			sg.GenSchema.HasAdditionalProperties = true
 			sg.GenSchema.IsComplexObject = false
 			sg.GenSchema.IsMap = true
@@ -1397,7 +1414,6 @@ func (sg *schemaGenContext) buildArray() error {
 	}
 
 	sg.GenSchema.IsArray = true
-
 	schemaCopy := elProp.GenSchema
 
 	schemaCopy.Required = false
@@ -1478,6 +1494,20 @@ func (sg *schemaGenContext) buildItems() error {
 			if elProp.GenSchema.IsInterface || elProp.GenSchema.IsStream {
 				elProp.GenSchema.HasValidations = false
 			}
+			/* FRED XP
+			// handle the case when a tuple element is a base type:
+			// we live on with the tuple element represented by the base type interface
+			// and we have to represent it as a non-pointer type.
+			if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
+				_, isBaseType := sg.Discrimination.Discriminators[s.Ref.String()]
+				if isBaseType {
+					//elProp.GenSchema.IsBaseType = true
+					elProp.GenSchema.IsNullable = false
+					elProp.GenSchema.Required = true
+
+				}
+			}
+			*/
 			sg.MergeResult(elProp, false)
 
 			elProp.GenSchema.Name = "p" + strconv.Itoa(i)
@@ -1556,6 +1586,21 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 
 		// lift validations when complex is not anonymous or ref'ed
 		if (tpe.IsComplexObject || it.Schema.Ref.String() != "") && !(tpe.IsInterface || tpe.IsStream) {
+			/* FRED XP
+			// handle the case when the AdditionalItems schema is a base type:
+			// we live on with this element represented by the base type interface
+			// but we have to represent it as a non-pointer type.
+			if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil && sg.Schema.AdditionalItems.Schema != nil {
+				_, isBaseType := sg.Discrimination.Discriminators[sg.Schema.AdditionalItems.Schema.Ref.String()]
+				if isBaseType {
+					// when the tuple element is a base type, we access the private field
+					// this one is no more rendered as a pointer and is thus not nullable.
+					it.GenSchema.IsBaseType = true
+					// TODO: case alias on base type
+					it.GenSchema.IsNullable = false
+				}
+			}
+			*/
 			it.GenSchema.HasValidations = true
 		}
 

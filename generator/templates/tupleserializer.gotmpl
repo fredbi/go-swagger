@@ -15,35 +15,72 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ if .AdditionalItems }}
   var lastIndex int
   {{ end }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   {{ range $idx, $val := .Properties }}if len(stage1) > {{ $idx }} {
     var data{{ pascalize .Name }} {{ template "dereffedSchemaType" . }}
+=======
+  {{ range $idx, $val := .Properties }} 
+    // {{ pascalize  .Name }}
+    if len(stage1) > {{ $idx }} {
+>>>>>>> Temp work
     buf = bytes.NewBuffer(stage1[{{ $idx }}])
+    {{- if .IsBaseType }}
+    // unmarshals tuple element as a base type (TODO: base type interface should export UnmarshalJSON())
+    rcv{{ $idx }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else if .IsMap }}Map{{ else }}{{ pascalize .GoType }}{{ end }}(buf, runtime.JSONConsumer())
+    if err != nil && err != io.EOF {
+        return err
+    }
+    {{- else }}
+    var rcv{{ $idx }} {{ template "dereffedSchemaType" . }}
     dec := json.NewDecoder(buf)
     dec.UseNumber()
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
     if err := dec.Decode(&data{{ pascalize .Name }}); err != nil {
       return err
     }
     {{ .ReceiverName }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = {{ if .IsNullable }}&{{ end }}data{{ pascalize .Name }}
     {{ if $.AdditionalItems }}
+=======
+    if err := dec.Decode(&rcv{{$idx}}); err != nil {
+      return err
+    }
+    {{- end }}
+    {{ .ReceiverName }}.{{ pascalize .Name }} = {{ if and .IsNullable (not .IsBaseType) }}&{{ end }}rcv{{ $idx }}
+    {{- if $.AdditionalItems }}
+>>>>>>> Temp work
     lastIndex = {{ $idx }}
-    {{ end }}
+    {{- end }}
   }
   {{ end }}
   {{ if .AdditionalItems }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   // stage 3: hydrates AdditionalItems
+=======
+    {{- with .AdditionalItems }}
+  // additionalItems
+>>>>>>> Temp work
   if len(stage1) > lastIndex+1 {
+    addItems := make([]{{ template "schemaType" . }},0,len(stage1)-lastIndex-1)
     for _, val := range stage1[lastIndex+1:] {
-      var toadd {{ template "schemaType" .AdditionalItems }}
       buf = bytes.NewBuffer(val)
+      {{- if .IsBaseType }}
+        // unmarshals additional items as a base type (TODO: base type interface should export UnmarshalJSON())
+        toadd, err := Unmarshal{{ pascalize .GoType }}{{ if .IsArray }}Slice{{ else if .IsMap }}Map{{ end }}(buf, runtime.JSONConsumer())
+        if err != nil && err != io.EOF {
+            return err
+        }
+      {{- else }}
+      var toadd {{ template "dereffedSchemaType" . }}
       dec := json.NewDecoder(buf)
       dec.UseNumber()
-      if err := dec.Decode({{ if not .AdditionalItems.IsNullable }}&{{ end }}toadd); err != nil {
+      if err := dec.Decode({{ if not .IsNullable }}&{{ end }}toadd); err != nil {
         return err
       }
-      {{ with .AdditionalItems -}}
-        {{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = append({{ $.ValueExpression }}.{{- if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }}, toadd)
       {{- end }}
+      addItems = append(addItems, {{ if and .IsNullable (not .IsBaseType) }}&{{ end }}toadd)
     }
+      {{ .ReceiverName }}.{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{ camelize .Name }}{{ end }} = addItems
+    {{- end }}
   }
   {{ end }}
   return nil
@@ -52,7 +89,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
 // MarshalJSON marshals this tuple type into a JSON array
 func ({{.ReceiverName}} {{ pascalize .Name }}) MarshalJSON() ([]byte, error) {
   data := []interface{}{
-  {{ range .Properties -}}
+  {{ range .Properties -}}{{- /* .ReceiverName}}.{{ if .IsBaseType }}{{ camelize .Name }}Field{{ else }}{{ pascalize .Name }}{{ end */ -}}
     {{.ReceiverName}}.{{ pascalize .Name }},
   {{ end }}
   }
@@ -92,7 +129,7 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
     {{ if not .IsBaseType }}
       {{ range .Properties }}
         {{ if or .IsBaseType (not .IsExported) }}
-  allOf{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+  allOf{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else if .IsMap }}Map{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
   if err != nil && err != io.EOF {
     return err
   }
@@ -102,7 +139,11 @@ func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(raw []byte) error 
   {{ end }}
   {{ range .Properties }}
     {{ if or .IsBaseType (not .IsExported) }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   prop{{ pascalize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+=======
+  {{ camelize .Name }}, err := Unmarshal{{ if .IsArray }}{{ pascalize .Items.GoType }}Slice{{ else if .IsMap }}Map{{ else }}{{ pascalize .GoType }}{{ end }}(bytes.NewBuffer(data.{{ pascalize .Name }}), runtime.JSONConsumer())
+>>>>>>> Temp work
   if err != nil && err != io.EOF {
     return err
   }

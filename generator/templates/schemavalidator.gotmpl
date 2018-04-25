@@ -1,5 +1,6 @@
 {{ define "primitivefieldvalidator" }}
-  {{ if .Required }}
+  {{ if .Required }}{{/* TODO: for tuples, requires a special process */}}
+  // DEBUG: $.IsTuple: {{ $.IsTuple }}
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
     return err
   }
@@ -40,13 +41,18 @@
     return err
   }
   {{ end }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   {{ if .IsCustomFormatter }}{{/* the .IsStream case (ioReadCloser) is already excluded, since it does not resolve as primitive */}}
+=======
+  {{ if .IsCustomFormatter }}{{/* the .IsStream case (ioReadCloser) is excluded, since it does not resolve as primitive */}}
+>>>>>>> Temp work
     {{ template "validationCustomformat" . }}
   {{ end }}
 {{ end }}
 
 {{define "slicevalidator" }}
   {{ if .Required }}
+    // DEBUG: $.IsTuple: {{ $.IsTuple }}
     if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
       return err
     }
@@ -76,6 +82,24 @@
     }
   {{ end }}
   {{ if .Items }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+    // DEBUG: items validation
+    // DEBUG: IsMap: {{ .IsMap }}
+    // DEBUG: IsAliased: {{ .IsAliased }}
+    // DEBUG: IsBaseType: {{ .IsBaseType }}
+    // DEBUG: HasBaseType: {{ .HasBaseType }}
+    // DEBUG: IsSubType: {{ .IsSubType }}
+    // DEBUG: .Items.IsMapNullOverride: {{ .Items.IsMapNullOverride }}
+    // DEBUG: .Items.IsAliased: {{ .Items.IsAliased }}
+    // DEBUG: .Items.IsNullable: {{ .Items.IsNullable }}
+    // DEBUG: .Items.HasValidations: {{ .Items.HasValidations }}
+    // DEBUG: .Items.IsBaseType: {{ .Items.IsBaseType }}
+    // DEBUG: .Items.HasBaseType: {{ .Items.HasBaseType }}
+    // DEBUG: .Items.IsArray: {{ .Items.IsArray }}
+    // DEBUG: .GoType : {{ .GoType }}
+    {{- /* TODO: same kind of override for discriminated objects */ -}}
+>>>>>>> Temp work
     {{- if and (or .Items.Required .Items.HasValidations .Items.IsBaseType .Items.IsAliased) (not .Items.IsInterface) (not .Items.IsStream) }}
       for {{.IndexVar }} := 0; {{.IndexVar }} < len({{.ValueExpression }}); {{.IndexVar }}++ {
       {{- with .Items }}
@@ -106,7 +130,21 @@
   {{- end }}
 {{ end }}
 {{ define "mapvalidator" }}{{/* validates additionalProperties */}}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   {{ if .HasAdditionalProperties }}
+=======
+  // DEBUG: mapvalidator for {{ .Name }}
+  // DEBUG: Required: {{ .Required }}
+  // DEBUG: IsAliased: {{ .IsAliased }}
+  // DEBUG: IsBaseType: {{ .IsBaseType }}
+  // DEBUG: IsSubType: {{ .IsSubType }}
+  {{ if .HasAdditionalProperties }}
+    {{ if and .IsMap .AdditionalProperties.Required }}
+    if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not .IsAnonymous }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not .IsAnonymous }}){{ end }}); err != nil {
+      return err
+    }
+    {{ end }}
+>>>>>>> Temp work
     {{- if  .AdditionalProperties.HasValidations }}
     for {{ .AdditionalProperties.KeyVar }} := range {{ .ValueExpression }} {
       {{ with .AdditionalProperties }}
@@ -114,6 +152,7 @@
       if swag.IsZero({{ .ValueExpression }}) { // not required
         continue
       }
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
         {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
@@ -122,6 +161,13 @@
         {{- if .IsPrimitive }}
           {{- if .IsAliased }}
             {{- if not .IsAnonymous }}
+=======
+        {{ end }}
+        {{- if .IsPrimitive }}
+          {{- if .IsAliased }}
+            {{- if not .IsAnonymous }}
+      // DEBUG: IsMap: {{ .IsMap }} (1)
+>>>>>>> Temp work
       if val, ok := {{ .ValueExpression }}; ok {
               {{- if and .IsNullable (not .IsMapNullOverride) }}
         if val != nil {
@@ -133,7 +179,11 @@
         }
               {{- end }}
       }
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
             {{- else }}{{/* validation of anonymous objects */}}
+=======
+            {{- else }}{{/* validation for anonymous objects */}}
+>>>>>>> Temp work
               {{ range .AllOf }}
                 {{ range .Properties }}
                   {{ template "propertyvalidator" . }}
@@ -144,25 +194,34 @@
               {{ end }}
             {{- end }}
             {{ if and .IsTuple .AdditionalItems }}
-      // TODO: validating additional items should go here, if you see this raise an issue
-      // at https://github.com/go-swagger/go-swagger/issues
+    // TODO: validating additional items should go here, if you see this raise an issue
+    // at https://github.com/go-swagger/go-swagger/issues
+    breakCompilation = 1
             {{ end }}
           {{ else }}
             {{ template "primitivefieldvalidator" . }}
           {{ end }}
         {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
           {{- if .Required }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+  // DEBUG: $.IsTuple: {{ $.IsTuple }}
+>>>>>>> Temp work
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
     return err
   }
           {{- end }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
           {{- if not .IsStream }}{{/* TODO: IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+=======
+          {{- if not .IsStream }}{{/* TODO(fredbi): IsStream and CustomFormattershould be mutually exclusive in type resolver */}}
+>>>>>>> Temp work
             {{ template "validationCustomformat" . }}
           {{- end }}
         {{ else if .IsArray }}
           {{ template "slicevalidator" . }}
         {{ else if .IsMap }}
-          {{ template "mapvalidator" . }}
+          {{ template "mapvalidator" .}}
           {{ if .Enum }}
       if err := {{ .ReceiverName }}.validate{{ pascalize .Name }}ValueEnum({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
         return err
@@ -170,6 +229,21 @@
           {{- end }}
         {{ else if or .IsComplexObject .IsTuple .IsAdditionalProperties .IsAliased }}
           {{- if not .IsAnonymous }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+        // DEBUG: IsMap: {{ .IsMap }} (2)
+        // DEBUG: IsNullable: {{ .IsNullable }} (2)
+        // DEBUG: IsPrimitive: {{ .IsPrimitive }} (2)
+        // DEBUG: IsBaseType: {{ .IsBaseType }} (2)
+        // DEBUG: HasBaseType: {{ .HasBaseType }} (2)
+        // DEBUG: IsSubType: {{ .IsSubType }}
+        // DEBUG: AdditionalProperties.IsPrimitive: {{ .IsPrimitive }} (2)
+        // DEBUG: .AdditionalProperties.IsNullable: {{ .IsNullable }} (2)
+        // DEBUG: .AdditionalProperties.IsAliased: {{ .IsAliased }} (2)
+        // DEBUG: .AdditionalProperties.AliasedType: {{ if .IsAliased }}{{ .AliasedType }}{{end}}
+        // DEBUG: .AdditionalProperties.IsMapNullOverride: {{ .IsMapNullOverride }} (2)
+        // DEBUG: .AdditionalProperties.GoType: {{ .IsMap }} (2)
+>>>>>>> Temp work
     if val, ok := {{ .ValueExpression }}; ok {
             {{- if and .IsNullable (not .IsMapNullOverride) }}
       if val != nil {
@@ -192,8 +266,9 @@
             {{- end }}
           {{- end }}
           {{ if and .IsTuple .AdditionalItems }}
-      // TODO: validating additional items should go here, if you see this raise an issue
-      // at https://github.com/go-swagger/go-swagger/issues
+    // TODO: validating additional items should go here, if you see this raise an issue
+    // at https://github.com/go-swagger/go-swagger/issues
+    breakCompilation = 2
           {{ end }}
         {{ end }}
     }
@@ -206,6 +281,7 @@
     }
     {{ end }}
   {{- else if .IsAliased }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
     {{- if and .Required .IsInterface }}
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
@@ -240,6 +316,39 @@
 {{define "objectvalidator" }}
   {{- if not .IsAnonymous }}
     {{- if and .Required .IsNullable }}
+=======
+      // DEBUG: aliased map
+    {{- if and .Required .IsInterface }}
+      // DEBUG: $.IsTuple: {{ $.IsTuple }}
+      if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+        return err
+      }
+    {{- else }}{{/* TODO(fredbi): figure out if something needed here*/}}
+    // DEBUG: Enum: {{ .Enum }} (1)
+    {{- end }}
+    {{- else }}
+  {{- end }}
+  // DEBUG: Enum: {{ .Enum }} (2)
+{{ end }}{{/* end "mapvalidator" */}}
+
+{{define "objectvalidator" }}
+  // DEBUG: ObjectValidator for {{.Name}}
+  // DEBUG: IsAliased: {{ .IsAliased }}
+  // DEBUG: IsNullable: {{ .IsNullable }}
+  // DEBUG: Required: {{ .Required }}
+  // DEBUG: AliasedType: {{ if .IsAliased }}{{ .AliasedType }}{{ end }}
+  // DEBUG: IsAnonymous: {{ .IsAnonymous }}
+  // DEBUG: IsAliased: {{ .IsAliased }}
+  // DEBUG: IsBaseType: {{ .IsBaseType }}
+  // DEBUG: HasBaseType: {{ .HasBaseType }}
+  // DEBUG: IsSubType: {{ .IsSubType }}
+  // DEBUG: IsMapNullOverride: {{ .IsMapNullOverride }}
+  // DEBUG: ValueExpression: {{ .ValueExpression }}
+  // DEBUG: .IsTuple: {{ .IsTuple }}
+  {{- if not .IsAnonymous }}
+    {{- if or (and .Required .IsNullable) (and .IsBaseType (or .Required .IsNullable)) }}
+      // DEBUG: $.IsTuple: {{ $.IsTuple }}
+>>>>>>> Temp work
       if err := validate.Required({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
@@ -271,18 +380,49 @@
   {{- if and .IsTuple .AdditionalItems }}
     // TODO: validating additional items should go here, if you see this raise an issue
     // at https://github.com/go-swagger/go-swagger/issues
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+  breakCompilation = 3
+>>>>>>> Temp work
   {{- end }}
 {{ end }}
 
 {{define "propertyvalidator" }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   {{- if .IsPrimitive }}
     {{- if .IsAliased }}
+=======
+  // DEBUG: PropertyValidator for {{.Name}}
+  // DEBUG: .HasValidations: {{ .HasValidations }}
+  // DEBUG: .IsMapNullOverride: {{ .IsMapNullOverride }}
+  // DEBUG: .IsAliased: {{ .IsAliased }}
+  // DEBUG: .Required: {{ .Required }}
+  // DEBUG: .IsBaseType: {{ .IsBaseType }}
+  // DEBUG: .IsSubType: {{ .IsSubType }}
+  // DEBUG: .HasBaseType: {{ .HasBaseType }}
+  // DEBUG: .IsAnonymous: {{ .IsAnonymous }}
+  // DEBUG: .IsMap: {{ .IsMap }}
+  // DEBUG: .IsArray: {{ .IsArray }}
+  // DEBUG: .IsPrimitive: {{ .IsPrimitive }}
+  // DEBUG: .IsComplexObject: {{ .IsComplexObject }}
+  // DEBUG: .IsCustomFormatter: {{ .IsCustomFormatter }}
+  // DEBUG: .IsStream: {{ .IsStream }}
+  // DEBUG: .IsAdditionalProperties: {{ .IsAdditionalProperties }}
+  // DEBUG: .HasAdditionalProperties: {{ .HasAdditionalProperties }}
+  {{- if .IsPrimitive }}
+    {{- if .IsAliased }}
+  // DEBUG: Aliased IsPrimitive
+>>>>>>> Temp work
       {{ template "objectvalidator" . }}
     {{- else }}
       {{ template "primitivefieldvalidator" . }}
     {{- end }}
     {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
     {{- if .Required }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+      // DEBUG: $.IsTuple: {{ $.IsTuple }}
+>>>>>>> Temp work
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
     return err
   }
@@ -300,10 +440,29 @@
 {{ end }}
 
 {{ define "fieldvalidator"}}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
   {{- if .IsPrimitive }}
     {{ template "primitivefieldvalidator" . }}
   {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
     {{- if .Required }}
+=======
+  // DEBUG: fieldvalidator for {{.Name}}
+  // DEBUG: .IsAliased: {{ .IsAliased }}
+  // DEBUG: .AliasedType: {{ if .IsAliased }}{{.AliasedType}}{{end}}
+  // DEBUG: IsBaseType: {{ .IsBaseType }}
+  // DEBUG: HasBaseType: {{ .HasBaseType }}
+  // DEBUG: IsSubType: {{ .IsSubType }}
+  // DEBUG: .IsMap: {{ .IsMap }}
+  // DEBUG: .IsArray: {{ .IsArray }}
+  // DEBUG: .IsMapNullOverride: {{ .IsMapNullOverride }}
+  // DEBUG: .HasValidations: {{ .HasValidations }}
+  {{- if .IsPrimitive }}
+  // IsPrimitive {{ .IsPrimitive }}
+    {{ template "primitivefieldvalidator" . }}
+  {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
+    {{- if .Required }}
+      // DEBUG: $.IsTuple: {{ $.IsTuple }}
+>>>>>>> Temp work
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ if .Path }}{{ .Path }}{{ else }}""{{ end }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
     return err
   }
@@ -314,6 +473,10 @@
   {{- else if .IsArray }}
     {{ template "slicevalidator" . }}
   {{- else if .IsMap }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+    // DEBUG: fieldvalidator with .IsMap
+>>>>>>> Temp work
     {{ template "mapvalidator" . }}
   {{- end }}
 {{ end }}
@@ -393,12 +556,20 @@ func ({{ .ReceiverName }} *{{ if .IsExported }}{{ pascalize .Name }}{{ else }}{{
     {{- end }}
   {{ end }}
 // Validate validates this {{ humanize .Name }}
-func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if .IsExported }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
+// DEBUG: IsAliased: {{ .IsAliased }}
+// DEBUG: IsBaseType: {{ .IsBaseType }}
+// DEBUG: HasBaseType: {{ .HasBaseType }}
+// DEBUG: IsExported: {{ .IsExported }}
+func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperties }}*{{ end }}{{ if .Discriminates }}{{ camelize .Name }}{{ else if or .IsExported .IsBaseType }}{{ pascalize .Name }}{{ else }}{{ .Name }}{{ end }}) Validate(formats strfmt.Registry) error {
   var res []error
 
   {{ range .AllOf }}
     {{- if not .Properties }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
       // validation for a type composition with {{ .GoType }}
+=======
+      // validation for a type composition (AllOf: {{ .Name }}) with {{ .GoType }}
+>>>>>>> Temp work
     {{- end }}
     {{- if and (or .IsInterface .IsAnonymous .IsBaseType) (or .Required .HasValidations) }}
       {{ template "fieldvalidator" . }}
@@ -424,14 +595,38 @@ func ({{.ReceiverName }} {{ if or .IsTuple .IsComplexObject .IsAdditionalPropert
       }
     {{- end }}
   {{- end }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+
+  // DEBUG: fieldvalidator
+>>>>>>> Temp work
   {{ template "fieldvalidator" . }}
   {{ range .Properties }}
+    // DEBUG: property {{.Name}}
+    // DEBUG: HasValidations {{.HasValidations}}
+    // DEBUG: IsAliased {{.IsAliased}}
+    // DEBUG: IsAnonymous {{.IsAnonymous}}
+    // DEBUG: IsBaseType: {{ .IsBaseType }}
+    // DEBUG: HasBaseType: {{ .HasBaseType }}
+    // DEBUG: IsSubType: {{ .IsSubType }}
+    // DEBUG: Required {{.Required}}
+    {{ if .AdditionalProperties }}{{ with .AdditionalProperties }}
+        // DEBUG: .AdditionalProperties.HasValidations: {{ .HasValidations }}
+        // DEBUG: .AdditionalProperties.IsAnonymous: {{ .IsAnonymous }}
+        // DEBUG: .AdditionalProperties.IsAliased: {{ .IsAliased }}
+        // DEBUG: .AdditionalProperties.IsComplexObject: {{ .IsComplexObject }}
+    {{ end }}{{else}}// No AdditionalProperties {{ end }}
     {{ if and (ne $.DiscriminatorField .Name) (or .Required .HasValidations) }}
       if err := {{.ReceiverName }}.validate{{ pascalize .Name }}(formats); err != nil {
         res = append(res, err)
       }
     {{ end }}
   {{ end }}
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+  // DEBUG: check additionalProperties
+  // .IsMap: {{ .IsMap }}
+>>>>>>> Temp work
   {{- if and .HasAdditionalProperties (not .IsMap) }}{{/* validates additionalProperties in an object which is not itself a map */}}
     {{ template "mapvalidator" . }}
   {{- end }}

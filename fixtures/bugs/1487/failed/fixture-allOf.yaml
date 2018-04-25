@@ -1,0 +1,316 @@
+swagger: '2.0'
+
+info:
+  version: "1.0.0"
+  title: test various allOf setups, including breaking validation
+  description: |
+    We check that validation bubbles up properly, with various compounds of 
+    complex structures, as well as no validation is generated when not necessary.
+
+    There is also some funny valid but non-serializable allOf's made of several slices or with additionalProperties.
+    Check the behaviour of the model generation in this case:
+      - codegen is not broken with slices, even though unmarshalling will fail for good reason: issue a warning at generation time
+      - codegen is broken with allOf members being empty objects with additionalProperties
+
+    Of course, the latter models do not correspond to real life situation and are just here to test the resilience of the 
+    codegen.
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /models:
+    get:
+      operationId: modelOp
+      summary: many model variations
+      description: Used to see if a codegen can render all the possible enum categories
+      tags:
+        - testcgen
+      parameters:
+        - name: manyThings 
+          in: body
+          schema:
+            $ref: '#/definitions/allThingsNested'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            $ref: '#/definitions/allThings'
+
+definitions:
+  aliasedDate:
+    type: string
+    format: date
+  aliasedNullableDate:
+    type: string
+    format: date
+    x-nullable: true
+  allThings:
+    type: object
+    # TODO: add slices and tuples
+    # TODO: nested allOf
+    # x-go-names wreck additionalProperties
+    allOf:
+      - 
+        #x-go-name: additionalThing
+        type: object
+        required: [ origin ]
+        properties:
+          origin: 
+            type: string
+            enum: [ print, e-book, collection, museum ]
+          status: 
+            type: string
+            enum: [ OK, KO ]
+          additionalProperties:
+            type: string
+            enum: [ bookshop, amazon, library ]
+      - 
+        # x-go-name: additionalObject
+        type: object
+        properties:
+          mockId: 
+           type: number
+        additionalProperties:
+          type: object
+          required: [ mockB ]
+          properties:
+            mockA: 
+              type: string
+              pattern: '^[A-Z]$'
+            mockB:
+              type: string
+              minLength: 1
+            mockC:
+              type: number
+      -  
+        # x-go-name: additionalThingsNested
+        type: object
+        properties:
+          origin2: 
+            type: string
+            enum: [ goPrint, goE-book, goCollection, goMuseum ]
+        additionalProperties:
+          type: object
+          properties:
+            printerAddress: 
+              type: string
+            printerDate: 
+              type: string
+              format: date
+            printerCountry:
+              type: string
+              enum: [ "US", "FR", "UK", "BE", "CA", "DE"]
+          additionalProperties:
+            type: object
+            properties:
+              averageDelay:
+                type: string
+                format: duration
+        #-  
+        # x-go-name: noValidationThing
+        # ERROR IN ALLOF
+        #type: object
+        #additionalProperties: true
+        #properties:
+        #  discourse: 
+        #    type: string
+        #  hoursSpent:
+        #    type: number
+      -  
+        # x-go-name: interfaceThing
+        type: object
+        additionalProperties: true
+        #-  
+        # x-go-name: additionalFormatedThing
+        # ERROR IN ALLOF
+        #type: object
+        #additionalProperties:
+        #  type: string 
+        #  format: date
+      -  
+        #x-go-name: additionalObjectWithAliasedThing
+        type: object
+        properties:
+          blob:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedDate'
+      - 
+        # x-go-name: additionalObjectWithNullableThing
+        type: object
+        properties:
+          blob2:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedNullableDate'
+      -  
+        #x-go-name: additionalDateWithNullableObject
+        type: object
+        properties:
+          nullableDate:
+            $ref: '#/definitions/aliasedNullableDate'
+      - 
+        #x-go-name: additionalDateWithNullableThing
+        type: object
+        properties:
+          blob3:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedNullableDate'
+      - 
+        #x-go-name: additionalObjectWithFormatedThing
+        type: object
+        required: [ blob4 ]
+        properties:
+          blob4:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          type: string 
+          format: date
+      - 
+        #x-go-name: additionalArrayThing
+        type: object
+        properties:
+          thisOneNotRequired:
+            type: integer
+            maximum: 10
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items: 
+            type: string
+            format: uuid
+  
+  allThingsNested:
+    type: object
+    # x-go-names wreck additionalProperties
+    allOf:
+      - 
+        $ref: '#/definitions/allThings'
+      - 
+        #x-go-name: additionalThing
+        type: object
+        required: [ origin2 ]
+        properties:
+          origin2: 
+            type: string
+            enum: [ print, e-book, collection, museum ]
+          status: 
+            type: string
+            enum: [ OK, KO ]
+          additionalProperties:
+            type: string
+            enum: [ bookshop, amazon, library ]
+      - 
+        # x-go-name: additionalObject
+        type: object
+        properties:
+          mockId: 
+           type: number
+        additionalProperties:
+          type: object
+          required: [ mockB ]
+          properties:
+            mockA: 
+              type: string
+              pattern: '^[A-Z]$'
+            mockB:
+              type: string
+              minLength: 1
+            mockC:
+              type: number
+      -  
+        # x-go-name: additionalThingsNested
+        type: object
+        properties:
+          origin3: 
+            type: string
+            enum: [ goPrint, goE-book, goCollection, goMuseum ]
+        additionalProperties:
+          type: object
+          properties:
+            printerAddress: 
+              type: string
+            printerDate: 
+              type: string
+              format: date
+            printerCountry:
+              type: string
+              enum: [ "US", "FR", "UK", "BE", "CA", "DE"]
+          additionalProperties:
+            type: object
+            properties:
+              averageDelay:
+                type: string
+                format: duration
+      -  
+        # x-go-name: noValidationThing
+        type: object
+        additionalProperties: true
+        properties:
+          discourse: 
+            type: string
+          hoursSpent:
+            type: number
+      -  
+        #x-go-name: additionalObjectWithAliasedThing
+        type: object
+        properties:
+          blob4:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedDate'
+      - 
+        # x-go-name: additionalObjectWithNullableThing
+        type: object
+        properties:
+          blob5:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedNullableDate'
+      -  
+        #x-go-name: additionalDateWithNullableObject
+        type: object
+        properties:
+          nullableDate:
+            $ref: '#/definitions/aliasedNullableDate'
+      - 
+        #x-go-name: additionalDateWithNullableThing
+        type: object
+        properties:
+          blob6:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          $ref: '#/definitions/aliasedNullableDate'
+      - 
+        #x-go-name: additionalObjectWithFormatedThing
+        type: object
+        required: [ blob4 ]
+        properties:
+          blob7:
+            type: integer
+            minimum: 1
+        additionalProperties:
+          type: string 
+          format: date
+      - 
+        #x-go-name: additionalArrayThing
+        type: object
+        properties:
+          thisOneNotRequired2:
+            type: integer
+            maximum: 10
+        additionalProperties:
+          type: array
+          uniqueItems: true
+          items: 
+            type: string
+            format: uuid

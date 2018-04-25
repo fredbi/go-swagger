@@ -11,9 +11,9 @@
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
       {{- end }}
     {{- end }}
+  {{- end }}
 {{- end }}
-{{- end }}
-{{ template "schema" . }}
+{{- template "schema" . }}
 
 {{ range .ExtraSchemas }}
   {{- if .IsExported }}

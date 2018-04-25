@@ -22,28 +22,28 @@ paths:
 definitions:
   notReallyComposedThing:
     allOf:
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop0:
             type: string
             format: uuid
   composedThing:
     allOf:
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop1:
             type: string
             format: uuid
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop2:
             type: string
             format: uuid
   simpleNestedObject:
     allOf:
       - $ref: '#/definitions/composedThing'
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop3:
             type: string
             format: uuid
@@ -51,15 +51,15 @@ definitions:
     type: object
     allOf:
       - $ref: '#/definitions/simpleNestedObject'
-      - type: object 
+      - type: object
         allOf:
-          - type: object 
-            properties: 
+          - type: object
+            properties:
               prop4:
                 type: string
                 format: uuid
-          - type: object 
-            properties: 
+          - type: object
+            properties:
               prop5:
                 type: string
                 format: date
@@ -67,8 +67,8 @@ definitions:
     type: object
     allOf:
       - $ref: '#/definitions/simpleNestedObject'
-      - type: object 
-        properties: 
+      - type: object
+        properties:
           prop6:
             type: string
             format: uuid

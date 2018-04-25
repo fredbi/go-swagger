@@ -1,6 +1,7 @@
 package generator
 
 func initFixture1479Part() {
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// testing ../fixtures/bugs/1479/fixture-1479-part.yaml with flatten and expand (--skip-flatten)
 
 	/*
@@ -14,6 +15,19 @@ func initFixture1479Part() {
 
 	// load expectations for model: container_create_config_all_of1.go
 	flattenRun.AddExpectations("container_create_config_all_of1.go", []string{
+=======
+	// testing ../fixtures/bugs/1487/fixture-1479-part.yaml with expand (--skip-flatten)
+
+	/* The breakage with allOf occurs when a schema with an allOf has itself a
+	property which is an allOf construct
+
+	*/
+	f := newModelFixture("../fixtures/bugs/1487/fixture-1479-part.yaml", "check nested AllOf validations (from Pouch Engine API)")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: container_create_config_all_of1.go
+	thisRun.AddExpectations("container_create_config_all_of1.go", []string{
+>>>>>>> Temp work
 		`type ContainerCreateConfigAllOf1 struct {`,
 		"	HostConfig *HostConfig `json:\"HostConfig,omitempty\"`",
 		"	NetworkingConfig *NetworkingConfig `json:\"NetworkingConfig,omitempty\"`",
@@ -41,7 +55,11 @@ func initFixture1479Part() {
 		noLines)
 
 	// load expectations for model: container_config.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("container_config.go", []string{
+=======
+	thisRun.AddExpectations("container_config.go", []string{
+>>>>>>> Temp work
 		`type ContainerConfig struct {`,
 		"	ArgsEscaped bool `json:\"ArgsEscaped,omitempty\"`",
 		"	AttachStderr bool `json:\"AttachStderr,omitempty\"`",
@@ -90,7 +108,11 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateExposedPorts(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ExposedPorts) {`,
 		`	for k := range m.ExposedPorts {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`		if swag.IsZero(m.ExposedPorts[k]) {`,
+=======
+		`		if swag.IsZero(m.ExposedPorts[k]) {`,
+>>>>>>> Temp work
 		`		if err := m.validateExposedPortsValueEnum("ExposedPorts"+"."+k, "body", m.ExposedPorts[k]); err != nil {`,
 		`func (m *ContainerConfig) validateHostname(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Hostname) {`,
@@ -121,7 +143,11 @@ func initFixture1479Part() {
 		`func (m *ContainerConfig) validateVolumes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Volumes) {`,
 		`	for k := range m.Volumes {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`		if swag.IsZero(m.Volumes[k]) {`,
+=======
+		`		if swag.IsZero(m.Volumes[k]) {`,
+>>>>>>> Temp work
 		`		if err := m.validateVolumesValueEnum("Volumes"+"."+k, "body", m.Volumes[k]); err != nil {`,
 	},
 		// not expected
@@ -130,10 +156,15 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("container_config.go", flattenRun.ExpectedFor("ContainerConfig").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: host_config_all_of0_log_config.go
 	flattenRun.AddExpectations("host_config_all_of0_log_config.go", []string{
+=======
+	// load expectations for model: host_config_all_of0_log_config.go
+	thisRun.AddExpectations("host_config_all_of0_log_config.go", []string{
+>>>>>>> Temp work
 		`type HostConfigAllOf0LogConfig struct {`,
 		"	Config map[string]string `json:\"Config,omitempty\"`",
 		"	Type string `json:\"Type,omitempty\"`",
@@ -167,7 +198,11 @@ func initFixture1479Part() {
 		noLines)
 
 	// load expectations for model: restart_policy.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("restart_policy.go", []string{
+=======
+	thisRun.AddExpectations("restart_policy.go", []string{
+>>>>>>> Temp work
 		`type RestartPolicy struct {`,
 		"	MaximumRetryCount int64 `json:\"MaximumRetryCount,omitempty\"`",
 		"	Name string `json:\"Name,omitempty\"`",
@@ -180,10 +215,15 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("restart_policy.go", flattenRun.ExpectedFor("RestartPolicy").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: endpoint_ip_a_m_config.go
 	flattenRun.AddExpectations("endpoint_ip_a_m_config.go", []string{
+=======
+	// load expectations for model: endpoint_ip_a_m_config.go
+	thisRun.AddExpectations("endpoint_ip_a_m_config.go", []string{
+>>>>>>> Temp work
 		`type EndpointIPAMConfig struct {`,
 		"	IPV4Address string `json:\"IPv4Address,omitempty\"`",
 		"	IPV6Address string `json:\"IPv6Address,omitempty\"`",
@@ -197,10 +237,15 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("endpoint_ip_a_m_config.go", flattenRun.ExpectedFor("EndpointIPAMConfig").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: host_config_all_of0.go
 	flattenRun.AddExpectations("host_config_all_of0.go", []string{
+=======
+	// load expectations for model: host_config_all_of0.go
+	thisRun.AddExpectations("host_config_all_of0.go", []string{
+>>>>>>> Temp work
 		`type HostConfigAllOf0 struct {`,
 		"	AutoRemove bool `json:\"AutoRemove,omitempty\"`",
 		"	Binds []string `json:\"Binds\"`",
@@ -254,9 +299,13 @@ func initFixture1479Part() {
 		`	if err := validate.MinItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	if err := validate.MaxItems("ConsoleSize", "body", iConsoleSizeSize, 2); err != nil {`,
 		`	for i := 0; i < len(m.ConsoleSize); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need...?
 		`		if swag.IsZero(m.ConsoleSize[i]) {`,
 		//`		if err := validate.Required("ConsoleSize"+"."+strconv.Itoa(i), "body", m.ConsoleSize[i]); err != nil {`,
+=======
+		`		if swag.IsZero(m.ConsoleSize[i]) {`,
+>>>>>>> Temp work
 		`		if err := validate.MinimumInt("ConsoleSize"+"."+strconv.Itoa(i), "body", int64(*m.ConsoleSize[i]), 0, false); err != nil {`,
 		`var hostConfigAllOf0TypeIsolationPropEnum []interface{`,
 		`	var res []string`,
@@ -311,7 +360,11 @@ func initFixture1479Part() {
 		noLines)
 
 	// load expectations for model: host_config.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("host_config.go", []string{
+=======
+	thisRun.AddExpectations("host_config.go", []string{
+>>>>>>> Temp work
 		`type HostConfig struct {`,
 		`	HostConfigAllOf0`,
 		`	Resources`,
@@ -326,6 +379,7 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("host_config.go", []string{
 		`type HostConfig struct {`,
 		"	AutoRemove bool `json:\"AutoRemove,omitempty\"`",
@@ -471,6 +525,10 @@ func initFixture1479Part() {
 
 	// load expectations for model: container_create_config.go
 	flattenRun.AddExpectations("container_create_config.go", []string{
+=======
+	// load expectations for model: container_create_config.go
+	thisRun.AddExpectations("container_create_config.go", []string{
+>>>>>>> Temp work
 		`type ContainerCreateConfig struct {`,
 		`	ContainerConfig`,
 		`	ContainerCreateConfigAllOf1`,
@@ -485,6 +543,7 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("container_create_config.go", []string{
 		`type ContainerCreateConfig struct {`,
 		"	ArgsEscaped bool `json:\"ArgsEscaped,omitempty\"`",
@@ -725,6 +784,10 @@ func initFixture1479Part() {
 
 	// load expectations for model: resources.go
 	flattenRun.AddExpectations("resources.go", []string{
+=======
+	// load expectations for model: resources.go
+	thisRun.AddExpectations("resources.go", []string{
+>>>>>>> Temp work
 		`type Resources struct {`,
 		"	BlkioWeight uint16 `json:\"BlkioWeight,omitempty\"`",
 		"	CgroupParent string `json:\"CgroupParent,omitempty\"`",
@@ -744,6 +807,7 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("resources.go", flattenRun.ExpectedFor("Resources").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: networking_config.go
@@ -752,16 +816,28 @@ func initFixture1479Part() {
 		// maps are now simple types
 		//"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
 		"	EndpointsConfig map[string]*EndpointSettings `json:\"EndpointsConfig,omitempty\"`",
+=======
+	// load expectations for model: networking_config.go
+	thisRun.AddExpectations("networking_config.go", []string{
+		`type NetworkingConfig struct {`,
+		"	EndpointsConfig NetworkingConfigEndpointsConfig `json:\"EndpointsConfig,omitempty\"`",
+>>>>>>> Temp work
 		`func (m *NetworkingConfig) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateEndpointsConfig(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *NetworkingConfig) validateEndpointsConfig(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.EndpointsConfig) {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
 		`       for k := range m.EndpointsConfig {`,
 		`	if err := validate.Required("EndpointsConfig"+"."+k, "body", m.EndpointsConfig[k]); err != nil {`,
 		`       	if val, ok := m.EndpointsConfig[k]; ok {`,
 		`          		if err := val.Validate(formats); err != nil {`,
+=======
+		`	if err := m.EndpointsConfig.Validate(formats); err != nil {`,
+		`		if ve, ok := err.(*errors.Validation); ok {`,
+		`			return ve.ValidateName("EndpointsConfig"`,
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -769,10 +845,15 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// NOTE(fredbi): maps are now simple types: this definition disappears
 
 	// load expectations for model: endpoint_settings.go
 	flattenRun.AddExpectations("endpoint_settings.go", []string{
+=======
+	// load expectations for model: endpoint_settings.go
+	thisRun.AddExpectations("endpoint_settings.go", []string{
+>>>>>>> Temp work
 		`type EndpointSettings struct {`,
 		"	Aliases []string `json:\"Aliases\"`",
 		"	DriverOpts map[string]string `json:\"DriverOpts,omitempty\"`",
@@ -803,6 +884,7 @@ func initFixture1479Part() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("endpoint_settings.go", []string{
 		`type EndpointSettings struct {`,
 		"	Aliases []string `json:\"Aliases\"`",
@@ -836,10 +918,25 @@ func initFixture1479Part() {
 	},
 		// not expected
 		noLines,
+=======
+	// load expectations for model: networking_config_endpoints_config.go
+	thisRun.AddExpectations("networking_config_endpoints_config.go", []string{
+		`type NetworkingConfigEndpointsConfig map[string]*EndpointSettings`,
+		`func (m NetworkingConfigEndpointsConfig) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", NetworkingConfigEndpointsConfig(m)); err != nil {`,
+		`	for k := range m {`,
+		`		if val, ok := m[k]; ok {`,
+		`			if err := val.Validate(formats); err != nil {`,
+		`		return errors.CompositeValidationError(res...`,
+	},
+		// not expected
+		todo,
+>>>>>>> Temp work
 		// output in log
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: networking_config_endpoints_config.go
 	// NOTE(fredbi): maps are now simple types - this definition disappears
 }
@@ -854,6 +951,19 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: not_really_composed_thing_all_of0.go
 	flattenRun.AddExpectations("not_really_composed_thing_all_of0.go", []string{
+=======
+}
+func initFixtureSimpleAllOf() {
+	// testing ../fixtures/bugs/1487/fixture-simple-allOf.yaml with expand (--skip-flatten)
+
+	/* we test various composition combinations, including nested, and nested isolated with a properties (e.g. issue #1479)
+	 */
+	f := newModelFixture("../fixtures/bugs/1487/fixture-simple-allOf.yaml", "fixture for nested allOf with ref")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: not_really_composed_thing_all_of0.go
+	thisRun.AddExpectations("not_really_composed_thing_all_of0.go", []string{
+>>>>>>> Temp work
 		`type NotReallyComposedThingAllOf0 struct {`,
 		"	Prop0 strfmt.UUID `json:\"prop0,omitempty\"`",
 		`func (m *NotReallyComposedThingAllOf0) Validate(formats strfmt.Registry) error {`,
@@ -869,6 +979,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: not_really_composed_thing.go
 	expandRun.AddExpectations("not_really_composed_thing.go", []string{
 		`type NotReallyComposedThing struct {`,
@@ -911,6 +1022,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: simple_nested_object_all_of1.go
 	flattenRun.AddExpectations("simple_nested_object_all_of1.go", []string{
+=======
+	// load expectations for model: simple_nested_object_all_of1.go
+	thisRun.AddExpectations("simple_nested_object_all_of1.go", []string{
+>>>>>>> Temp work
 		`type SimpleNestedObjectAllOf1 struct {`,
 		"	Prop3 strfmt.UUID `json:\"prop3,omitempty\"`",
 		`func (m *SimpleNestedObjectAllOf1) Validate(formats strfmt.Registry) error {`,
@@ -927,7 +1042,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: break_nested_object_all_of1_prop7.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("break_nested_object_all_of1_prop7.go", []string{
+=======
+	thisRun.AddExpectations("break_nested_object_all_of1_prop7.go", []string{
+>>>>>>> Temp work
 		`type BreakNestedObjectAllOf1Prop7 struct {`,
 		`	BreakNestedObjectAllOf1Prop7AllOf0`,
 		`	BreakNestedObjectAllOf1Prop7AllOf1`,
@@ -943,7 +1062,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: composed_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("composed_thing.go", []string{
+=======
+	thisRun.AddExpectations("composed_thing.go", []string{
+>>>>>>> Temp work
 		`type ComposedThing struct {`,
 		`	ComposedThingAllOf0`,
 		`	ComposedThingAllOf1`,
@@ -958,6 +1081,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: composed_thing.go
 	expandRun.AddExpectations("composed_thing.go", []string{
 		`type ComposedThing struct {`,
@@ -1016,6 +1140,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: break_nested_object.go
 	flattenRun.AddExpectations("break_nested_object.go", []string{
+=======
+	// load expectations for model: break_nested_object.go
+	thisRun.AddExpectations("break_nested_object.go", []string{
+>>>>>>> Temp work
 		`type BreakNestedObject struct {`,
 		`	SimpleNestedObject`,
 		`	BreakNestedObjectAllOf1`,
@@ -1030,6 +1158,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: break_nested_object.go
 	expandRun.AddExpectations("break_nested_object.go", []string{
 		`type BreakNestedObject struct {`,
@@ -1187,6 +1316,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: deep_nested_object_all_of1_all_of1.go
 	flattenRun.AddExpectations("deep_nested_object_all_of1_all_of1.go", []string{
+=======
+	// load expectations for model: deep_nested_object_all_of1_all_of1.go
+	thisRun.AddExpectations("deep_nested_object_all_of1_all_of1.go", []string{
+>>>>>>> Temp work
 		`type DeepNestedObjectAllOf1AllOf1 struct {`,
 		"	Prop5 strfmt.Date `json:\"prop5,omitempty\"`",
 		`func (m *DeepNestedObjectAllOf1AllOf1) Validate(formats strfmt.Registry) error {`,
@@ -1203,7 +1336,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: deep_nested_object.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("deep_nested_object.go", []string{
+=======
+	thisRun.AddExpectations("deep_nested_object.go", []string{
+>>>>>>> Temp work
 		`type DeepNestedObject struct {`,
 		`	SimpleNestedObject`,
 		`	DeepNestedObjectAllOf1`,
@@ -1218,6 +1355,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: deep_nested_object.go
 	expandRun.AddExpectations("deep_nested_object.go", []string{
 		`type DeepNestedObject struct {`,
@@ -1396,6 +1534,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: break_nested_object_all_of1.go
 	flattenRun.AddExpectations("break_nested_object_all_of1.go", []string{
+=======
+	// load expectations for model: break_nested_object_all_of1.go
+	thisRun.AddExpectations("break_nested_object_all_of1.go", []string{
+>>>>>>> Temp work
 		`type BreakNestedObjectAllOf1 struct {`,
 		"	Prop6 strfmt.UUID `json:\"prop6,omitempty\"`",
 		"	Prop7 *BreakNestedObjectAllOf1Prop7 `json:\"prop7,omitempty\"`",
@@ -1420,7 +1562,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: not_really_composed_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("not_really_composed_thing.go", []string{
+=======
+	thisRun.AddExpectations("not_really_composed_thing.go", []string{
+>>>>>>> Temp work
 		`type NotReallyComposedThing struct {`,
 		`	NotReallyComposedThingAllOf0`,
 		`func (m *NotReallyComposedThing) Validate(formats strfmt.Registry) error {`,
@@ -1433,6 +1579,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("not_really_composed_thing.go", []string{
 		`type NotReallyComposedThing struct {`,
 		"	Prop0 strfmt.UUID `json:\"prop0,omitempty\"`",
@@ -1451,6 +1598,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: simple_nested_object.go
 	flattenRun.AddExpectations("simple_nested_object.go", []string{
+=======
+	// load expectations for model: simple_nested_object.go
+	thisRun.AddExpectations("simple_nested_object.go", []string{
+>>>>>>> Temp work
 		`type SimpleNestedObject struct {`,
 		`	ComposedThing`,
 		`	SimpleNestedObjectAllOf1`,
@@ -1465,6 +1616,7 @@ func initFixtureSimpleAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// load expectations for model: simple_nested_object.go
 	expandRun.AddExpectations("simple_nested_object.go", []string{
 		`type SimpleNestedObject struct {`,
@@ -1563,6 +1715,10 @@ func initFixtureSimpleAllOf() {
 
 	// load expectations for model: break_nested_object_all_of1_prop7_all_of0.go
 	flattenRun.AddExpectations("break_nested_object_all_of1_prop7_all_of0.go", []string{
+=======
+	// load expectations for model: break_nested_object_all_of1_prop7_all_of0.go
+	thisRun.AddExpectations("break_nested_object_all_of1_prop7_all_of0.go", []string{
+>>>>>>> Temp work
 		`type BreakNestedObjectAllOf1Prop7AllOf0 struct {`,
 		"	Prop8 int64 `json:\"prop8,omitempty\"`",
 		`func (m *BreakNestedObjectAllOf1Prop7AllOf0) Validate(formats strfmt.Registry) error {`,
@@ -1579,7 +1735,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: deep_nested_object_all_of1_all_of0.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("deep_nested_object_all_of1_all_of0.go", []string{
+=======
+	thisRun.AddExpectations("deep_nested_object_all_of1_all_of0.go", []string{
+>>>>>>> Temp work
 		`type DeepNestedObjectAllOf1AllOf0 struct {`,
 		"	Prop4 strfmt.UUID `json:\"prop4,omitempty\"`",
 		`func (m *DeepNestedObjectAllOf1AllOf0) Validate(formats strfmt.Registry) error {`,
@@ -1596,7 +1756,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: break_nested_object_all_of1_prop7_all_of1.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("break_nested_object_all_of1_prop7_all_of1.go", []string{
+=======
+	thisRun.AddExpectations("break_nested_object_all_of1_prop7_all_of1.go", []string{
+>>>>>>> Temp work
 		`type BreakNestedObjectAllOf1Prop7AllOf1 struct {`,
 		"	Prop9 int64 `json:\"prop9,omitempty\"`",
 		`func (m *BreakNestedObjectAllOf1Prop7AllOf1) Validate(formats strfmt.Registry) error {`,
@@ -1613,7 +1777,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: composed_thing_all_of0.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("composed_thing_all_of0.go", []string{
+=======
+	thisRun.AddExpectations("composed_thing_all_of0.go", []string{
+>>>>>>> Temp work
 		`type ComposedThingAllOf0 struct {`,
 		"	Prop1 strfmt.UUID `json:\"prop1,omitempty\"`",
 		`func (m *ComposedThingAllOf0) Validate(formats strfmt.Registry) error {`,
@@ -1630,7 +1798,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: composed_thing_all_of1.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("composed_thing_all_of1.go", []string{
+=======
+	thisRun.AddExpectations("composed_thing_all_of1.go", []string{
+>>>>>>> Temp work
 		`type ComposedThingAllOf1 struct {`,
 		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
 		`func (m *ComposedThingAllOf1) Validate(formats strfmt.Registry) error {`,
@@ -1647,7 +1819,11 @@ func initFixtureSimpleAllOf() {
 		noLines)
 
 	// load expectations for model: deep_nested_object_all_of1.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("deep_nested_object_all_of1.go", []string{
+=======
+	thisRun.AddExpectations("deep_nested_object_all_of1.go", []string{
+>>>>>>> Temp work
 		`type DeepNestedObjectAllOf1 struct {`,
 		`	DeepNestedObjectAllOf1AllOf0`,
 		`	DeepNestedObjectAllOf1AllOf1`,
@@ -1665,16 +1841,27 @@ func initFixtureSimpleAllOf() {
 }
 
 func initFixtureComplexAllOf() {
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// testing ../fixtures/bugs/1487/fixture-complex-allOf.yaml with flatten and expand (--skip-flatten)
+=======
+	// testing ../fixtures/bugs/1487/fixture-complex-allOf.yaml with expand (--skip-flatten)
+>>>>>>> Temp work
 
 	/*
 	 */
 	f := newModelFixture("../fixtures/bugs/1487/fixture-complex-allOf.yaml", "fixture for nested allOf with ref")
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
 	// load expectations for model: aliased_date.go
 	flattenRun.AddExpectations("aliased_date.go", []string{
+=======
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: aliased_date.go
+	thisRun.AddExpectations("aliased_date.go", []string{
+>>>>>>> Temp work
 		`type AliasedDate strfmt.Date`,
 		`func (m AliasedDate) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
@@ -1686,10 +1873,15 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_date.go", flattenRun.ExpectedFor("AliasedDate").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: object_mix_all_of2.go
 	flattenRun.AddExpectations("object_mix_all_of2.go", []string{
+=======
+	// load expectations for model: object_mix_all_of2.go
+	thisRun.AddExpectations("object_mix_all_of2.go", []string{
+>>>>>>> Temp work
 		`type ObjectMixAllOf2 struct {`,
 		"	Prop2 *ObjectMixAllOf2Prop2 `json:\"prop2,omitempty\"`",
 		`func (m *ObjectMixAllOf2) Validate(formats strfmt.Registry) error {`,
@@ -1709,7 +1901,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: object_mix.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("object_mix.go", []string{
+=======
+	thisRun.AddExpectations("object_mix.go", []string{
+>>>>>>> Temp work
 		`type ObjectMix struct {`,
 		`	ObjectMixAllOf1`,
 		`	ObjectMixAllOf2`,
@@ -1724,6 +1920,7 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("object_mix.go", []string{
 		`type ObjectMix struct {`,
 		`	Prop1 struct {`,
@@ -1767,6 +1964,10 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: all_of_slices_of_aliases.go
 	flattenRun.AddExpectations("all_of_slices_of_aliases.go", []string{
+=======
+	// load expectations for model: all_of_slices_of_aliases.go
+	thisRun.AddExpectations("all_of_slices_of_aliases.go", []string{
+>>>>>>> Temp work
 		`type AllOfSlicesOfAliases struct {`,
 		`	AllOfSlicesOfAliasesAllOf0`,
 		`	AllOfSlicesOfAliasesAllOf1`,
@@ -1781,6 +1982,7 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("all_of_slices_of_aliases.go", []string{
 		`type AllOfSlicesOfAliases struct {`,
 		"	Prop1 []strfmt.Date `json:\"prop1\"`",
@@ -1815,6 +2017,10 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: all_of_aliases.go
 	flattenRun.AddExpectations("all_of_aliases.go", []string{
+=======
+	// load expectations for model: all_of_aliases.go
+	thisRun.AddExpectations("all_of_aliases.go", []string{
+>>>>>>> Temp work
 		`type AllOfAliases struct {`,
 		`	AliasedDate`,
 		`	AliasedNullableDate`,
@@ -1829,6 +2035,7 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("all_of_aliases.go", []string{
 		`type AllOfAliases struct {`,
 		`	AllOfAliasesAllOf0`,
@@ -1858,6 +2065,10 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: object_mix_all_of1.go
 	flattenRun.AddExpectations("object_mix_all_of1.go", []string{
+=======
+	// load expectations for model: object_mix_all_of1.go
+	thisRun.AddExpectations("object_mix_all_of1.go", []string{
+>>>>>>> Temp work
 		`type ObjectMixAllOf1 struct {`,
 		"	Prop1 *ObjectMixAllOf1Prop1 `json:\"prop1,omitempty\"`",
 		`func (m *ObjectMixAllOf1) Validate(formats strfmt.Registry) error {`,
@@ -1877,7 +2088,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: all_of_slices_of_aliases_all_of0.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("all_of_slices_of_aliases_all_of0.go", []string{
+=======
+	thisRun.AddExpectations("all_of_slices_of_aliases_all_of0.go", []string{
+>>>>>>> Temp work
 		`type AllOfSlicesOfAliasesAllOf0 struct {`,
 		"	Prop1 []AliasedDate `json:\"prop1\"`",
 		`func (m *AllOfSlicesOfAliasesAllOf0) Validate(formats strfmt.Registry) error {`,
@@ -1899,16 +2114,24 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: slice_of_all_of.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("slice_of_all_of.go", []string{
+=======
+	thisRun.AddExpectations("slice_of_all_of.go", []string{
+>>>>>>> Temp work
 		`type SliceOfAllOf []*SliceOfAllOfItems`,
 		`func (m SliceOfAllOf) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.UniqueItems("", "body", m); err != nil {`,
 		`	for i := 0; i < len(m); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`		if swag.IsZero(m[i]) {`,
 		// nullable required:
 		//`if err := validate.Required(strconv.Itoa(i), "body", m[i]); err != nil {`,
+=======
+		`		if swag.IsZero(m[i]) {`,
+>>>>>>> Temp work
 		`		if m[i] != nil {`,
 		`			if err := m[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -1921,6 +2144,7 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("slice_of_all_of.go", []string{
 		`type SliceOfAllOf []*SliceOfAllOfItems0`,
 		`func (m SliceOfAllOf) Validate(formats strfmt.Registry) error {`,
@@ -1957,6 +2181,10 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: object_mix_all_of2_prop2.go
 	flattenRun.AddExpectations("object_mix_all_of2_prop2.go", []string{
+=======
+	// load expectations for model: object_mix_all_of2_prop2.go
+	thisRun.AddExpectations("object_mix_all_of2_prop2.go", []string{
+>>>>>>> Temp work
 		`type ObjectMixAllOf2Prop2 struct {`,
 		`	AliasedDate`,
 		`	AliasedNullableDate`,
@@ -1972,7 +2200,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: slice_of_all_of_items_all_of0.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("slice_of_all_of_items_all_of0.go", []string{
+=======
+	thisRun.AddExpectations("slice_of_all_of_items_all_of0.go", []string{
+>>>>>>> Temp work
 		`type SliceOfAllOfItemsAllOf0 struct {`,
 		"	Prop0 strfmt.UUID `json:\"prop0,omitempty\"`",
 		`func (m *SliceOfAllOfItemsAllOf0) Validate(formats strfmt.Registry) error {`,
@@ -1989,7 +2221,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: slice_of_interfaces.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("slice_of_interfaces.go", []string{
+=======
+	thisRun.AddExpectations("slice_of_interfaces.go", []string{
+>>>>>>> Temp work
 		`type SliceOfInterfaces []interface{`,
 		// empty validation
 		"func (m SliceOfInterfaces) Validate(formats strfmt.Registry) error {\n	return nil\n}",
@@ -2000,6 +2236,7 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("slice_of_interfaces.go", flattenRun.ExpectedFor("SliceOfInterfaces").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: slice_of_interfaces_with_validation.go
@@ -2020,6 +2257,10 @@ func initFixtureComplexAllOf() {
 
 	// load expectations for model: aliased_nullable_date.go
 	flattenRun.AddExpectations("aliased_nullable_date.go", []string{
+=======
+	// load expectations for model: aliased_nullable_date.go
+	thisRun.AddExpectations("aliased_nullable_date.go", []string{
+>>>>>>> Temp work
 		`type AliasedNullableDate strfmt.Date`,
 		`func (m AliasedNullableDate) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
@@ -2031,10 +2272,15 @@ func initFixtureComplexAllOf() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_nullable_date.go", flattenRun.ExpectedFor("AliasedNullableDate").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: slice_mix.go
 	flattenRun.AddExpectations("slice_mix.go", []string{
+=======
+	// load expectations for model: slice_mix.go
+	thisRun.AddExpectations("slice_mix.go", []string{
+>>>>>>> Temp work
 		`type SliceMix struct {`,
 		`	SliceOfAllOf`,
 		`	SliceOfInterfaces`,
@@ -2046,6 +2292,7 @@ func initFixtureComplexAllOf() {
 		// not expected
 		todo,
 		// output in log
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		warning,
 		noLines)
 
@@ -2098,6 +2345,19 @@ func initFixtureComplexAllOf() {
 		`func (m *ObjectMixAllOf1Prop1) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.AliasedDate.Validate(formats); err != nil {`,
 		`	if err := m.AliasedNullableDate.Validate(formats); err != nil {`,
+=======
+		noLines,
+		noLines)
+
+	// load expectations for model: object_mix_all_of1_prop1.go
+	thisRun.AddExpectations("object_mix_all_of1_prop1.go", []string{
+		`type ObjectMixAllOf1Prop1 struct {`,
+		`	AliasedDate`,
+		`	AliasedNullableDate`,
+		`func (m *ObjectMixAllOf1Prop1) Validate(formats strfmt.Registry) error {`,
+		`	if err := m.AliasedDate.Validate(formats); err != nil {`,
+		`	if err := m.AliasedNullableDate.Validate(formats); err != nil {`,
+>>>>>>> Temp work
 		`		return errors.CompositeValidationError(res...`,
 	},
 		// not expected
@@ -2107,7 +2367,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: slice_of_all_of_items.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("slice_of_all_of_items.go", []string{
+=======
+	thisRun.AddExpectations("slice_of_all_of_items.go", []string{
+>>>>>>> Temp work
 		`type SliceOfAllOfItems struct {`,
 		`	SliceOfAllOfItemsAllOf0`,
 		`	SliceOfInterfaces`,
@@ -2123,7 +2387,11 @@ func initFixtureComplexAllOf() {
 		noLines)
 
 	// load expectations for model: all_of_slices_of_aliases_all_of1.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("all_of_slices_of_aliases_all_of1.go", []string{
+=======
+	thisRun.AddExpectations("all_of_slices_of_aliases_all_of1.go", []string{
+>>>>>>> Temp work
 		`type AllOfSlicesOfAliasesAllOf1 struct {`,
 		"	Prop2 []*AliasedNullableDate `json:\"prop2\"`",
 		`func (m *AllOfSlicesOfAliasesAllOf1) Validate(formats strfmt.Registry) error {`,
@@ -2134,11 +2402,15 @@ func initFixtureComplexAllOf() {
 		`	iProp2Size := int64(len(m.Prop2)`,
 		`	if err := validate.MaxItems("prop2", "body", iProp2Size, 20); err != nil {`,
 		`	for i := 0; i < len(m.Prop2); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`		if swag.IsZero(m.Prop2[i]) {`,
 		// nullable required:
 		//`if err := validate.Required("prop2"+"."+strconv.Itoa(i), "body", m.Prop2[i]); err != nil {`,
+=======
+		`		if swag.IsZero(m.Prop2[i]) {`,
+>>>>>>> Temp work
 		`		if m.Prop2[i] != nil {`,
 		`			if err := m.Prop2[i].Validate(formats); err != nil {`,
 		`				if ve, ok := err.(*errors.Validation); ok {`,
@@ -2153,16 +2425,27 @@ func initFixtureComplexAllOf() {
 }
 
 func initFixtureIsNullable() {
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	// testing ../fixtures/bugs/1487/fixture-is-nullable.yaml with flatten and expand (--skip-flatten)
+=======
+	// testing ../fixtures/bugs/1487/fixture-is-nullable.yaml with expand (--skip-flatten)
+>>>>>>> Temp work
 
 	/* just an elementary check with the x-nullable tag
 	 */
 	f := newModelFixture("../fixtures/bugs/1487/fixture-is-nullable.yaml", "fixture for x-nullable flag")
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
 	// load expectations for model: thing_with_nullable_dates.go
 	flattenRun.AddExpectations("thing_with_nullable_dates.go", []string{
+=======
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: thing_with_nullable_dates.go
+	thisRun.AddExpectations("thing_with_nullable_dates.go", []string{
+>>>>>>> Temp work
 		`type ThingWithNullableDates struct {`,
 		"	Prop1 strfmt.Date `json:\"prop1,omitempty\"`",
 		"	Prop2 *strfmt.Date `json:\"prop2,omitempty\"`",
@@ -2183,6 +2466,7 @@ func initFixtureIsNullable() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("thing_with_nullable_dates.go", flattenRun.ExpectedFor("ThingWithNullableDates").ExpectedLines, todo, noLines, noLines)
 
 }
@@ -2202,6 +2486,24 @@ func initFixtureItching() {
 
 	// load expectations for model: top_level_format_issue_my_alternate_file.go
 	flattenRun.AddExpectations("top_level_format_issue_my_alternate_file.go", []string{
+=======
+}
+
+func initFixtureItching() {
+	// testing ../fixtures/bugs/1487/fixture-itching.yaml with expand (--skip-flatten)
+
+	/* This one regroups a number of itching cases, essentially around additionalProperties.
+	In particular, we test some things with empty objects (no properties) which have additionalProperties of diverse sorts.
+	We also added here some funny models using the special types Files, string format: binary and interface{}
+	These special cases do not correspond to actual API specs: we use them to verify the internal behavior of the general.
+
+	*/
+	f := newModelFixture("../fixtures/bugs/1487/fixture-itching.yaml", "fixture for additionalProperties")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: top_level_format_issue_my_alternate_file.go
+	thisRun.AddExpectations("top_level_format_issue_my_alternate_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type TopLevelFormatIssueMyAlternateFile io.ReadCloser`,
 	},
@@ -2212,7 +2514,11 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: not_validated_additional_props.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("not_validated_additional_props.go", []string{
+=======
+	thisRun.AddExpectations("not_validated_additional_props.go", []string{
+>>>>>>> Temp work
 		`type NotValidatedAdditionalProps struct {`,
 		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
 		"	NotValidatedAdditionalProps map[string]map[string]map[string]string `json:\"-\"`",
@@ -2229,10 +2535,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("not_validated_additional_props.go", flattenRun.ExpectedFor("NotValidatedAdditionalProps").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: aliased_nullable_file.go
 	flattenRun.AddExpectations("aliased_nullable_file.go", []string{
+=======
+	// load expectations for model: aliased_nullable_file.go
+	thisRun.AddExpectations("aliased_nullable_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type AliasedNullableFile io.ReadCloser`,
 	},
@@ -2242,10 +2553,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_nullable_file.go", flattenRun.ExpectedFor("AliasedNullableFile").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_nullable_primitive.go
 	flattenRun.AddExpectations("empty_object_with_additional_nullable_primitive.go", []string{
+=======
+	// load expectations for model: empty_object_with_additional_nullable_primitive.go
+	thisRun.AddExpectations("empty_object_with_additional_nullable_primitive.go", []string{
+>>>>>>> Temp work
 		`type EmptyObjectWithAdditionalNullablePrimitive map[string]*strfmt.Date`,
 		`func (m EmptyObjectWithAdditionalNullablePrimitive) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
@@ -2259,6 +2575,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_nullable_primitive.go", flattenRun.ExpectedFor("EmptyObjectWithAdditionalNullablePrimitive").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_alias.go
@@ -2267,6 +2584,14 @@ func initFixtureItching() {
 		`func (m EmptyObjectWithAdditionalAlias) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
+=======
+	// load expectations for model: empty_object_with_additional_alias.go
+	thisRun.AddExpectations("empty_object_with_additional_alias.go", []string{
+		`type EmptyObjectWithAdditionalAlias map[string]AliasedThing`,
+		`func (m EmptyObjectWithAdditionalAlias) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalAlias(m)); err != nil {`,
+		`	for k := range m {`,
+>>>>>>> Temp work
 		`		if val, ok := m[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -2277,6 +2602,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_alias.go", []string{
 		`type EmptyObjectWithAdditionalAlias map[string]EmptyObjectWithAdditionalAliasAnon`,
 		`func (m EmptyObjectWithAdditionalAlias) Validate(formats strfmt.Registry) error {`,
@@ -2302,6 +2628,10 @@ func initFixtureItching() {
 
 	// load expectations for model: nullable_thing.go
 	flattenRun.AddExpectations("nullable_thing.go", []string{
+=======
+	// load expectations for model: nullable_thing.go
+	thisRun.AddExpectations("nullable_thing.go", []string{
+>>>>>>> Temp work
 		`type NullableThing strfmt.Date`,
 		`func (m NullableThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
@@ -2313,10 +2643,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("nullable_thing.go", flattenRun.ExpectedFor("NullableThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: slice_of_aliased_files.go
 	flattenRun.AddExpectations("slice_of_aliased_files.go", []string{
+=======
+	// load expectations for model: slice_of_aliased_files.go
+	thisRun.AddExpectations("slice_of_aliased_files.go", []string{
+>>>>>>> Temp work
 		`type SliceOfAliasedFiles []AliasedFile`,
 		`func (m SliceOfAliasedFiles) Validate(formats strfmt.Registry) error {`,
 		`	iSliceOfAliasedFilesSize := int64(len(m)`,
@@ -2329,6 +2664,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("slice_of_aliased_files.go", []string{
 		`type SliceOfAliasedFiles []io.ReadCloser`,
 		`func (m SliceOfAliasedFiles) Validate(formats strfmt.Registry) error {`,
@@ -2349,6 +2685,14 @@ func initFixtureItching() {
 		`	for k := range m {`,
 		// fix undue IsZero call
 		//`		if swag.IsZero(m[k]) {`,
+=======
+	// load expectations for model: empty_object_with_additional_non_nullable_primitive.go
+	thisRun.AddExpectations("empty_object_with_additional_non_nullable_primitive.go", []string{
+		`type EmptyObjectWithAdditionalNonNullablePrimitive map[string]strfmt.Date`,
+		`func (m EmptyObjectWithAdditionalNonNullablePrimitive) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		`		if swag.IsZero(m[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -2358,10 +2702,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_non_nullable_primitive.go", flattenRun.ExpectedFor("EmptyObjectWithAdditionalNonNullablePrimitive").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: good_old_format_issue.go
 	flattenRun.AddExpectations("good_old_format_issue.go", []string{
+=======
+	// load expectations for model: good_old_format_issue.go
+	thisRun.AddExpectations("good_old_format_issue.go", []string{
+>>>>>>> Temp work
 		`type GoodOldFormatIssue struct {`,
 		"	AlternateFile GoodOldFormatIssueAlternateFile `json:\"alternateFile,omitempty\"`",
 		"	AnotherFile io.ReadCloser `json:\"anotherFile,omitempty\"`",
@@ -2377,8 +2726,12 @@ func initFixtureItching() {
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *GoodOldFormatIssue) validateMyBytes(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.MyBytes) {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// Fixed this: we don't want to call validate.FormatOf() for base64
 		//`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+=======
+		`	if err := validate.FormatOf("myBytes", "body", "byte", m.MyBytes.String(), formats); err != nil {`,
+>>>>>>> Temp work
 		`func (m *GoodOldFormatIssue) validateMyFile(formats strfmt.Registry) error {`,
 		`	if err := validate.Required("myFile", "body", io.ReadCloser(m.MyFile)); err != nil {`,
 	},
@@ -2388,6 +2741,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("good_old_format_issue.go", []string{
 		`type GoodOldFormatIssue struct {`,
 		"	AlternateFile io.ReadCloser `json:\"alternateFile,omitempty\"`",
@@ -2417,6 +2771,10 @@ func initFixtureItching() {
 
 	// load expectations for model: empty_object_with_additional_slice_additional_properties_items.go
 	flattenRun.AddExpectations("empty_object_with_additional_slice_additional_properties_items.go", []string{
+=======
+	// load expectations for model: empty_object_with_additional_slice_additional_properties_items.go
+	thisRun.AddExpectations("empty_object_with_additional_slice_additional_properties_items.go", []string{
+>>>>>>> Temp work
 		`type EmptyObjectWithAdditionalSliceAdditionalPropertiesItems struct {`,
 		"	DummyProp1 strfmt.Date `json:\"dummyProp1,omitempty\"`",
 		`func (m *EmptyObjectWithAdditionalSliceAdditionalPropertiesItems) Validate(formats strfmt.Registry) error {`,
@@ -2433,7 +2791,11 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: not_validated_additional_props_slice.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("not_validated_additional_props_slice.go", []string{
+=======
+	thisRun.AddExpectations("not_validated_additional_props_slice.go", []string{
+>>>>>>> Temp work
 		`type NotValidatedAdditionalPropsSlice struct {`,
 		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
 		"	NotValidatedAdditionalPropsSlice map[string][]map[string]map[string]string `json:\"-\"`",
@@ -2451,7 +2813,11 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: aliased_type_file.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("aliased_type_file.go", []string{
+=======
+	thisRun.AddExpectations("aliased_type_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type AliasedTypeFile io.ReadCloser`,
 	},
@@ -2461,10 +2827,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_type_file.go", flattenRun.ExpectedFor("AliasedTypeFile").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: object_with_empty_object.go
 	flattenRun.AddExpectations("object_with_empty_object.go", []string{
+=======
+	// load expectations for model: object_with_empty_object.go
+	thisRun.AddExpectations("object_with_empty_object.go", []string{
+>>>>>>> Temp work
 		`type ObjectWithEmptyObject struct {`,
 		"	EmptyObj EmptyObjectWithAdditionalAlias `json:\"emptyObj,omitempty\"`",
 		"	NonEmptyObj *NullableThing `json:\"nonEmptyObj,omitempty\"`",
@@ -2490,6 +2861,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("object_with_empty_object.go", []string{
 		`type ObjectWithEmptyObject struct {`,
 		"	EmptyObj map[string]ObjectWithEmptyObjectEmptyObjAnon `json:\"emptyObj,omitempty\"`",
@@ -2524,6 +2896,10 @@ func initFixtureItching() {
 
 	// load expectations for model: aliased_file.go
 	flattenRun.AddExpectations("aliased_file.go", []string{
+=======
+	// load expectations for model: aliased_file.go
+	thisRun.AddExpectations("aliased_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type AliasedFile io.ReadCloser`,
 	},
@@ -2533,6 +2909,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_file.go", flattenRun.ExpectedFor("AliasedFile").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_slice.go
@@ -2541,6 +2918,13 @@ func initFixtureItching() {
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		// fixed undue Required on this aliased type
 		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+=======
+	// load expectations for model: empty_object_with_additional_slice.go
+	thisRun.AddExpectations("empty_object_with_additional_slice.go", []string{
+		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
+		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+>>>>>>> Temp work
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2555,6 +2939,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_slice.go", []string{
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
@@ -2584,6 +2969,10 @@ func initFixtureItching() {
 
 	// load expectations for model: additional_aliased_file.go
 	flattenRun.AddExpectations("additional_aliased_file.go", []string{
+=======
+	// load expectations for model: additional_aliased_file.go
+	thisRun.AddExpectations("additional_aliased_file.go", []string{
+>>>>>>> Temp work
 		`type AdditionalAliasedFile interface{`,
 	},
 		// not expected
@@ -2592,10 +2981,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_aliased_file.go", flattenRun.ExpectedFor("AdditionalAliasedFile").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: good_old_format_issue_alternate_file.go
 	flattenRun.AddExpectations("good_old_format_issue_alternate_file.go", []string{
+=======
+	// load expectations for model: good_old_format_issue_alternate_file.go
+	thisRun.AddExpectations("good_old_format_issue_alternate_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type GoodOldFormatIssueAlternateFile io.ReadCloser`,
 	},
@@ -2606,7 +3000,11 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: empty_object_with_additional_nested_slice_additional_properties_items_items_items.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("empty_object_with_additional_nested_slice_additional_properties_items_items_items.go", []string{
+=======
+	thisRun.AddExpectations("empty_object_with_additional_nested_slice_additional_properties_items_items_items.go", []string{
+>>>>>>> Temp work
 		`type EmptyObjectWithAdditionalNestedSliceAdditionalPropertiesItemsItemsItems struct {`,
 		"	DummyProp1 strfmt.Date `json:\"dummyProp1,omitempty\"`",
 		`func (m *EmptyObjectWithAdditionalNestedSliceAdditionalPropertiesItemsItemsItems) Validate(formats strfmt.Registry) error {`,
@@ -2623,7 +3021,11 @@ func initFixtureItching() {
 		noLines)
 
 	// load expectations for model: aliased_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("aliased_thing.go", []string{
+=======
+	thisRun.AddExpectations("aliased_thing.go", []string{
+>>>>>>> Temp work
 		`type AliasedThing struct {`,
 		"	Prop1 strfmt.Date `json:\"prop1,omitempty\"`",
 		`func (m *AliasedThing) Validate(formats strfmt.Registry) error {`,
@@ -2639,10 +3041,15 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_thing.go", flattenRun.ExpectedFor("AliasedThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_file.go
 	flattenRun.AddExpectations("additional_file.go", []string{
+=======
+	// load expectations for model: additional_file.go
+	thisRun.AddExpectations("additional_file.go", []string{
+>>>>>>> Temp work
 		`type AdditionalFile struct {`,
 		"	DirName string `json:\"dirName,omitempty\"`",
 		"	AdditionalFile map[string]io.ReadCloser `json:\"-\"`",
@@ -2655,23 +3062,40 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_file.go", flattenRun.ExpectedFor("AdditionalFile").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: aliased_type_nullable_file.go
 	flattenRun.AddExpectations("aliased_type_nullable_file.go", []string{
+=======
+	// load expectations for model: aliased_type_nullable_file.go
+	thisRun.AddExpectations("aliased_type_nullable_file.go", []string{
+>>>>>>> Temp work
 		`import "io"`,
 		`type AliasedTypeNullableFile io.ReadCloser`,
 	},
 		// not expected
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		validatable,
+=======
+		[]string{
+			`Validate(`,
+			`// TODO`,
+		},
+>>>>>>> Temp work
 		// output in log
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_type_nullable_file.go", flattenRun.ExpectedFor("AliasedTypeNullableFile").ExpectedLines, validatable, noLines, noLines)
 
 	// load expectations for model: top_level_format_issue.go
 	flattenRun.AddExpectations("top_level_format_issue.go", []string{
+=======
+	// load expectations for model: top_level_format_issue.go
+	thisRun.AddExpectations("top_level_format_issue.go", []string{
+>>>>>>> Temp work
 		`type TopLevelFormatIssue struct {`,
 		"	MyAlternateFile TopLevelFormatIssueMyAlternateFile `json:\"myAlternateFile,omitempty\"`",
 		"	MyFile io.ReadCloser `json:\"myFile,omitempty\"`",
@@ -2684,6 +3108,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("top_level_format_issue.go", []string{
 		`type TopLevelFormatIssue struct {`,
 		"	MyAlternateFile io.ReadCloser `json:\"myAlternateFile,omitempty\"`",
@@ -2699,6 +3124,10 @@ func initFixtureItching() {
 
 	// load expectations for model: enums_with_additional_props.go
 	flattenRun.AddExpectations("enums_with_additional_props.go", []string{
+=======
+	// load expectations for model: enums_with_additional_props.go
+	thisRun.AddExpectations("enums_with_additional_props.go", []string{
+>>>>>>> Temp work
 		`type EnumsWithAdditionalProps map[string]interface{`,
 		`var enumsWithAdditionalPropsEnum []interface{`,
 		`	var res []EnumsWithAdditionalProps`,
@@ -2716,6 +3145,10 @@ func initFixtureItching() {
 		`	if err := validate.Enum(path, location, value, enumsWithAdditionalPropsValueEnum); err != nil {`,
 		`func (m EnumsWithAdditionalProps) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
+=======
+		`		if swag.IsZero(m[k]) {`,
+>>>>>>> Temp work
 		`		if err := m.validateEnumsWithAdditionalPropsValueEnum(k, "body", m[k]); err != nil {`,
 		`	if err := m.validateEnumsWithAdditionalPropsEnum("", "body", m); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -2726,12 +3159,20 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("enums_with_additional_props.go", flattenRun.ExpectedFor("EnumsWithAdditionalProps").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_nested_slice.go
 	flattenRun.AddExpectations("empty_object_with_additional_nested_slice.go", []string{
 		`type EmptyObjectWithAdditionalNestedSlice map[string][][][]EmptyObjectWithAdditionalNestedSliceAdditionalPropertiesItemsItemsItems`,
 		`func (m EmptyObjectWithAdditionalNestedSlice) Validate(formats strfmt.Registry) error {`,
+=======
+	// load expectations for model: empty_object_with_additional_nested_slice.go
+	thisRun.AddExpectations("empty_object_with_additional_nested_slice.go", []string{
+		`type EmptyObjectWithAdditionalNestedSlice map[string][][][]EmptyObjectWithAdditionalNestedSliceAdditionalPropertiesItemsItemsItems`,
+		`func (m EmptyObjectWithAdditionalNestedSlice) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalNestedSlice(m)); err != nil {`,
+>>>>>>> Temp work
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -2748,6 +3189,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_nested_slice.go", []string{
 		`type EmptyObjectWithAdditionalNestedSlice map[string][][][]EmptyObjectWithAdditionalNestedSliceItems0`,
 		`func (m EmptyObjectWithAdditionalNestedSlice) Validate(formats strfmt.Registry) error {`,
@@ -2779,6 +3221,11 @@ func initFixtureItching() {
 	// fixed nullability of aliased type
 	flattenRun.AddExpectations("empty_object_with_additional_nullable.go", []string{
 		`type EmptyObjectWithAdditionalNullable map[string]*NullableThing`,
+=======
+	// load expectations for model: empty_object_with_additional_nullable.go
+	thisRun.AddExpectations("empty_object_with_additional_nullable.go", []string{
+		`type EmptyObjectWithAdditionalNullable map[string]NullableThing`,
+>>>>>>> Temp work
 		`func (m EmptyObjectWithAdditionalNullable) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		`		if swag.IsZero(m[k]) {`,
@@ -2792,6 +3239,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("empty_object_with_additional_nullable.go", []string{
 		`type EmptyObjectWithAdditionalNullable map[string]*strfmt.Date`,
 		`func (m EmptyObjectWithAdditionalNullable) Validate(formats strfmt.Registry) error {`,
@@ -2808,6 +3256,10 @@ func initFixtureItching() {
 
 	// load expectations for model: not_validated_at_all.go
 	flattenRun.AddExpectations("not_validated_at_all.go", []string{
+=======
+	// load expectations for model: not_validated_at_all.go
+	thisRun.AddExpectations("not_validated_at_all.go", []string{
+>>>>>>> Temp work
 		`type NotValidatedAtAll struct {`,
 		"	Prop2 string `json:\"prop2,omitempty\"`",
 		"	NotValidatedAtAll map[string][]map[string]map[string]string `json:\"-\"`",
@@ -2820,6 +3272,7 @@ func initFixtureItching() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("not_validated_at_all.go", flattenRun.ExpectedFor("NotValidatedAtAll").ExpectedLines, todo, noLines, noLines)
 }
 
@@ -2835,14 +3288,32 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_object_with_formated_thing.go
 	flattenRun.AddExpectations("additional_object_with_formated_thing.go", []string{
+=======
+}
+
+func initFixtureAdditionalProps() {
+	// testing ../fixtures/bugs/1487/fixture-additionalProps.yaml with expand (--skip-flatten)
+
+	/* various patterns of additionalProperties
+	 */
+	f := newModelFixture("../fixtures/bugs/1487/fixture-additionalProps.yaml", "fixture for additionalProperties")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: additional_object_with_formated_thing.go
+	thisRun.AddExpectations("additional_object_with_formated_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalObjectWithFormatedThing struct {`,
 		"	Blob *int64 `json:\"blob\"`",
 		"	AdditionalObjectWithFormatedThing map[string]strfmt.Date `json:\"-\"`",
 		`func (m *AdditionalObjectWithFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithFormatedThing {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IZero call
 		//`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalObjectWithFormatedThing[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.FormatOf(k, "body", "date", m.AdditionalObjectWithFormatedThing[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalObjectWithFormatedThing) validateBlob(formats strfmt.Registry) error {`,
@@ -2855,10 +3326,15 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_object_with_formated_thing.go", flattenRun.ExpectedFor("AdditionalObjectWithFormatedThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: aliased_date.go
 	flattenRun.AddExpectations("aliased_date.go", []string{
+=======
+	// load expectations for model: aliased_date.go
+	thisRun.AddExpectations("aliased_date.go", []string{
+>>>>>>> Temp work
 		`type AliasedDate strfmt.Date`,
 		`func (m AliasedDate) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
@@ -2870,18 +3346,27 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_date.go", flattenRun.ExpectedFor("AliasedDate").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_of_refed_thing.go
 	flattenRun.AddExpectations("additional_array_of_refed_thing.go", []string{
+=======
+	// load expectations for model: additional_array_of_refed_thing.go
+	thisRun.AddExpectations("additional_array_of_refed_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalArrayOfRefedThing struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalArrayOfRefedThing map[string][]AliasedDate `json:\"-\"`",
 		`func (m *AdditionalArrayOfRefedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfRefedThing {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsZero call
 		//`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalArrayOfRefedThing[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedThing[k]); i++ {`,
 		`			if err := m.AdditionalArrayOfRefedThing[k][i].Validate(formats); err != nil {`,
@@ -2898,6 +3383,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_array_of_refed_thing.go", []string{
 		`type AdditionalArrayOfRefedThing struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
@@ -2923,6 +3409,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_object_with_nullable_thing.go
 	flattenRun.AddExpectations("additional_object_with_nullable_thing.go", []string{
+=======
+	// load expectations for model: additional_object_with_nullable_thing.go
+	thisRun.AddExpectations("additional_object_with_nullable_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalObjectWithNullableThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
 		"	AdditionalObjectWithNullableThing map[string]*AliasedNullableDate `json:\"-\"`",
@@ -2944,6 +3434,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_object_with_nullable_thing.go", []string{
 		`type AdditionalObjectWithNullableThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
@@ -2966,6 +3457,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_things.go
 	flattenRun.AddExpectations("additional_things.go", []string{
+=======
+	// load expectations for model: additional_things.go
+	thisRun.AddExpectations("additional_things.go", []string{
+>>>>>>> Temp work
 		`type AdditionalThings struct {`,
 		"	Origin *string `json:\"origin\"`",
 		"	Status string `json:\"status,omitempty\"`",
@@ -2981,8 +3476,12 @@ func initFixtureAdditionalProps() {
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	if err := m.validateStatus(formats); err != nil {`,
 		`	for k := range m.AdditionalThings {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsZero call
 		//`		if swag.IsZero(m.AdditionalThings[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalThings[k]) {`,
+>>>>>>> Temp work
 		`		if err := m.validateAdditionalThingsValueEnum(k, "body", m.AdditionalThings[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var additionalThingsTypeOriginPropEnum []interface{`,
@@ -3018,10 +3517,15 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_things.go", flattenRun.ExpectedFor("AdditionalThings").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: transitive_refed_thing_additional_properties.go
 	flattenRun.AddExpectations("transitive_refed_thing_additional_properties.go", []string{
+=======
+	// load expectations for model: transitive_refed_thing_additional_properties.go
+	thisRun.AddExpectations("transitive_refed_thing_additional_properties.go", []string{
+>>>>>>> Temp work
 		`type TransitiveRefedThingAdditionalProperties struct {`,
 		"	A1 strfmt.DateTime `json:\"a1,omitempty\"`",
 		"	TransitiveRefedThingAdditionalProperties map[string]*NoValidationThing `json:\"-\"`",
@@ -3043,7 +3547,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_object.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_object.go", []string{
+=======
+	thisRun.AddExpectations("additional_object.go", []string{
+>>>>>>> Temp work
 		`type AdditionalObject struct {`,
 		"	MockID float64 `json:\"mockId,omitempty\"`",
 		"	AdditionalObject map[string]*AdditionalObjectAdditionalProperties `json:\"-\"`",
@@ -3060,6 +3568,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_object.go", []string{
 		`type AdditionalObject struct {`,
 		"	MockID float64 `json:\"mockId,omitempty\"`",
@@ -3093,6 +3602,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_slice_of_objects_additional_properties_items.go
 	flattenRun.AddExpectations("additional_slice_of_objects_additional_properties_items.go", []string{
+=======
+	// load expectations for model: additional_slice_of_objects_additional_properties_items.go
+	thisRun.AddExpectations("additional_slice_of_objects_additional_properties_items.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfObjectsAdditionalPropertiesItems struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
@@ -3105,13 +3618,18 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_slice_of_aliased_nullable_primitives.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_slice_of_aliased_nullable_primitives.go", []string{
+=======
+	thisRun.AddExpectations("additional_slice_of_aliased_nullable_primitives.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfAliasedNullablePrimitives struct {`,
 		"	Prop3 strfmt.UUID `json:\"prop3,omitempty\"`",
 		"	AdditionalSliceOfAliasedNullablePrimitives map[string][]*AliasedNullableDate `json:\"-\"`",
 		`func (m *AdditionalSliceOfAliasedNullablePrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp3(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedNullablePrimitives {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsSzero call
 		//`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
 		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
@@ -3122,6 +3640,13 @@ func initFixtureAdditionalProps() {
 		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
 		// nullable required:
 		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalSliceOfAliasedNullablePrimitives[k][i]); err != nil {`,
+=======
+		`		if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k]) {`,
+		`		iAdditionalSliceOfAliasedNullablePrimitivesSize := int64(len(m.AdditionalSliceOfAliasedNullablePrimitives[k])`,
+		`		if err := validate.MinItems(k, "body", iAdditionalSliceOfAliasedNullablePrimitivesSize, 10); err != nil {`,
+		`		for i := 0; i < len(m.AdditionalSliceOfAliasedNullablePrimitives[k]); i++ {`,
+		`			if swag.IsZero(m.AdditionalSliceOfAliasedNullablePrimitives[k][i]) {`,
+>>>>>>> Temp work
 		`			if m.AdditionalSliceOfAliasedNullablePrimitives[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfAliasedNullablePrimitives[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3137,6 +3662,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_slice_of_aliased_nullable_primitives.go", []string{
 		`type AdditionalSliceOfAliasedNullablePrimitives struct {`,
 		"	Prop3 strfmt.UUID `json:\"prop3,omitempty\"`",
@@ -3167,6 +3693,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_slice_of_slice.go
 	flattenRun.AddExpectations("additional_slice_of_slice.go", []string{
+=======
+	// load expectations for model: additional_slice_of_slice.go
+	thisRun.AddExpectations("additional_slice_of_slice.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfSlice struct {`,
 		"	Prop4 strfmt.UUID `json:\"prop4,omitempty\"`",
 		"	AdditionalSliceOfSlice map[string][][]*AdditionalSliceOfSliceAdditionalPropertiesItemsItems `json:\"-\"`",
@@ -3178,6 +3708,7 @@ func initFixtureAdditionalProps() {
 		`			iiAdditionalSliceOfSliceSize := int64(len(m.AdditionalSliceOfSlice[k][i])`,
 		`			if err := validate.MaxItems(k+"."+strconv.Itoa(i), "body", iiAdditionalSliceOfSliceSize, 10); err != nil {`,
 		`			for ii := 0; ii < len(m.AdditionalSliceOfSlice[k][i]); ii++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
@@ -3215,6 +3746,9 @@ func initFixtureAdditionalProps() {
 		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
 		// nullable required:
 		//`				if err := validate.Required(k+"."+strconv.Itoa(i)+"."+strconv.Itoa(ii), "body", m.AdditionalSliceOfSlice[k][i][ii]); err != nil {`,
+=======
+		`				if swag.IsZero(m.AdditionalSliceOfSlice[k][i][ii]) {`,
+>>>>>>> Temp work
 		`				if m.AdditionalSliceOfSlice[k][i][ii] != nil {`,
 		`					if err := m.AdditionalSliceOfSlice[k][i][ii].Validate(formats); err != nil {`,
 		`						if ve, ok := err.(*errors.Validation); ok {`,
@@ -3223,6 +3757,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfSlice) validateProp4(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop4) {`,
 		`	if err := validate.FormatOf("prop4", "body", "uuid", m.Prop4.String(), formats); err != nil {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		`type AdditionalSliceOfSliceItems0 struct {`,
 		"	Prop5 int64 `json:\"prop5,omitempty\"`",
 		`func (m *AdditionalSliceOfSliceItems0) Validate(formats strfmt.Registry) error {`,
@@ -3231,6 +3766,8 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalSliceOfSliceItems0) validateProp5(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.Prop5) {`,
 		`	if err := validate.MaximumInt("prop5", "body", int64(m.Prop5), 10, false); err != nil {`,
+=======
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3239,15 +3776,23 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_object_with_aliased_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_object_with_aliased_thing.go", []string{
+=======
+	thisRun.AddExpectations("additional_object_with_aliased_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalObjectWithAliasedThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
 		"	AdditionalObjectWithAliasedThing map[string]AliasedDate `json:\"-\"`",
 		`func (m *AdditionalObjectWithAliasedThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateBlob(formats); err != nil {`,
 		`	for k := range m.AdditionalObjectWithAliasedThing {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsZero call
 		//`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalObjectWithAliasedThing[k]) {`,
+>>>>>>> Temp work
 		`		if val, ok := m.AdditionalObjectWithAliasedThing[k]; ok {`,
 		`			if err := val.Validate(formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
@@ -3261,6 +3806,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_object_with_aliased_thing.go", []string{
 		`type AdditionalObjectWithAliasedThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
@@ -3283,6 +3829,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: additional_things_nested_additional_properties.go
 	flattenRun.AddExpectations("additional_things_nested_additional_properties.go", []string{
+=======
+	// load expectations for model: additional_things_nested_additional_properties.go
+	thisRun.AddExpectations("additional_things_nested_additional_properties.go", []string{
+>>>>>>> Temp work
 		`type AdditionalThingsNestedAdditionalProperties struct {`,
 		"	PrinterAddress string `json:\"printerAddress,omitempty\"`",
 		"	PrinterCountry string `json:\"printerCountry,omitempty\"`",
@@ -3323,7 +3873,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: empty_object_with_additional_slice_additional_properties_items.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("empty_object_with_additional_slice_additional_properties_items.go", []string{
+=======
+	thisRun.AddExpectations("empty_object_with_additional_slice_additional_properties_items.go", []string{
+>>>>>>> Temp work
 		`type EmptyObjectWithAdditionalSliceAdditionalPropertiesItems struct {`,
 		"	DummyProp1 strfmt.Date `json:\"dummyProp1,omitempty\"`",
 		`func (m *EmptyObjectWithAdditionalSliceAdditionalPropertiesItems) Validate(formats strfmt.Registry) error {`,
@@ -3340,7 +3894,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_things_nested_additional_properties_additional_properties.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_things_nested_additional_properties_additional_properties.go", []string{
+=======
+	thisRun.AddExpectations("additional_things_nested_additional_properties_additional_properties.go", []string{
+>>>>>>> Temp work
 		`type AdditionalThingsNestedAdditionalPropertiesAdditionalProperties struct {`,
 		"	AverageDelay strfmt.Duration `json:\"averageDelay,omitempty\"`",
 		`func (m *AdditionalThingsNestedAdditionalPropertiesAdditionalProperties) Validate(formats strfmt.Registry) error {`,
@@ -3357,7 +3915,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_slice_of_slice_additional_properties_items_items.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_slice_of_slice_additional_properties_items_items.go", []string{
+=======
+	thisRun.AddExpectations("additional_slice_of_slice_additional_properties_items_items.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfSliceAdditionalPropertiesItemsItems struct {`,
 		"	Prop5 int64 `json:\"prop5,omitempty\"`",
 		`func (m *AdditionalSliceOfSliceAdditionalPropertiesItemsItems) Validate(formats strfmt.Registry) error {`,
@@ -3374,7 +3936,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_object_additional_properties.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_object_additional_properties.go", []string{
+=======
+	thisRun.AddExpectations("additional_object_additional_properties.go", []string{
+>>>>>>> Temp work
 		`type AdditionalObjectAdditionalProperties struct {`,
 		"	MockA string `json:\"mockA,omitempty\"`",
 		"	MockB *string `json:\"mockB\"`",
@@ -3397,7 +3963,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_transitive_refed_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_transitive_refed_thing.go", []string{
+=======
+	thisRun.AddExpectations("additional_transitive_refed_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalTransitiveRefedThing struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalTransitiveRefedThing map[string][]*TransitiveRefedThing `json:\"-\"`",
@@ -3407,6 +3977,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalTransitiveRefedThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalTransitiveRefedThing[k]); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
@@ -3442,6 +4013,9 @@ func initFixtureAdditionalProps() {
 		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
 		// nullable required:
 		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalTransitiveRefedThing[k][i]); err != nil {`,
+=======
+		`			if swag.IsZero(m.AdditionalTransitiveRefedThing[k][i]) {`,
+>>>>>>> Temp work
 		`			if m.AdditionalTransitiveRefedThing[k][i] != nil {`,
 		`				if err := m.AdditionalTransitiveRefedThing[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3450,6 +4024,7 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalTransitiveRefedThing) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
 		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		`type AdditionalTransitiveRefedThingItems0 struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
 		"	AdditionalTransitiveRefedThingItems0 map[string]*AdditionalTransitiveRefedThingItems0Anon `json:\"-\"`",
@@ -3482,6 +4057,8 @@ func initFixtureAdditionalProps() {
 		"	AdditionalTransitiveRefedThingItems0AnonAnonAdditionalProperties map[string]interface{} `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalTransitiveRefedThingItems0AnonAnon) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+=======
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3490,14 +4067,22 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_nullable_array_thing.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_nullable_array_thing.go", []string{
+=======
+	thisRun.AddExpectations("additional_nullable_array_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalNullableArrayThing struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalNullableArrayThing map[string][]strfmt.ISBN `json:\"-\"`",
 		`func (m *AdditionalNullableArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalNullableArrayThing {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalNullableArrayThing[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalNullableArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalNullableArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "isbn", m.AdditionalNullableArrayThing[k][i].String(), formats); err != nil {`,
@@ -3512,16 +4097,25 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_nullable_array_thing.go", flattenRun.ExpectedFor("AdditionalNullableArrayThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_slice_of_primitives.go
 	flattenRun.AddExpectations("additional_slice_of_primitives.go", []string{
+=======
+	// load expectations for model: additional_slice_of_primitives.go
+	thisRun.AddExpectations("additional_slice_of_primitives.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfPrimitives struct {`,
 		"	Prop1 string `json:\"prop1,omitempty\"`",
 		"	AdditionalSliceOfPrimitives map[string][]strfmt.Date `json:\"-\"`",
 		`func (m *AdditionalSliceOfPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m.AdditionalSliceOfPrimitives {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalSliceOfPrimitives[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfPrimitives[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfPrimitives[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "date", m.AdditionalSliceOfPrimitives[k][i].String(), formats); err != nil {`,
@@ -3533,17 +4127,26 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_slice_of_primitives.go", flattenRun.ExpectedFor("AdditionalSliceOfPrimitives").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_thing.go
 	flattenRun.AddExpectations("additional_array_thing.go", []string{
+=======
+	// load expectations for model: additional_array_thing.go
+	thisRun.AddExpectations("additional_array_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalArrayThing struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalArrayThing map[string][]strfmt.UUID `json:\"-\"`",
 		`func (m *AdditionalArrayThing) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayThing {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		//`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalArrayThing[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayThing[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayThing[k]); i++ {`,
 		`			if err := validate.FormatOf(k+"."+strconv.Itoa(i), "body", "uuid", m.AdditionalArrayThing[k][i].String(), formats); err != nil {`,
@@ -3558,11 +4161,17 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_array_thing.go", flattenRun.ExpectedFor("AdditionalArrayThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: interface_thing.go
 	flattenRun.AddExpectations("interface_thing.go", []string{
 		`type InterfaceThing interface{}`,
+=======
+	// load expectations for model: interface_thing.go
+	thisRun.AddExpectations("interface_thing.go", []string{
+		`type InterfaceThing interface{`,
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3570,6 +4179,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("interface_thing.go", flattenRun.ExpectedFor("InterfaceThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: empty_object_with_additional_slice.go
@@ -3595,6 +4205,13 @@ func initFixtureAdditionalProps() {
 		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceItems0`,
 		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
 		//`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+=======
+	// load expectations for model: empty_object_with_additional_slice.go
+	thisRun.AddExpectations("empty_object_with_additional_slice.go", []string{
+		`type EmptyObjectWithAdditionalSlice map[string][]EmptyObjectWithAdditionalSliceAdditionalPropertiesItems`,
+		`func (m EmptyObjectWithAdditionalSlice) Validate(formats strfmt.Registry) error {`,
+		`	if err := validate.Required("", "body", EmptyObjectWithAdditionalSlice(m)); err != nil {`,
+>>>>>>> Temp work
 		`	for k := range m {`,
 		`		if err := validate.Required(k, "body", m[k]); err != nil {`,
 		`		for i := 0; i < len(m[k]); i++ {`,
@@ -3602,6 +4219,7 @@ func initFixtureAdditionalProps() {
 		`				if ve, ok := err.(*errors.Validation); ok {`,
 		`					return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		`type EmptyObjectWithAdditionalSliceItems0 struct {`,
 		"	DummyProp1 strfmt.Date `json:\"dummyProp1,omitempty\"`",
 		`func (m *EmptyObjectWithAdditionalSliceItems0) Validate(formats strfmt.Registry) error {`,
@@ -3610,6 +4228,8 @@ func initFixtureAdditionalProps() {
 		`func (m *EmptyObjectWithAdditionalSliceItems0) validateDummyProp1(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.DummyProp1) {`,
 		`	if err := validate.FormatOf("dummyProp1", "body", "date", m.DummyProp1.String(), formats); err != nil {`,
+=======
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3618,7 +4238,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_slice_of_objects.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_slice_of_objects.go", []string{
+=======
+	thisRun.AddExpectations("additional_slice_of_objects.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfObjects struct {`,
 		"	Prop1 string `json:\"prop1,omitempty\"`",
 		"	AdditionalSliceOfObjects map[string][]*AdditionalSliceOfObjectsAdditionalPropertiesItems `json:\"-\"`",
@@ -3627,6 +4251,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfObjects[k]); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
@@ -3658,15 +4283,21 @@ func initFixtureAdditionalProps() {
 		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
 		// nullable required:
 		//`if err := validate.Required(k, "body", m.AdditionalSliceOfObjects[k]); err != nil {`,
+=======
+		`			if swag.IsZero(m.AdditionalSliceOfObjects[k][i]) {`,
+>>>>>>> Temp work
 		`			if m.AdditionalSliceOfObjects[k][i] != nil {`,
 		`				if err := m.AdditionalSliceOfObjects[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
 		`						return ve.ValidateName(k + "." + strconv.Itoa(i)`,
 		`		return errors.CompositeValidationError(res...`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		`type AdditionalSliceOfObjectsItems0 struct {`,
 		"	Prop2 int64 `json:\"prop2,omitempty\"`",
 		// empty validation
 		"func (m *AdditionalSliceOfObjectsItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+=======
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3675,7 +4306,11 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_things_nested.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_things_nested.go", []string{
+=======
+	thisRun.AddExpectations("additional_things_nested.go", []string{
+>>>>>>> Temp work
 		`type AdditionalThingsNested struct {`,
 		"	Origin string `json:\"origin,omitempty\"`",
 		"	AdditionalThingsNested map[string]*AdditionalThingsNestedAdditionalProperties `json:\"-\"`",
@@ -3707,6 +4342,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_things_nested.go", []string{
 		`type AdditionalThingsNested struct {`,
 		"	Origin string `json:\"origin,omitempty\"`",
@@ -3781,6 +4417,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: no_validation_thing.go
 	flattenRun.AddExpectations("no_validation_thing.go", []string{
+=======
+	// load expectations for model: no_validation_thing.go
+	thisRun.AddExpectations("no_validation_thing.go", []string{
+>>>>>>> Temp work
 		`type NoValidationThing struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
@@ -3794,18 +4434,27 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("no_validation_thing.go", flattenRun.ExpectedFor("NoValidationThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_of_interface.go
 	flattenRun.AddExpectations("additional_array_of_interface.go", []string{
+=======
+	// load expectations for model: additional_array_of_interface.go
+	thisRun.AddExpectations("additional_array_of_interface.go", []string{
+>>>>>>> Temp work
 		`type AdditionalArrayOfInterface struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalArrayOfInterface map[string][]interface{} `json:\"-\"`",
 		`func (m *AdditionalArrayOfInterface) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateThisOneNotRequired(formats); err != nil {`,
 		`	for k := range m.AdditionalArrayOfInterface {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// remove undue IsZero call
 		//`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalArrayOfInterface[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfInterface[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`func (m *AdditionalArrayOfInterface) validateThisOneNotRequired(formats strfmt.Registry) error {`,
@@ -3818,6 +4467,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_array_of_interface.go", flattenRun.ExpectedFor("AdditionalArrayOfInterface").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_formated_thing.go
@@ -3826,6 +4476,14 @@ func initFixtureAdditionalProps() {
 		`func (m AdditionalFormatedThing) Validate(formats strfmt.Registry) error {`,
 		`	for k := range m {`,
 		//`		if swag.IsZero(m[k]) {`,
+=======
+	// load expectations for model: additional_formated_thing.go
+	thisRun.AddExpectations("additional_formated_thing.go", []string{
+		`type AdditionalFormatedThing map[string]strfmt.Date`,
+		`func (m AdditionalFormatedThing) Validate(formats strfmt.Registry) error {`,
+		`	for k := range m {`,
+		`		if swag.IsZero(m[k]) {`,
+>>>>>>> Temp work
 		`		if err := validate.FormatOf(k, "body", "date", m[k].String(), formats); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 	},
@@ -3835,10 +4493,15 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_formated_thing.go", flattenRun.ExpectedFor("AdditionalFormatedThing").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: aliased_nullable_date.go
 	flattenRun.AddExpectations("aliased_nullable_date.go", []string{
+=======
+	// load expectations for model: aliased_nullable_date.go
+	thisRun.AddExpectations("aliased_nullable_date.go", []string{
+>>>>>>> Temp work
 		`type AliasedNullableDate strfmt.Date`,
 		`func (m AliasedNullableDate) Validate(formats strfmt.Registry) error {`,
 		`	if err := validate.FormatOf("", "body", "date", strfmt.Date(m).String(), formats); err != nil {`,
@@ -3850,10 +4513,15 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("aliased_nullable_date.go", flattenRun.ExpectedFor("AliasedNullableDate").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_array_of_refed_object.go
 	flattenRun.AddExpectations("additional_array_of_refed_object.go", []string{
+=======
+	// load expectations for model: additional_array_of_refed_object.go
+	thisRun.AddExpectations("additional_array_of_refed_object.go", []string{
+>>>>>>> Temp work
 		`type AdditionalArrayOfRefedObject struct {`,
 		"	ThisOneNotRequired int64 `json:\"thisOneNotRequired,omitempty\"`",
 		"	AdditionalArrayOfRefedObject map[string][]*NoValidationThing `json:\"-\"`",
@@ -3863,6 +4531,7 @@ func initFixtureAdditionalProps() {
 		`		if err := validate.Required(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		if err := validate.UniqueItems(k, "body", m.AdditionalArrayOfRefedObject[k]); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalArrayOfRefedObject[k]); i++ {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// do we need Required when item is nullable?
 		// nullable not required:
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
@@ -3898,6 +4567,9 @@ func initFixtureAdditionalProps() {
 		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
 		// nullable required:
 		//`			if err := validate.Required(k+"."+strconv.Itoa(i), "body", m.AdditionalArrayOfRefedObject[k][i]); err != nil {`,
+=======
+		`			if swag.IsZero(m.AdditionalArrayOfRefedObject[k][i]) {`,
+>>>>>>> Temp work
 		`			if m.AdditionalArrayOfRefedObject[k][i] != nil {`,
 		`				if err := m.AdditionalArrayOfRefedObject[k][i].Validate(formats); err != nil {`,
 		`					if ve, ok := err.(*errors.Validation); ok {`,
@@ -3906,12 +4578,15 @@ func initFixtureAdditionalProps() {
 		`func (m *AdditionalArrayOfRefedObject) validateThisOneNotRequired(formats strfmt.Registry) error {`,
 		`	if swag.IsZero(m.ThisOneNotRequired) {`,
 		`	if err := validate.MaximumInt("thisOneNotRequired", "body", int64(m.ThisOneNotRequired), 10, false); err != nil {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		`type AdditionalArrayOfRefedObjectItems0 struct {`,
 		"	Discourse string `json:\"discourse,omitempty\"`",
 		"	HoursSpent float64 `json:\"hoursSpent,omitempty\"`",
 		"	AdditionalArrayOfRefedObjectItems0AdditionalProperties map[string]interface{} `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalArrayOfRefedObjectItems0) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+=======
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -3920,15 +4595,23 @@ func initFixtureAdditionalProps() {
 		noLines)
 
 	// load expectations for model: additional_slice_of_aliased_primitives.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("additional_slice_of_aliased_primitives.go", []string{
+=======
+	thisRun.AddExpectations("additional_slice_of_aliased_primitives.go", []string{
+>>>>>>> Temp work
 		`type AdditionalSliceOfAliasedPrimitives struct {`,
 		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
 		"	AdditionalSliceOfAliasedPrimitives map[string][]AliasedDate `json:\"-\"`",
 		`func (m *AdditionalSliceOfAliasedPrimitives) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateProp2(formats); err != nil {`,
 		`	for k := range m.AdditionalSliceOfAliasedPrimitives {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsZero call
 		//`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
+=======
+		`		if swag.IsZero(m.AdditionalSliceOfAliasedPrimitives[k]) {`,
+>>>>>>> Temp work
 		`		iAdditionalSliceOfAliasedPrimitivesSize := int64(len(m.AdditionalSliceOfAliasedPrimitives[k])`,
 		`		if err := validate.MaxItems(k, "body", iAdditionalSliceOfAliasedPrimitivesSize, 10); err != nil {`,
 		`		for i := 0; i < len(m.AdditionalSliceOfAliasedPrimitives[k]); i++ {`,
@@ -3946,6 +4629,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_slice_of_aliased_primitives.go", []string{
 		`type AdditionalSliceOfAliasedPrimitives struct {`,
 		"	Prop2 strfmt.UUID `json:\"prop2,omitempty\"`",
@@ -3971,6 +4655,10 @@ func initFixtureAdditionalProps() {
 
 	// load expectations for model: transitive_refed_thing.go
 	flattenRun.AddExpectations("transitive_refed_thing.go", []string{
+=======
+	// load expectations for model: transitive_refed_thing.go
+	thisRun.AddExpectations("transitive_refed_thing.go", []string{
+>>>>>>> Temp work
 		`type TransitiveRefedThing struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
 		"	TransitiveRefedThing map[string]*TransitiveRefedThingAdditionalProperties `json:\"-\"`",
@@ -3991,6 +4679,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("transitive_refed_thing.go", []string{
 		`type TransitiveRefedThing struct {`,
 		"	ThisOneNotRequiredEither int64 `json:\"thisOneNotRequiredEither,omitempty\"`",
@@ -4038,6 +4727,15 @@ func initFixtureAdditionalProps() {
 		"	AdditionalEmptyObject map[string]interface{} `json:\"-\"`",
 		// empty validation
 		"func (m *AdditionalEmptyObject) Validate(formats strfmt.Registry) error {\n	return nil\n}",
+=======
+	// load expectations for model: additional_empty_object.go
+	thisRun.AddExpectations("additional_empty_object.go", []string{
+		`type AdditionalEmptyObject struct {`,
+		"	PropA interface{} `json:\"propA,omitempty\"`",
+		"	AdditionalEmptyObject map[string]interface{} `json:\"-\"`",
+		`func (m *AdditionalEmptyObject) Validate(formats strfmt.Registry) error {`,
+		`		return errors.CompositeValidationError(res...`,
+>>>>>>> Temp work
 	},
 		// not expected
 		todo,
@@ -4045,10 +4743,15 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_empty_object.go", flattenRun.ExpectedFor("AdditionalEmptyObject").ExpectedLines, todo, noLines, noLines)
 
 	// load expectations for model: additional_date_with_nullable_thing.go
 	flattenRun.AddExpectations("additional_date_with_nullable_thing.go", []string{
+=======
+	// load expectations for model: additional_date_with_nullable_thing.go
+	thisRun.AddExpectations("additional_date_with_nullable_thing.go", []string{
+>>>>>>> Temp work
 		`type AdditionalDateWithNullableThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
 		"	NullableDate *AliasedNullableDate `json:\"nullableDate,omitempty\"`",
@@ -4078,6 +4781,7 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("additional_date_with_nullable_thing.go", []string{
 		`type AdditionalDateWithNullableThing struct {`,
 		"	Blob int64 `json:\"blob,omitempty\"`",
@@ -4103,6 +4807,8 @@ func initFixtureAdditionalProps() {
 		noLines,
 		noLines)
 
+=======
+>>>>>>> Temp work
 }
 
 func initFixtureTuple() {
@@ -4111,11 +4817,18 @@ func initFixtureTuple() {
 	/* check different patterns of additionalItems validations or absence thereof
 	 */
 	f := newModelFixture("../fixtures/bugs/1487/fixture-tuple.yaml", "fixture for tuples and additionalItems")
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun := f.AddRun(false)
 	expandRun := f.AddRun(true)
 
 	// load expectations for model: classics.go
 	flattenRun.AddExpectations("classics.go", []string{
+=======
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: classics.go
+	thisRun.AddExpectations("classics.go", []string{
+>>>>>>> Temp work
 		`type Classics struct {`,
 		"	P0 *int64 `json:\"-\"`",
 		"	P1 *strfmt.ISBN `json:\"-\"`",
@@ -4148,6 +4861,7 @@ func initFixtureTuple() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("classics.go", []string{
 		`type Classics struct {`,
 		"	P0 *int64 `json:\"-\"`",
@@ -4401,6 +5115,10 @@ func initFixtureTuple() {
 
 	// load expectations for model: comics_items2.go
 	flattenRun.AddExpectations("comics_items2.go", []string{
+=======
+	// load expectations for model: comics_items2.go
+	thisRun.AddExpectations("comics_items2.go", []string{
+>>>>>>> Temp work
 		`type ComicsItems2 struct {`,
 		"	MarketingBS string `json:\"marketingBS,omitempty\"`",
 		// empty validation
@@ -4413,7 +5131,11 @@ func initFixtureTuple() {
 		noLines)
 
 	// load expectations for model: classics_items_additional_items_items2.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("classics_items_additional_items_items2.go", []string{
+=======
+	thisRun.AddExpectations("classics_items_additional_items_items2.go", []string{
+>>>>>>> Temp work
 		`type ClassicsItemsAdditionalItemsItems2 struct {`,
 		"	Origin string `json:\"origin,omitempty\"`",
 		"	ClassicsItemsAdditionalItemsItems2 map[string]string `json:\"-\"`",
@@ -4427,8 +5149,12 @@ func initFixtureTuple() {
 		`func (m *ClassicsItemsAdditionalItemsItems2) Validate(formats strfmt.Registry) error {`,
 		`	if err := m.validateOrigin(formats); err != nil {`,
 		`	for k := range m.ClassicsItemsAdditionalItemsItems2 {`,
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 		// removed undue IsZero()
 		//`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
+=======
+		`		if swag.IsZero(m.ClassicsItemsAdditionalItemsItems2[k]) {`,
+>>>>>>> Temp work
 		`		if err := m.validateClassicsItemsAdditionalItemsItems2ValueEnum(k, "body", m.ClassicsItemsAdditionalItemsItems2[k]); err != nil {`,
 		`		return errors.CompositeValidationError(res...`,
 		`var classicsItemsAdditionalItemsItems2TypeOriginPropEnum []interface{`,
@@ -4453,7 +5179,11 @@ func initFixtureTuple() {
 		noLines)
 
 	// load expectations for model: comics.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("comics.go", []string{
+=======
+	thisRun.AddExpectations("comics.go", []string{
+>>>>>>> Temp work
 		`type Comics struct {`,
 		"	P0 *string `json:\"-\"`",
 		"	P1 *ComicsItems1 `json:\"-\"`",
@@ -4502,6 +5232,7 @@ func initFixtureTuple() {
 		noLines,
 		noLines)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	expandRun.AddExpectations("comics.go", []string{
 		`type Comics struct {`,
 		"	P0 *string `json:\"-\"`",
@@ -4544,6 +5275,10 @@ func initFixtureTuple() {
 
 	// load expectations for model: classics_items_additional_items_items0.go
 	flattenRun.AddExpectations("classics_items_additional_items_items0.go", []string{
+=======
+	// load expectations for model: classics_items_additional_items_items0.go
+	thisRun.AddExpectations("classics_items_additional_items_items0.go", []string{
+>>>>>>> Temp work
 		`type ClassicsItemsAdditionalItemsItems0 struct {`,
 		"	Period string `json:\"period,omitempty\"`",
 		"	Title string `json:\"title,omitempty\"`",
@@ -4572,7 +5307,11 @@ func initFixtureTuple() {
 		noLines)
 
 	// load expectations for model: comics_items1.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("comics_items1.go", []string{
+=======
+	thisRun.AddExpectations("comics_items1.go", []string{
+>>>>>>> Temp work
 		`type ComicsItems1 struct {`,
 		"	Narrative *string `json:\"narrative\"`",
 		`func (m *ComicsItems1) Validate(formats strfmt.Registry) error {`,
@@ -4588,7 +5327,11 @@ func initFixtureTuple() {
 		noLines)
 
 	// load expectations for model: comics_items3.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("comics_items3.go", []string{
+=======
+	thisRun.AddExpectations("comics_items3.go", []string{
+>>>>>>> Temp work
 		`type ComicsItems3 struct {`,
 		"	Author string `json:\"author,omitempty\"`",
 		"	Character string `json:\"character,omitempty\"`",
@@ -4610,7 +5353,11 @@ func initFixtureTuple() {
 		noLines)
 
 	// load expectations for model: classics_tuple_additional_items.go
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	flattenRun.AddExpectations("classics_tuple_additional_items.go", []string{
+=======
+	thisRun.AddExpectations("classics_tuple_additional_items.go", []string{
+>>>>>>> Temp work
 		`type ClassicsTupleAdditionalItems struct {`,
 		"	P0 *ClassicsItemsAdditionalItemsItems0 `json:\"-\"`",
 		"	P1 []strfmt.Date `json:\"-\"`",
@@ -4654,11 +5401,19 @@ func initFixtureTuple() {
 func initFixture1198() {
 	// testing ../fixtures/bugs/1487/fixture-1198.yaml with expand (--skip-flatten)
 
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 	f := newModelFixture("../fixtures/bugs/1198/fixture-1198.yaml", "string-body-api")
 	flattenRun := f.AddRun(false)
 
 	// load expectations for model: pet.go
 	flattenRun.AddExpectations("pet.go", []string{
+=======
+	f := newModelFixture("../fixtures/bugs/1487/fixture-1198.yaml", "string-body-api")
+	thisRun := f.AddRun(false)
+
+	// load expectations for model: pet.go
+	thisRun.AddExpectations("pet.go", []string{
+>>>>>>> Temp work
 		`type Pet struct {`,
 		"	Date interface{} `json:\"date\"`",
 		`func (m *Pet) Validate(formats strfmt.Registry) error {`,
@@ -4673,6 +5428,7 @@ func initFixture1198() {
 		noLines)
 
 }
+<<<<<<< b10bd7b2c916c12928f64efcfc1391c864b54480
 
 func initFixture1042() {
 	// testing ../fixtures/bugs/1487/fixture-1042.yaml with expand (--skip-flatten)
@@ -10261,3 +11017,5 @@ func initFixture1617() {
 		noLines)
 
 }
+=======
+>>>>>>> Temp work

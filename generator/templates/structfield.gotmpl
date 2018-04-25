@@ -47,3 +47,9 @@ Set{{ pascalize .Name}}({{ template "schemaType" . }})
 {{- define "privtuplefield" }}
   {{- camelize .Name}}Field {{ template "schemaType" . }}
 {{ end }}
+{{- define "privmapfield" }}
+  {{- camelize .Name}}Field map[string]{{ template "schemaType" . }}
+{{ end }}
+{{- define "privitemsfield" }}
+  {{- camelize .Name}}Field []{{ template "schemaType" . }}
+{{ end }}

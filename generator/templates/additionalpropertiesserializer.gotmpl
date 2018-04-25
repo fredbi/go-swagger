@@ -1,4 +1,4 @@
-{{ define "additionalPropertiesSerializer" }}
+{{ define "additionalPropertiesSerializer" }}{{/* TODO: base type in map */}}
 // UnmarshalJSON unmarshals this object with additional properties from JSON
 func ({{.ReceiverName}} *{{ pascalize .Name }}) UnmarshalJSON(data []byte) error {
   // stage 1, bind the properties
