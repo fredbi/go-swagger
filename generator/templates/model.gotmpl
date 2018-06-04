@@ -1,6 +1,6 @@
 {{ template "header" . }}
 
-{{ if .IncludeModel }}
+{{- if .IncludeModel }}
   {{- if eq .Name "ApiResponse" }}// APIResponse is the response to an API call.
   {{- else }}
     {{- if .IsExported -}}
@@ -11,19 +11,19 @@
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
       {{- end }}
     {{- end }}
-{{- end }}
+  {{- end }}
 {{- end }}
 {{ template "schema" . }}
 
 {{ range .ExtraSchemas }}
   {{- if .IsExported }}
-{{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
-  {{- if not .IsBaseType }}
+    {{ if .IncludeModel }}// {{ pascalize .Name }} {{ template "docstring" . }}
+      {{- if not .IsBaseType }}
 // swagger:model {{ .Name }}
-  {{- else }}
+      {{- else }}
 // swagger:discriminator {{ .Name }} {{ .DiscriminatorField }}
+      {{- end }}
+    {{- end}}
   {{- end }}
-{{- end}}
-{{- end }}
-{{ template "schema" . }}
+  {{ template "schema" . }}
 {{ end }}

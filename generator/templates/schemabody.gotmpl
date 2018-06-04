@@ -93,7 +93,7 @@
   {{ range .AllOf }}
     {{ if .IsAnonymous }}
       {{ range .Properties }}
-        {{ if and .IsExported (not .IsBaseType) }}
+        {{ if and .IsExported (not .IsBaseType) (not (and .HasBaseType (or .IsArray .IsMap)))}}
           {{ if .IsTuple }}
             {{ template "tuplefield" . }}
           {{ else }}
@@ -101,16 +101,16 @@
           {{ end }}
         {{ else }}
           {{ pascalize .Name }} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
-        {{ end}}
+        {{ end }}
       {{ end }}
-      {{ if .HasAdditionalProperties }}
-        {{ if .AdditionalProperties }}
-          {{ if .IsExported }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-        {{end}}
-      {{ end }}
-      {{ if .AdditionalItems }}
-        {{ if .IsExported }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-      {{ end }}
+      {{- if .HasAdditionalProperties }}
+        {{- if .AdditionalProperties }}
+          {{ if and .IsExported (not (and .HasBaseType (or .IsArray .IsMap))) }}{{ pascalize .AdditionalProperties.Name }}{{ else }}{{ .AdditionalProperties.Name }}{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+        {{- end }}
+      {{- end }}
+      {{- if .AdditionalItems }}
+        {{ if .IsExported (not (and .HasBaseType (or .IsArray .IsMap))) }}{{ pascalize .AdditionalItems.Name }}{{ else }}{{ .AdditionalItems.Name }}{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+      {{- end }}
     {{ else }}
       {{ if not (and .IsBaseType .IsExported) }}
         {{ .GoType }}
@@ -118,7 +118,7 @@
     {{ end }}
   {{ end }}
   {{range .Properties}}
-    {{ if not .IsBaseType }}
+    {{ if and (not .IsBaseType) (not (and .HasBaseType (or .IsArray .IsMap))) }}
       {{ if not $.IsExported }}
         {{template "privstructfield" . }}
       {{ else }}
@@ -126,11 +126,19 @@
       {{ end}}
     {{ else }}
       {{ pascalize .Name }} json.RawMessage `json:"{{ .Name }}{{ if not .Required }},omitempty{{ end }}"`
-    {{end}}
+    {{ end }}
   {{ end }}
-  {{ if .HasAdditionalProperties }}
-    {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-  {{ end }}
+  {{- if .HasAdditionalProperties }}
+    {{- if or .AdditionalProperties.IsBaseType .AdditionalProperties.HasBaseType }}
+      {{ pascalize .AdditionalProperties.Name }} map[string]json.RawMessage `json:"-"`
+    {{- else }}
+      {{ pascalize .AdditionalProperties.Name }}{{ if .IsExported }}Field{{ end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
+    {{- end }}
+  {{- end }}
+  {{- if .AdditionalItems }}
+  // TODO(fredbi): support for additionalItems
+  do not compile this
+  {{- end }}
 }{{ end }}
 
 {{ define "withoutBaseTypeBodyOrNonExported" }}struct {
@@ -238,7 +246,7 @@
 }{{end}}
 
 {{ define "JustBaseTypeBody" }}struct {
-  /* Just the base type fields. Used for unmashalling polymorphic types.*/
+  /* Just the base type fields. Used for unmarshalling polymorphic types.*/
   {{ range .AllOf }}
     {{ if .IsBaseType }}
       {{ range .Properties }}

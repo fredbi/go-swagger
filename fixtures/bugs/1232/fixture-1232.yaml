@@ -1,5 +1,13 @@
 swagger: '2.0'
-
+# TODO:
+# - nested arrays/maps/mixed of base type
+# - arrays/maps of base type in structs|in additionalProperties
+# - same with nested
+# - same nesting with $ref
+# - object has multiple base types
+# - allOf base types, allOf subtypes and mix
+# - object with properties which are objects with HasBasType
+# - aliased type on base type
 info:
   version: "1.0.0"
   title: 'issue 1232'
@@ -12,40 +20,253 @@ paths:
   /pet:
     get:
       operationId: getPet
-      summary: many model variations
+      summary: base type
       description: no description
       tags:
         - testcgen
       parameters:
       - name: aPet
-        in: body 
-        schema: 
+        in: body
+        schema:
           $ref: '#/definitions/Pet'
       responses:
         default:
           description: Generic Out
           schema:
             $ref: '#/definitions/Pet'
+  /petArray:
+    get:
+      operationId: getPetArray
+      summary: anonymous array of base type
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aPetArray
+        in: body
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Pet'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelArrayOfPets'
+  /petNamedArray:
+    get:
+      operationId: getPetNamedArray
+      summary: named array of base type
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aNamedPetArray
+        in: body
+        schema:
+          $ref: '#/definitions/ModelArrayOfPets'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            $ref: '#/definitions/ModelArrayOfPets'
+  /petMap:
+    get:
+      operationId: getPetMap
+      summary: anonymous map of base type
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aPetMap
+        in: body
+        schema:
+          type: object
+          additionalProperties:
+            $ref: '#/definitions/Pet'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/Pet'
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelMapOfPets'
+  /petNamedMap:
+    get:
+      operationId: getPetNamedMap
+      summary: named map of base type
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aNamedPetMap
+        in: body
+        schema:
+          $ref: '#/definitions/ModelMapOfPets'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            $ref: '#/definitions/ModelMapOfPets'
+  /petObject:
+    get:
+      operationId: getPetObject
+      summary: anonymous object with subtypes
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aPetObject
+        in: body
+        schema:
+          type: object
+          required:
+            - prop1
+          properties:
+            prop1:
+              $ref: '#/definitions/Pet'
+            prop2:
+              $ref: '#/definitions/Pet'
+            prop3:
+              type: integer
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: object
+            required:
+              - prop1
+            properties:
+              prop1:
+                $ref: '#/definitions/Pet'
+              prop2:
+                $ref: '#/definitions/Pet'
+              prop3:
+                type: integer
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelObjectWithPets'
   /cat:
     get:
       operationId: getCat
-      summary: many model variations
+      summary: simple subtype
       description: no description
       tags:
         - testcgen
       parameters:
       - name: aCat
-        in: body 
-        schema: 
+        in: body
+        schema:
           $ref: '#/definitions/Cat'
       responses:
         default:
           description: Generic Out
           schema:
             $ref: '#/definitions/Pet'
+  /catArray:
+    get:
+      operationId: getCatArray
+      summary: array of subtypes
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aCatArray
+        in: body
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Cat'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cat'
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelArrayOfCats'
+  /catMap:
+    get:
+      operationId: getCatMap
+      summary: map of subtypes
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aCatMap
+        in: body
+        schema:
+          type: object
+          additionalProperties:
+            $ref: '#/definitions/Cat'
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: object
+            additionalProperties:
+              $ref: '#/definitions/Cat'
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelMapOfCats'
+  /catObject:
+    get:
+      operationId: getCatObject
+      summary: object with subtypes
+      description: no description
+      tags:
+        - testcgen
+      parameters:
+      - name: aCatObject
+        in: body
+        schema:
+          type: object
+          required:
+            - prop1
+          properties:
+            prop1:
+              $ref: '#/definitions/Cat'
+            prop2:
+              $ref: '#/definitions/Cat'
+            prop3:
+              type: integer
+      responses:
+        default:
+          description: Generic Out
+          schema:
+            type: object
+            required:
+              - prop1
+            properties:
+              prop1:
+                $ref: '#/definitions/Cat'
+              prop2:
+                $ref: '#/definitions/Cat'
+              prop3:
+                type: integer
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ModelObjectWithCats'
 definitions:
   Pet:
     type: object
+    description: base type is a generic pet
     discriminator: petType
     properties:
       name:
@@ -58,7 +279,7 @@ definitions:
 
   Cat:
     type: object
-    description: A representation of a cat
+    description: subtype is a representation of a cat
     allOf:
     - $ref: '#/definitions/Pet'
     - properties:
@@ -73,3 +294,384 @@ definitions:
           - aggressive
       required:
       - huntingSkill
+
+  Dog:
+    type: object
+    description: subtype is a representation of a dog
+    allOf:
+    - $ref: '#/definitions/Pet'
+    - properties:
+        guardingSkill:
+          type: string
+          description: The measured skill for guarding
+          default: lazy
+          enum:
+          - clueless
+          - lazy
+          - vigilant
+          - defensive
+      required:
+      - guardingSkill
+  ModelArrayOfPets:
+    type: array
+    items:
+      $ref: '#/definitions/Pet'
+
+  ModelMapOfPets:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/Pet'
+
+  # nested models
+  ModelArrayArrayOfPets:
+    type: array
+    items:
+      type: array
+      items:
+        $ref: '#/definitions/Pet'
+
+  ModelDeeperArrayArrayOfPets:
+    type: array
+    items:
+      type: array
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Pet'
+
+  ModelArrayNamedArrayOfPets:
+    type: array
+    items:
+      $ref: '#/definitions/ModelArrayArrayOfPets'
+
+  ModelMapMapOfPets:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        $ref: '#/definitions/Pet'
+
+  ModelDeeperMapMapOfPets:
+    type: object
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Pet'
+
+  ModelMapNamedMapOfPets:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/ModelMapOfPets'
+
+  ModelMapMixedNestedOfPets:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Pet'
+
+  ModelArrayMixedNestedOfPets:
+    type: array
+    items:
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          $ref: '#/definitions/Pet'
+
+  ModelArrayOfMapOfPets:
+    type: array
+    items:
+      type: object
+      additionalProperties:
+        $ref: '#/definitions/Pet'
+
+  ModelMapOfArrayOfPets:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        $ref: '#/definitions/Pet'
+
+  ModelObjectWithPets:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        $ref: '#/definitions/Pet'
+      prop2:
+        $ref: '#/definitions/Pet'
+      prop3:
+        type: integer
+    additionalProperties:
+      $ref: '#/definitions/Pet'
+
+  ModelObjectVanilla:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop0:
+        $ref: '#/definitions/ModelSanity'
+      prop1:
+        $ref: '#/definitions/ModelSanity'
+      prop2:
+        type: array
+        items:
+          $ref: '#/definitions/ModelSanity'
+      prop3:
+        $ref: '#/definitions/ModelSanity'
+      prop4:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/ModelSanity'
+      prop5:
+        type: integer
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/ModelSanity'
+  ModelObjectWithArrayAndMapOfPets:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop0:
+        $ref: '#/definitions/Pet'
+      prop1:
+        $ref: '#/definitions/ModelArrayOfPets'
+      prop2:
+        type: array
+        items:
+          $ref: '#/definitions/Pet'
+      prop3:
+        $ref: '#/definitions/ModelMapOfPets'
+      prop4:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Pet'
+      prop5:
+        type: integer
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Pet'
+
+  ModelObjectWithNestedArrayAndMapOfPets:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop0:
+        $ref: '#/definitions/Pet'
+      prop1:
+        $ref: '#/definitions/ModelArrayArrayOfPets'
+      prop2:
+        type: array
+        items:
+          type: array
+          items:
+            $ref: '#/definitions/Pet'
+      prop3:
+        $ref: '#/definitions/ModelMapMapOfPets'
+      prop4:
+        type: object
+        additionalProperties:
+          type: object
+          additionalProperties:
+            $ref: '#/definitions/Pet'
+      prop5:
+        type: integer
+    additionalProperties:
+      type: array
+      items:
+        type: array
+        items:
+          $ref: '#/definitions/Pet'
+
+  ModelObjectWithAdditionalPets:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      $ref: '#/definitions/Pet'
+
+  ModelObjectWithAdditionalArrayOfPets:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      type: array
+      items:
+        $ref: '#/definitions/Pet'
+
+  ModelObjectWithAdditionalMapOfPets:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Pet'
+
+  ModelObjectWithAdditionalCats:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      $ref: '#/definitions/Cat'
+
+  ModelObjectWithAdditionalArrayOfCats:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      type: array
+      items:
+        $ref: '#/definitions/Cat'
+
+  ModelObjectWithAdditionalMapOfCats:
+    type: object
+    properties:
+      prop1:
+        type: string
+    additionalProperties:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Cat'
+
+  ModelArrayOfCats:
+    type: array
+    items:
+      $ref: '#/definitions/Cat'
+
+  ModelMapOfCats:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/Cat'
+
+  ModelObjectWithCats:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        $ref: '#/definitions/Cat'
+      prop2:
+        $ref: '#/definitions/Cat'
+      prop3:
+        type: integer
+    additionalProperties:
+      $ref: '#/definitions/Cat'
+
+  ModelObjectWithPetProp:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        $ref: '#/definitions/Pet'
+
+  ModelObjectWithPetSlice:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        type: array
+        items:
+          $ref: '#/definitions/Pet'
+    additionalProperties: true
+
+  ModelObjectWithCatProp:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        $ref: '#/definitions/Cat'
+
+  ModelObjectWithCatSlice:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop1:
+        type: array
+        items:
+          $ref: '#/definitions/Cat'
+
+  ModelObjectWithArrayAndMapOfCats:
+    type: object
+    required:
+      - prop1
+    properties:
+      prop0:
+        $ref: '#/definitions/Cat'
+      prop1:
+        type: array
+        items:
+          $ref: '#/definitions/Cat'
+      prop2:
+        $ref: '#/definitions/ModelArrayOfCats'
+      prop3:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/Cat'
+      prop4:
+        $ref: '#/definitions/ModelMapOfCats'
+      prop5:
+        type: integer
+    additionalProperties:
+      type: array
+      items:
+        $ref: '#/definitions/Cat'
+
+  ModelTupleWithPetsDogsAndCats:
+      type: array
+      items:
+      - $ref: '#/definitions/Cat'
+      - $ref: '#/definitions/Dog'
+      - $ref: '#/definitions/Pet'
+      additionalItems:
+        $ref: '#/definitions/Pet'
+
+  ModelSanity:
+    type: object
+    required:
+    - propB
+    properties:
+      propA:
+        type: string
+      propB:
+        type: string
+#  # sanity check/non reg
+#  ModelArrayOfDates:
+#    type: array
+#    items:
+#      type: string
+#      format: date
+#
+#  ModelArrayOfStrings:
+#    type: array
+#    items:
+#      type: string
+#      format: uuid

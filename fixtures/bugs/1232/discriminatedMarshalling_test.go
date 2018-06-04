@@ -29,7 +29,7 @@ func Test_Pet(t *testing.T) {
 			json.Unmarshal(buf, input)
 
 			// unmarshall into model
-			model := models.TupleThing{}
+			model := models.Cat{}
 			err = model.UnmarshalJSON(buf)
 			if assert.NoError(t, err) {
 				err = model.Validate(strfmt.Default)

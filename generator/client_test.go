@@ -23,7 +23,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClient(t *testing.T) {
+func TestClient_InvalidSpec(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+
+	opts := testGenOpts()
+	opts.Spec = "../fixtures/bugs/825/swagger.yml"
+	opts.ValidateSpec = true
+	assert.Error(t, GenerateClient("foo", nil, nil, &opts))
+}
+
+func TestClient_BaseImportDisabled(t *testing.T) {
 	targetdir, err := ioutil.TempDir(os.TempDir(), "swagger_nogo")
 	if err != nil {
 		t.Fatalf("Failed to create a test target directory: %v", err)

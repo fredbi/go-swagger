@@ -1,0 +1,17 @@
+[
+{
+    "petType": "Cat",
+    "name": "fluffy",
+    "huntingSkill": "lazy"
+},
+{
+    "petType": "Dog",
+    "name": "medor",
+    "guardingSkill": "defensive"
+},
+{
+    "petType": "Cat",
+    "name": "garfield",
+    "huntingSkill": "lazy"
+}
+]

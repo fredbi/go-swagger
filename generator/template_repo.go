@@ -46,14 +46,7 @@ var FuncMap template.FuncMap = map[string]interface{}{
 	"hasSecure": func(arg []string) bool {
 		return swag.ContainsStringsCI(arg, "https") || swag.ContainsStringsCI(arg, "wss")
 	},
-	"stripPackage": func(str, pkg string) string {
-		parts := strings.Split(str, ".")
-		strlen := len(parts)
-		if strlen > 0 {
-			return parts[strlen-1]
-		}
-		return str
-	},
+	// dropPackage strips the package part of a type
 	"dropPackage": func(str string) string {
 		parts := strings.Split(str, ".")
 		strlen := len(parts)
@@ -61,6 +54,15 @@ var FuncMap template.FuncMap = map[string]interface{}{
 			return parts[strlen-1]
 		}
 		return str
+	},
+	// getPackage retrieves the package part of a type
+	"getPackage": func(str string) string {
+		parts := strings.Split(str, ".")
+		strlen := len(parts)
+		if strlen > 1 {
+			return strings.Join(parts[0:strlen-1], ".")
+		}
+		return ""
 	},
 	"upper": func(str string) string {
 		return strings.ToUpper(str)

@@ -57,8 +57,8 @@ if [ ! -f `which swagger` ]; then
   exit 1
 fi
 
-# NOTE(fredbi): 
-# The following ones fail generation: 
+# NOTE(fredbi):
+# The following ones fail generation:
 # - existing-model.yml requires pregeneration (not supported yet by this script)
 # - issue72: model works with --skip-validation. Invalid spec (duplicate operationID)
 # - todolist.simple.yml: invalid default values put on purpose for UT (provided fixed version for testing)
@@ -165,9 +165,9 @@ list=( $check_list )
 fixtures_count=${#list[@]}
 okcr "Running codegen for ${fixtures_count} specs"
 
-for spec in ${check_list}; do 
+for spec in ${check_list}; do
     testcase=${spec##*/}
-    case ${testcase} in 
+    case ${testcase} in
     ${known_failed})
         warncr "[`date +%T`]${spec}: not tested against full build because of known issues."
         run="false"
@@ -210,7 +210,7 @@ for spec in ${check_list}; do
         for preprocessingOpts in ${OPTS} ; do
             index+=1
             infocr "Generation with options: ${preprocessingOpts} ${opts}"
-	
+
             # Do not attempt to generate on expanded specs when there is a discriminator specified
 	        grep -q discriminator ${spec}
 	        discriminated=$?
@@ -221,18 +221,18 @@ for spec in ${check_list}; do
             if [[ ${noexpand} != "true" && ${preprocessingOpts} == "--with-flatten=expand" ]] ; then
                 continue
             fi
-	
+
 	        target=${gendir}/gen-${testcase%.*}${index}
 	        target_client=${gendir}/gen-${testcase%.*}${index}"-client"
 
 	        server_name="nrcodegen"
 	        client_name="nrcodegen"
 	        errlog=${gendir}/stderr.log
-	
+
 	        rm -rf ${target} ${target_client}
 	        mkdir -p ${target} ${target_client}
 	        rm -f ${errlog}
-	
+
 	        # Gen server
 	        swagger generate server --spec ${spec} --target ${target} --name=${server_name} --quiet ${opts} ${preprocessingOpts} 2>${errlog}
 	        if [[ $? != 0 ]] ; then
@@ -263,8 +263,8 @@ for spec in ${check_list}; do
 	            exit 1
 	        fi
 	        ok `printf " %s..."  "Server build OK"`
-	        # Build models if any produced 
-	        if [[ -d ${target}/models ]] ; then 
+	        # Build models if any produced
+	        if [[ -d ${target}/models ]] ; then
 	            (cd ${target}/models ; go build) 2>${errlog}
 	            if [[ $? != 0 ]] ; then
 	                errcr "Model build Failed"

@@ -89,6 +89,9 @@ type GenSchema struct {
 	IncludeValidator        bool
 	IncludeModel            bool
 	Default                 interface{}
+	// TODO(fredbi): marshalling source/dest variable for polymorphic nests
+	SourceVar string
+	DestVar   string
 }
 
 func (g GenSchemaList) Len() int      { return len(g) }

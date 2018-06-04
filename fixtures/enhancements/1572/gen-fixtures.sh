@@ -1,4 +1,4 @@
-#! /bin/bash 
+#! /bin/bash
 if [[ ${1} == "--clean" ]] ; then
     clean=1
 fi
@@ -56,13 +56,13 @@ for testcase in ${testcases} ; do
             fi
         fi
         echo "${spec}: Build OK"
-        if [[ -n ${clean} ]] ; then 
+        if [[ -n ${clean} ]] ; then
              rm -rf ${target}
         fi
     fi
 done
 done
-if [[ ! -z ${failures} ]] ; then 
+if [[ ! -z ${failures} ]] ; then
     echo ${failures}|tr ' ' '\n'
 else
     echo "No failures"

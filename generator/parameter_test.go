@@ -4269,5 +4269,4 @@ func TestGenParameter_1637(t *testing.T) {
 			},
 		},
 	}
-	assertParams(t, fixtureConfig, filepath.Join("..", "fixtures", "bugs", "1637", "fixture-1637.yaml"), true, false)
 }

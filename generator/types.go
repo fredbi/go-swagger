@@ -240,8 +240,7 @@ func (t *typeResolver) resolveSchemaRef(schema *spec.Schema, isRequired bool) (r
 		}
 		result.HasDiscriminator = res.HasDiscriminator
 		result.IsBaseType = result.HasDiscriminator
-		result.IsNullable = t.IsNullable(ref)
-		//result.IsAliased = true
+		result.IsNullable = t.IsNullable(ref) && !result.IsBaseType
 		return
 
 	}
@@ -372,9 +371,10 @@ func (t *typeResolver) resolveArray(schema *spec.Schema, isAnonymous, isRequired
 	// override the general nullability rule from ResolveSchema():
 	// only complex items are nullable (when not discriminated, not forced by x-nullable)
 	rt.IsNullable = t.IsNullable(schema.Items.Schema) && !rt.HasDiscriminator
-	result.GoType = "[]" + rt.GoType
 	if rt.IsNullable && !strings.HasPrefix(rt.GoType, "*") {
 		result.GoType = "[]*" + rt.GoType
+	} else {
+		result.GoType = "[]" + rt.GoType
 	}
 
 	result.ElemType = &rt
@@ -455,9 +455,8 @@ func (t *typeResolver) resolveObject(schema *spec.Schema, isAnonymous bool) (res
 
 		result.SwaggerType = object
 
-		// only complex map elements are nullable (when not forced by x-nullable)
-		// TODO: figure out if required to check when not discriminated like arrays?
-		et.IsNullable = t.isNullable(schema.AdditionalProperties.Schema)
+		// only complex map elements are nullable (when not forced by x-nullable, not base type)
+		et.IsNullable = t.isNullable(schema.AdditionalProperties.Schema) && !et.HasDiscriminator
 		if et.IsNullable {
 			result.GoType = "map[string]*" + et.GoType
 		} else {

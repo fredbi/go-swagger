@@ -1,0 +1,17 @@
+{
+"firstPet":{
+    "petType": "Cat",
+    "name": "fluffy",
+    "huntingSkill": "lazy"
+},
+"secondPet":{
+    "petType": "Dog",
+    "name": "medor",
+    "guardingSkill": "defensive"
+},
+"thirdPet":{
+    "petType": "Cat",
+    "name": "garfield",
+    "huntingSkill": "lazy"
+}
+}

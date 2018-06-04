@@ -447,8 +447,16 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
     {{ .ReceiverName }}.{{ pascalize .Name }} = r.Body
     {{- else }}
     defer r.Body.Close()
-      {{- if and .Schema.IsBaseType .Schema.IsExported }}
-    body, err := {{ .ModelsPackage }}.Unmarshal{{ stripPackage .GoType .ModelsPackage }}{{ if .IsArray }}Slice{{ end }}(r.Body, route.Consumer)
+      {{/* TODO(fredbi): this can be a nested array, map or a mix of both */}}
+      {{- if or (and .Schema.IsBaseType .Schema.IsExported) (and .Schema.HasBaseType (or .Schema.IsArray .Schema.IsMap)) }}
+        {{- if and .IsArray .Schema.Items }}
+    // Unmarshall array of base type with discriminator
+        {{- else if and .IsMap .Schema.AdditionalProperties }}
+    // Unmarshall map of base type with discriminator
+        {{- else }}
+    // Unmarshall base type with discriminator
+        {{- end }}
+    body, err := {{ .ModelsPackage }}.Unmarshal{{ dropPackage .GoType }}{{ if .IsArray }}Slice{{ else if .IsMap }}Map{{ end }}(r.Body, route.Consumer)
     if err != nil {
         {{- if .Required }}
       if err == io.EOF {
@@ -456,7 +464,7 @@ func ({{ .ReceiverName }} *{{ pascalize .Name }}Params) BindRequest(r *http.Requ
       }
         {{- end }}
     res = append(res, err)
-    {{- else }}
+      {{- else }}
     var body {{ .GoType }}
     if err := route.Consumer.Consume(r.Body, &body); err != nil {
         {{- if .Required }}

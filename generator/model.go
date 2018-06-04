@@ -435,10 +435,10 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 	} else {
 		pg.Path = pg.Path + "+ \".\" + strconv.Itoa(" + indexVar + ")"
 	}
-	// check who is parent, if it's a base type then rewrite the value expression
+	// check who is the parent of this slice, if it's a base type then rewrite the value expression
 	if sg.Discrimination != nil && sg.Discrimination.Discriminators != nil {
 		_, rewriteValueExpr := sg.Discrimination.Discriminators["#/definitions/"+sg.TypeResolver.ModelName]
-		if (pg.IndexVar == "i" && rewriteValueExpr) || sg.GenSchema.ElemType.IsBaseType {
+		if pg.IndexVar == "i" && rewriteValueExpr {
 			if !sg.GenSchema.IsAliased {
 				pg.ValueExpr = sg.Receiver + "." + swag.ToJSONName(sg.GenSchema.Name) + "Field"
 			} else {
@@ -446,7 +446,6 @@ func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContex
 			}
 		}
 	}
-	sg.GenSchema.IsBaseType = sg.GenSchema.ElemType.HasDiscriminator
 	pg.IndexVar = indexVar + "i"
 	pg.ValueExpr = pg.ValueExpr + "[" + indexVar + "]"
 	pg.Schema = *schema
@@ -663,7 +662,7 @@ func (sg *schemaGenContext) MergeResult(other *schemaGenContext, liftsRequired b
 	}
 
 	if other.GenSchema.HasBaseType {
-		sg.GenSchema.HasBaseType = other.GenSchema.HasBaseType
+		sg.GenSchema.HasBaseType = true
 	}
 
 	sg.Dependencies = append(sg.Dependencies, other.Dependencies...)
@@ -766,10 +765,11 @@ func (sg *schemaGenContext) buildProperties() error {
 				if _, ok := emprop.Discrimination.Discriminators[emprop.Schema.Ref.String()]; ok {
 					emprop.GenSchema.IsBaseType = true
 					emprop.GenSchema.IsNullable = false
-					emprop.GenSchema.HasBaseType = true
+					sg.GenSchema.HasBaseType = true
 				}
 				if _, ok := emprop.Discrimination.Discriminated[emprop.Schema.Ref.String()]; ok {
 					emprop.GenSchema.IsSubType = true
+					sg.GenSchema.HasBaseType = false
 				}
 			}
 
@@ -828,7 +828,8 @@ func (sg *schemaGenContext) buildProperties() error {
 			emprop.GenSchema.IsNullable = false
 		}
 		if emprop.GenSchema.IsBaseType {
-			sg.GenSchema.HasBaseType = true
+			// a base type property is an interface: cannot be pointer to interface
+			emprop.GenSchema.IsNullable = false
 		}
 		sg.MergeResult(emprop, false)
 
@@ -1377,6 +1378,7 @@ func (sg *schemaGenContext) buildArray() error {
 
 	// NOTE(fredbi): since this is reset below, this Required = true serves the obscure purpose
 	// of indirectly lifting validations from the slice. This is carried on differently now.
+	//
 	// elProp.Required = true
 
 	if err := elProp.makeGenSchema(); err != nil {
@@ -1385,7 +1387,6 @@ func (sg *schemaGenContext) buildArray() error {
 
 	sg.MergeResult(elProp, false)
 
-	sg.GenSchema.IsBaseType = elProp.GenSchema.IsBaseType
 	sg.GenSchema.ItemsEnum = elProp.GenSchema.Enum
 	elProp.GenSchema.Suffix = "Items"
 
@@ -1408,8 +1409,7 @@ func (sg *schemaGenContext) buildArray() error {
 	// include format validation, excluding binary
 	hv = hv || (schemaCopy.IsCustomFormatter && !schemaCopy.IsStream) || (schemaCopy.IsArray && schemaCopy.ElemType.IsCustomFormatter && !schemaCopy.ElemType.IsStream)
 
-	// base types of polymorphic types must be validated
-	// NOTE: IsNullable is not useful to figure out a validation: we use Refed and IsAliased below instead
+	// base types of polymorphic types must be validated (TODO: move to general)
 	if hv || elProp.GenSchema.IsBaseType {
 		schemaCopy.HasValidations = true
 	}
@@ -1436,6 +1436,7 @@ func (sg *schemaGenContext) buildArray() error {
 func (sg *schemaGenContext) buildItems() error {
 	if sg.Schema.Items == nil {
 		// in swagger, arrays MUST have an items schema
+		// go-swagger tolerates unrestricted arrays (like JSONSchema), with null items rendered as interface{}
 		return nil
 	}
 
@@ -1477,6 +1478,12 @@ func (sg *schemaGenContext) buildItems() error {
 			}
 			if elProp.GenSchema.IsInterface || elProp.GenSchema.IsStream {
 				elProp.GenSchema.HasValidations = false
+			}
+			if elProp.GenSchema.IsBaseType {
+				elProp.GenSchema.IsNullable = false
+				elProp.GenSchema.HasValidations = true
+				elProp.GenSchema.IsExported = true
+				sg.GenSchema.HasBaseType = true
 			}
 			sg.MergeResult(elProp, false)
 
@@ -1557,6 +1564,11 @@ func (sg *schemaGenContext) buildAdditionalItems() error {
 		// lift validations when complex is not anonymous or ref'ed
 		if (tpe.IsComplexObject || it.Schema.Ref.String() != "") && !(tpe.IsInterface || tpe.IsStream) {
 			it.GenSchema.HasValidations = true
+		}
+		if it.GenSchema.IsBaseType {
+			it.GenSchema.IsNullable = false
+			it.GenSchema.HasValidations = true
+			sg.GenSchema.HasBaseType = true
 		}
 
 		sg.MergeResult(it, true)
@@ -1749,6 +1761,90 @@ func (sg *schemaGenContext) buildMapOfNullable(sch *GenSchema) {
 	}
 }
 
+// buildBaseTypeComposition performs some adjustment for types composed of base types (aka polymorphic types).
+// It propagates the HasBaseType property across nests of arrays or maps.
+// HasBaseType means that a type is using a base type for its definition, but is not a subtype.
+// This triggers the generation of a custom unmarshaller.
+//
+// SourceVar and DestVar are set to reuse the template to unmarshall nested arrays/maps of base types in different places.
+// This re-walks the hierarchy, since names depend on the topmost context
+//
+// These are used when:
+//   - array items or map elements are a base type (or nested constructs with arrays or maps of a base type)
+//   - properties in object are a base type (or nested constructs with arrays or maps of a base type)
+//
+// TODO: support for AdditionalItems
+func (sg *schemaGenContext) buildBaseTypeComposition() {
+
+	// propagates unmarshaller source and destination variable names
+	var setDestVarProperties func(gs, parent *GenSchema, prefix string)
+	setDestVarProperties = func(gs, parent *GenSchema, prefix string) {
+		if gs == nil {
+			return
+		}
+		for i := range gs.AllOf {
+			setDestVarProperties(&gs.AllOf[i], gs, swag.ToVarName(prefix+" "+"allOf"))
+		}
+
+		if gs.IsMap || gs.IsArray {
+			if parent == nil || gs.IsAliased {
+				gs.SourceVar = "raw"
+				gs.DestVar = "data"
+			} else if parent != nil && parent != gs && (parent.SourceVar != "raw") { // from a property
+				gs.SourceVar = parent.SourceVar
+				gs.DestVar = parent.DestVar
+			}
+			if gs.AdditionalProperties != nil {
+				setDestVarProperties(gs.AdditionalProperties, gs, prefix)
+			}
+			if gs.Items != nil {
+				setDestVarProperties(gs.Items, gs, prefix)
+			}
+		} else {
+			for j := range gs.Properties {
+				gs.Properties[j].SourceVar = "data." + pascalize(gs.Properties[j].Name)
+				gs.Properties[j].DestVar = swag.ToVarName(prefix + " " + "prop" + " " + gs.Properties[j].Name)
+				setDestVarProperties(&gs.Properties[j], &gs.Properties[j], prefix)
+			}
+			if gs.AdditionalProperties != nil && !gs.AdditionalProperties.IsAliased {
+				gs.AdditionalProperties.SourceVar = "v"
+				gs.AdditionalProperties.DestVar = swag.ToVarName(prefix + " " + "toadd")
+				setDestVarProperties(gs.AdditionalProperties, gs.AdditionalProperties, prefix)
+				setDestVarProperties(gs.Items, gs.AdditionalProperties, prefix)
+			}
+		}
+	}
+	setDestVarProperties(&sg.GenSchema, nil, "")
+
+	// propagates HasBaseType
+	if sg.GenSchema.IsMap && sg.GenSchema.AdditionalProperties != nil {
+		if sg.GenSchema.AdditionalProperties.HasBaseType && (sg.GenSchema.AdditionalProperties.IsArray || sg.GenSchema.AdditionalProperties.IsMap) && !sg.GenSchema.AdditionalProperties.IsAliased {
+			sg.GenSchema.HasBaseType = true
+		} else {
+			sg.GenSchema.HasBaseType = sg.GenSchema.AdditionalProperties.IsBaseType
+		}
+		if sg.GenSchema.SourceVar == "" {
+			// unmarshaller variable names for aliased maps|arrays
+			sg.GenSchema.SourceVar = "raw"
+			sg.GenSchema.DestVar = "data"
+		}
+	} else if sg.GenSchema.IsArray && sg.GenSchema.Items != nil {
+		if sg.GenSchema.Items.HasBaseType && (sg.GenSchema.Items.IsArray || sg.GenSchema.Items.IsMap) && !sg.GenSchema.Items.IsAliased {
+			sg.GenSchema.HasBaseType = true
+		} else {
+			sg.GenSchema.HasBaseType = sg.GenSchema.Items.IsBaseType
+		}
+		if sg.GenSchema.SourceVar == "" {
+			// unmarshaller variable names for aliased maps|arrays
+			sg.GenSchema.SourceVar = "raw"
+			sg.GenSchema.DestVar = "data"
+		}
+	}
+	if sg.GenSchema.AdditionalProperties != nil && (sg.GenSchema.AdditionalProperties.HasBaseType || sg.GenSchema.AdditionalProperties.IsBaseType) {
+		sg.GenSchema.HasBaseType = true
+	}
+}
+
 func (sg *schemaGenContext) makeGenSchema() error {
 	debugLogAsJSON("making gen schema (anon: %t, req: %t, tuple: %t) %s\n",
 		!sg.Named, sg.Required, sg.IsTuple, sg.Name, sg.Schema)
@@ -1880,6 +1976,9 @@ func (sg *schemaGenContext) makeGenSchema() error {
 
 	sg.buildMapOfNullable(nil)
 
+	sg.buildBaseTypeComposition()
+
 	debugLog("finished gen schema for %q", sg.Name)
+
 	return nil
 }
