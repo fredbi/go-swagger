@@ -523,3 +523,15 @@ func TestServer_Issue1816(t *testing.T) {
 	assertInCode(t, `"api_key": []`, res)
 	assertNotInCode(t, `"api_key": null`, res)
 }
+
+func TestServer_JSONPointers(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	defer log.SetOutput(os.Stdout)
+	gen, err := testAppGenerator(t, "../fixtures/codegen/jsonpointers.yaml", "generate a server from a spec with json pointers to anonymous docs")
+	if assert.NoError(t, err) {
+		app, err := gen.makeCodegenApp()
+		if assert.NoError(t, err) {
+			assert.NotNil(t, app)
+		}
+	}
+}
