@@ -1,0 +1,36 @@
+---
+  swagger: "2.0"
+  info: 
+    title: "allOf bugs with empty objects"
+    version: "0.0.1"
+    description: "repro"
+    license: 
+      name: "Apache 2.0"
+      url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  paths: 
+    /: 
+      get: 
+        responses: 
+          200: 
+            description: "OK"
+            schema: 
+            $ref: "#/definitions/foo"
+
+  definitions:
+    foo:
+      type: object
+      required:
+        - field
+        - bar
+      properties:
+        field:
+          type: string
+          x-nullable: true
+        bar:
+          type: object
+          x-nullable: true
+          required:
+            - baz
+          properties:
+            baz:
+              type: string
