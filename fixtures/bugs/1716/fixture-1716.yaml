@@ -1,0 +1,32 @@
+swagger: '2.0'
+info:
+  description: Body parameters
+  title: App
+  version: 1.0.0
+paths:
+  '/user/{user_id}/activation':
+      put:
+        operationId: activateUser
+        consumes:
+          - application/json
+        produces:
+          - application/json
+        parameters:
+          - in: path
+            name: user_id
+            required: true
+            description: User ID
+            type: string
+          - in: body
+            name: activation
+            description: Body
+            required: true
+            schema:
+              type: object
+              properties:
+                active:
+                  type: boolean
+        responses:
+          '200':
+            description: OK
+        summary: Activate user
