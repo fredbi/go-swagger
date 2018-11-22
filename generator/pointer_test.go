@@ -7,8 +7,29 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-openapi/swag"
+	"github.com/kr/pretty"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestNullableString(t *testing.T) {
+	assert.False(t, nullableString(spec.StringProperty(), false))
+	assert.False(t, nullableString(spec.StringProperty().WithMinLength(0), false)) // ???
+	assert.False(t, nullableString(spec.StringProperty().WithMinLength(1), true))
+	assert.False(t, nullableString(spec.StringProperty().WithEnum("a", "b"), true))
+	assert.False(t, nullableString(spec.StringProperty().WithEnum("a", "b"), false))
+	assert.False(t, nullableString(spec.StringProperty().WithEnum("a", ""), false))
+	assert.False(t, nullableString(spec.StringProperty().WithPattern("^X(.+)$"), true))
+	assert.False(t, nullableString(spec.StringProperty().WithMinLength(1).WithDefault("abc"), false))
+
+	assert.True(t, nullableString(spec.StringProperty(), true))
+	assert.True(t, nullableString(spec.StringProperty(), true))
+	assert.True(t, nullableString(spec.StringProperty().WithMinLength(0), true))
+	assert.True(t, nullableString(spec.StringProperty().WithEnum("a", ""), true))
+	assert.True(t, nullableString(spec.StringProperty().WithMinLength(0).WithDefault("abc"), false))
+	assert.True(t, nullableString(spec.StringProperty().WithDefault("abc"), false))
+	// TODO: null in enum
+	// TODO: default
+}
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
 	specDoc, err := loads.Spec("../fixtures/codegen/todolist.models.yml")
@@ -540,14 +561,14 @@ func assertBuiltinVal(t testing.TB, resolver *typeResolver, aliased bool, i int,
 	if assert.NoError(t, err) {
 		if val.Nullable {
 			if !assert.True(t, rt.IsNullable, "expected nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
+				t.Logf("isRequired: %t", val.Required)
+				t.Log(pretty.Sprint(sch))
 				return false
 			}
 		} else {
 			if !assert.False(t, rt.IsNullable, "expected not nullable for item at: %d", i) {
-				// fmt.Println("isRequired:", val.Required)
-				// pretty.Println(sch)
+				t.Logf("isRequired: %t", val.Required)
+				t.Log(pretty.Sprint(sch))
 				return false
 			}
 		}

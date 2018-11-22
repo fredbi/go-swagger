@@ -23,7 +23,9 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 	"github.com/kr/pretty"
 )
 
@@ -538,10 +540,15 @@ func nullableBool(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
 	}
-	required := isRequired && schema.Default == nil && !schema.ReadOnly
-	optional := !isRequired && (schema.Default != nil || schema.ReadOnly)
+	/*
+		required := isRequired && schema.Default == nil && !schema.ReadOnly
+		optional := !isRequired && (schema.Default != nil || schema.ReadOnly)
 
-	return required || optional
+		return required || optional
+	*/
+	hasNonZeroDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	isZeroValid := validate.AgainstSchema(schema, false, strfmt.Default) == nil
+	return !schema.ReadOnly && isZeroValid && (isRequired || hasNonZeroDefault)
 }
 
 // nullableNumber makes a number a pointer when we want to distinguish the zero value from no value set.
@@ -556,44 +563,73 @@ func nullableNumber(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
 	}
-	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	hasNonZeroDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+	isZeroValid := validate.AgainstSchema(schema, 0, strfmt.Default) == nil
 
-	isMin := schema.Minimum != nil && (*schema.Minimum != 0 || schema.ExclusiveMinimum)
-	bcMin := schema.Minimum != nil && *schema.Minimum == 0 && !schema.ExclusiveMinimum
-	isMax := schema.Minimum == nil && (schema.Maximum != nil && (*schema.Maximum != 0 || schema.ExclusiveMaximum))
-	bcMax := schema.Maximum != nil && *schema.Maximum == 0 && !schema.ExclusiveMaximum
-	isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < *schema.Maximum)
-	bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
+	/*
+		isMin := schema.Minimum != nil && (*schema.Minimum != 0 || schema.ExclusiveMinimum)
+		bcMin := schema.Minimum != nil && *schema.Minimum == 0 && !schema.ExclusiveMinimum
+		isMax := schema.Minimum == nil && (schema.Maximum != nil && (*schema.Maximum != 0 || schema.ExclusiveMaximum))
+		bcMax := schema.Maximum != nil && *schema.Maximum == 0 && !schema.ExclusiveMaximum
+		isMinMax := (schema.Minimum != nil && schema.Maximum != nil && *schema.Minimum < *schema.Maximum)
+		bcMinMax := (schema.Minimum != nil && schema.Maximum != nil && (*schema.Minimum < 0 && 0 < *schema.Maximum))
 
-	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !(isMin || isMax || isMinMax)) || bcMin || bcMax || bcMinMax)
-	return nullable
+		nullable := !schema.ReadOnly && (isRequired || (hasNonZeroDefault && !(isMin || isMax || isMinMax)) || bcMin || bcMax || bcMinMax)
+		return nullable
+	*/
+	return !schema.ReadOnly && isZeroValid && (isRequired || hasNonZeroDefault)
 }
 
 // nullableString makes a string nullable when we want to distinguish the zero value from no value set.
 // This is the case when:
-// - a x-nullable extension says so in the spec
-// - it is **not** a read-only property
-// - it is a required property
-// - it has a MinLength property set to 0
-// - it has a default other than "" (the zero for strings) and no MinLength or zero MinLength
+//   - a x-nullable extension says so in the spec
+//   - it is **not** a read-only property
+//   - it is a required property
+//   - it has a MinLength property set to 0
+//   - it has a default other than "" (the zero for strings) and no MinLength or zero MinLength
+//
+// There is an optimization on pointer usage:
+//   - if the zero value is not a valid one, "required" does not make the attribute a pointer
 func nullableString(schema *spec.Schema, isRequired bool) bool {
 	if nullable := nullableExtension(schema.Extensions); nullable != nil {
 		return *nullable
 	}
-	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
-	isMin := schema.MinLength != nil && *schema.MinLength != 0
-	bcMin := schema.MinLength != nil && *schema.MinLength == 0
+	// TODO: invalid spec case: default && required || read-only && default
 
-	nullable := !schema.ReadOnly && (isRequired || (hasDefault && !isMin) || bcMin)
-	return nullable
+	hasNonZeroDefault := schema.Default != nil && !swag.IsZero(schema.Default)
+
+	// TODO: does this work for enum: [ null ]?
+	isZeroValid := validate.AgainstSchema(schema, "", strfmt.Default) == nil
+
+	/*
+		// DEBUG
+		isMin := schema.MinLength != nil && *schema.MinLength != 0
+		bcMin := schema.MinLength != nil && *schema.MinLength == 0
+		wasNullable := !schema.ReadOnly && (isRequired || (hasNonZeroDefault && !isMin) || bcMin)
+
+		nullable := !schema.ReadOnly && // a readOnly schema is never nullable
+			isZeroValid && // when zero value is not valid, the attribute is implicitly required and different than zero: no pointer
+			(isRequired || // required must distinguish valid zero value from unset: this is rendered with pointer
+				hasNonZeroDefault) // must distinguish default vs unset (debatable...): rendered with pointer
+
+		if nullable != wasNullable {
+			log.Printf("YAY for required=%t", isRequired)
+			log.Printf("YAY nullable=%t, wasNullable=%t", nullable, wasNullable)
+			bbb, _ := json.MarshalIndent(schema, "", " ")
+			log.Printf("%s", string(bbb))
+		}
+		return nullable
+	*/
+	return !schema.ReadOnly && isZeroValid && (isRequired || hasNonZeroDefault)
 }
 
 func nullableStrfmt(schema *spec.Schema, isRequired bool) bool {
 	notBinary := schema.Format != binary
-	if nullable := nullableExtension(schema.Extensions); nullable != nil && notBinary {
+	if nullable := nullableExtension(schema.Extensions); notBinary && nullable != nil {
 		return *nullable
 	}
+
 	hasDefault := schema.Default != nil && !swag.IsZero(schema.Default)
 
 	nullable := !schema.ReadOnly && (isRequired || hasDefault)
