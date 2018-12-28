@@ -1,0 +1,60 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "tag name conflict",
+    "version": "0.0.1",
+    "description": "repro issue 1683",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "paths": {
+    "/projects": {
+      "get": {
+        "summary": "List Project",
+        "operationId": "findProjects",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/parameters/page"
+          },
+          {
+            "$ref": "#/parameters/size"
+          }
+        ]
+      }
+    }
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "parameters": {
+    "page": {
+      "in": "query",
+      "type": "integer",
+      "name": "Page number",
+      "format": "int32",
+      "default": 1,
+      "description": "Page number for queries",
+      "minimum": 1
+    },
+    "size": {
+      "name": "Page size",
+      "in": "query",
+      "type": "integer",
+      "description": "Page size",
+      "format": "int32",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10
+    }
+  }
+}
