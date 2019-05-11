@@ -1,0 +1,68 @@
+swagger: "2.0"
+consumes:
+- application/json
+info:
+  description: A silly time-of-day
+  title: Timeofday
+  version: 0.1.0
+produces:
+- application/json
+schemes:
+- http
+basePath: /timeofday/v1
+paths:
+  /time:
+    get:
+      operationId: "GetTime"
+      parameters:
+        - in: query
+          name: timezone
+          description: "Timezone to return"
+          required: false
+          type: string  
+            
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: "#/definitions/TimeOfDay"
+        404:
+          description: ""
+          schema:
+            $ref: "#/definitions/NotFound"
+    post:
+      operationId: "PostTime"
+      parameters:
+        - in: body
+          name: Timezone
+          schema:
+            $ref: "#/definitions/Timezone"
+      responses:
+        200:
+          description: ""
+          schema:
+            $ref: "#/definitions/TimeOfDay"
+        404:
+          description: ""
+          schema:
+            $ref: "#/definitions/NotFound"
+definitions:
+  NotFound:
+    type: object
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+  Timezone:
+    type: object
+    properties:
+      timezone:
+        type: string
+        minLength: 3
+  TimeOfDay:
+    type: object
+    properties:
+      timeOfDay: 
+        type: string
+            

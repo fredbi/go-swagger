@@ -1,0 +1,592 @@
+2019/02/11 09:55:56 
+The swagger spec at "fixture-1874.json" showed up some valid but possibly unwanted constructs.
+2019/02/11 09:55:56 See warnings below:
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/deleted_alipay_account" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/deleted_bank_account" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/rule" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/recipient_transfer" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/reserve_transaction" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/deleted_card" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/deleted_bitcoin_receiver" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/application" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/connect_collection_transfer" is not used anywhere
+2019/02/11 09:55:56 - WARNING: definition "#/definitions/payment_method" is not used anywhere
+
+The swagger spec at "fixture-1874.json" is invalid against swagger specification 2.0.
+See errors below:
+- "paths./v1/sources/{source}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sources/{source}.get.parameters is required
+- paths./v1/sources/{source}.get.parameters.in in body should be one of [header]
+- "paths./v1/topups.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/topups.get.parameters is required
+- paths./v1/topups.get.parameters.in in body should be one of [header]
+- "paths./v1/orders/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/orders/{id}.get.parameters is required
+- paths./v1/orders/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/reporting/report_types/{report_type}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reporting/report_types/{report_type}.get.parameters is required
+- paths./v1/reporting/report_types/{report_type}.get.parameters.in in body should be one of [header]
+- "paths./v1/subscription_items/{subscription_item}/usage_record_summaries.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/subscription_items/{subscription_item}/usage_record_summaries.get.parameters is required
+- paths./v1/subscription_items/{subscription_item}/usage_record_summaries.get.parameters.in in body should be one of [header]
+- "paths./v1/account/people.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/people.get.parameters is required
+- paths./v1/account/people.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/persons/{person}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/persons/{person}.get.parameters is required
+- paths./v1/accounts/{account}/persons/{person}.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices/upcoming/lines.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoices/upcoming/lines.get.parameters is required
+- paths./v1/invoices/upcoming/lines.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cards/{card}/pin.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cards/{card}/pin.get.parameters is required
+- paths./v1/issuing/cards/{card}/pin.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/disputes.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/disputes.get.parameters is required
+- paths./v1/issuing/disputes.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/transactions/{transaction}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/transactions/{transaction}.get.parameters is required
+- paths./v1/issuing/transactions/{transaction}.get.parameters.in in body should be one of [header]
+- "paths./v1/reviews.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reviews.get.parameters is required
+- paths./v1/reviews.get.parameters.in in body should be one of [header]
+- "paths./v1/transfers/{transfer}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/transfers/{transfer}.get.parameters is required
+- paths./v1/transfers/{transfer}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/external_accounts/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/external_accounts/{id}.get.parameters is required
+- paths./v1/accounts/{account}/external_accounts/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/application_fees/{id}/refunds.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/application_fees/{id}/refunds.get.parameters is required
+- paths./v1/application_fees/{id}/refunds.get.parameters.in in body should be one of [header]
+- "paths./v1/orders.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/orders.get.parameters is required
+- paths./v1/orders.get.parameters.in in body should be one of [header]
+- "paths./v1/radar/value_lists.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/radar/value_lists.get.parameters is required
+- paths./v1/radar/value_lists.get.parameters.in in body should be one of [header]
+- "paths./v1/account.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account.get.parameters is required
+- paths./v1/account.get.parameters.in in body should be one of [header]
+- "paths./v1/account.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/account.post.parameters.schema.properties.legal_entity.properties.additional_owners is required
+- "paths./v1/accounts.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts.get.parameters is required
+- paths./v1/accounts.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/accounts.post.parameters.schema.properties.legal_entity.properties.additional_owners is required
+- "paths./v1/apple_pay/domains/{domain}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/apple_pay/domains/{domain}.get.parameters is required
+- paths./v1/apple_pay/domains/{domain}.get.parameters.in in body should be one of [header]
+- "paths./v1/application_fees/{fee}/refunds/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/application_fees/{fee}/refunds/{id}.get.parameters is required
+- paths./v1/application_fees/{fee}/refunds/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/invoiceitems/{invoiceitem}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoiceitems/{invoiceitem}.get.parameters is required
+- paths./v1/invoiceitems/{invoiceitem}.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/bank_accounts.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/bank_accounts.get.parameters is required
+- paths./v1/customers/{customer}/bank_accounts.get.parameters.in in body should be one of [header]
+- "paths./v1/exchange_rates.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/exchange_rates.get.parameters is required
+- paths./v1/exchange_rates.get.parameters.in in body should be one of [header]
+- "paths./v1/payment_intents/{intent}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/payment_intents/{intent}.get.parameters is required
+- paths./v1/payment_intents/{intent}.get.parameters.in in body should be one of [header]
+- "paths./v1/application_fees.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/application_fees.get.parameters is required
+- paths./v1/application_fees.get.parameters.in in body should be one of [header]
+- "paths./v1/country_specs/{country}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/country_specs/{country}.get.parameters is required
+- paths./v1/country_specs/{country}.get.parameters.in in body should be one of [header]
+- "paths./v1/customers.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers.get.parameters is required
+- paths./v1/customers.get.parameters.in in body should be one of [header]
+- "paths./v1/customers.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/customers.post.parameters.schema.properties.invoice_settings.properties.custom_fields is required
+- "paths./v1/plans.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/plans.get.parameters is required
+- paths./v1/plans.get.parameters.in in body should be one of [header]
+- "paths./v1/products/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/products/{id}.get.parameters is required
+- paths./v1/products/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/reviews/{review}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reviews/{review}.get.parameters is required
+- paths./v1/reviews/{review}.get.parameters.in in body should be one of [header]
+- "paths./v1/subscriptions/{subscription_exposed_id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/subscriptions/{subscription_exposed_id}.get.parameters is required
+- paths./v1/subscriptions/{subscription_exposed_id}.get.parameters.in in body should be one of [header]
+- "paths./v1/subscription_items/{item}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/subscription_items/{item}.get.parameters is required
+- paths./v1/subscription_items/{item}.get.parameters.in in body should be one of [header]
+- "paths./v1/transfers/{id}/reversals.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/transfers/{id}/reversals.get.parameters is required
+- paths./v1/transfers/{id}/reversals.get.parameters.in in body should be one of [header]
+- "paths./v1/files/{file}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/files/{file}.get.parameters is required
+- paths./v1/files/{file}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cards/{card}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cards/{card}.get.parameters is required
+- paths./v1/issuing/cards/{card}.get.parameters.in in body should be one of [header]
+- "paths./v1/order_returns.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/order_returns.get.parameters is required
+- paths./v1/order_returns.get.parameters.in in body should be one of [header]
+- "paths./v1/order_returns/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/order_returns/{id}.get.parameters is required
+- paths./v1/order_returns/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/orders/{id}/returns.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/orders/{id}/returns.post.parameters.schema.properties.items is required
+- "paths./v1/payouts.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/payouts.get.parameters is required
+- paths./v1/payouts.get.parameters.in in body should be one of [header]
+- "paths./v1/subscriptions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/subscriptions.get.parameters is required
+- paths./v1/subscriptions.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/discount.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/discount.get.parameters is required
+- paths./v1/customers/{customer}/discount.get.parameters.in in body should be one of [header]
+- "paths./v1/issuer_fraud_records.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuer_fraud_records.get.parameters is required
+- paths./v1/issuer_fraud_records.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/authorizations.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/authorizations.get.parameters is required
+- paths./v1/issuing/authorizations.get.parameters.in in body should be one of [header]
+- "paths./v1/charges/{charge}/refunds/{refund}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/charges/{charge}/refunds/{refund}.get.parameters is required
+- paths./v1/charges/{charge}/refunds/{refund}.get.parameters.in in body should be one of [header]
+- "paths./v1/radar/value_lists/{value_list}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/radar/value_lists/{value_list}.get.parameters is required
+- paths./v1/radar/value_lists/{value_list}.get.parameters.in in body should be one of [header]
+- "paths./v1/terminal/locations/{location}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/terminal/locations/{location}.get.parameters is required
+- paths./v1/terminal/locations/{location}.get.parameters.in in body should be one of [header]
+- "paths./v1/topups/{topup}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/topups/{topup}.get.parameters is required
+- paths./v1/topups/{topup}.get.parameters.in in body should be one of [header]
+- "paths./v1/account/persons/{person}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/persons/{person}.get.parameters is required
+- paths./v1/account/persons/{person}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cardholders.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cardholders.get.parameters is required
+- paths./v1/issuing/cardholders.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cards.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cards.get.parameters is required
+- paths./v1/issuing/cards.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cards/{card}/details.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cards/{card}/details.get.parameters is required
+- paths./v1/issuing/cards/{card}/details.get.parameters.in in body should be one of [header]
+- "paths./v1/skus.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/skus.get.parameters is required
+- paths./v1/skus.get.parameters.in in body should be one of [header]
+- "paths./v1/account/bank_accounts/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/bank_accounts/{id}.get.parameters is required
+- paths./v1/account/bank_accounts/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/bank_accounts/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/bank_accounts/{id}.get.parameters is required
+- paths./v1/accounts/{account}/bank_accounts/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/charges/{charge}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/charges/{charge}.get.parameters is required
+- paths./v1/charges/{charge}.get.parameters.in in body should be one of [header]
+- "paths./v1/files.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/files.get.parameters is required
+- paths./v1/files.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices/upcoming.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoices/upcoming.get.parameters is required
+- paths./v1/invoices/upcoming.get.parameters.in in body should be one of [header]
+- "paths./v1/sigma/scheduled_query_runs.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sigma/scheduled_query_runs.get.parameters is required
+- paths./v1/sigma/scheduled_query_runs.get.parameters.in in body should be one of [header]
+- "paths./v1/transfers.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/transfers.get.parameters is required
+- paths./v1/transfers.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/customers/{customer}.post.parameters.schema.properties.invoice_settings.properties.custom_fields is required
+- "paths./v1/customers/{customer}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}.get.parameters is required
+- paths./v1/customers/{customer}.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/cards.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/cards.get.parameters is required
+- paths./v1/customers/{customer}/cards.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}.get.parameters is required
+- paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}.get.parameters.in in body should be one of [header]
+- "paths./v1/disputes/{dispute}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/disputes/{dispute}.get.parameters is required
+- paths./v1/disputes/{dispute}.get.parameters.in in body should be one of [header]
+- "paths./v1/file_links.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/file_links.get.parameters is required
+- paths./v1/file_links.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/disputes/{dispute}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/disputes/{dispute}.get.parameters is required
+- paths./v1/issuing/disputes/{dispute}.get.parameters.in in body should be one of [header]
+- "paths./v1/apple_pay/domains.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/apple_pay/domains.get.parameters is required
+- paths./v1/apple_pay/domains.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/bank_accounts/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/bank_accounts/{id}.get.parameters is required
+- paths./v1/customers/{customer}/bank_accounts/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/settlements.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/settlements.get.parameters is required
+- paths./v1/issuing/settlements.get.parameters.in in body should be one of [header]
+- "paths./v1/transfers/{transfer}/reversals/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/transfers/{transfer}/reversals/{id}.get.parameters is required
+- paths./v1/transfers/{transfer}/reversals/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/disputes.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/disputes.get.parameters is required
+- paths./v1/disputes.get.parameters.in in body should be one of [header]
+- "paths./v1/invoiceitems.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoiceitems.get.parameters is required
+- paths./v1/invoiceitems.get.parameters.in in body should be one of [header]
+- "paths./v1/account/external_accounts/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/external_accounts/{id}.get.parameters is required
+- paths./v1/account/external_accounts/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/persons.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/persons.get.parameters is required
+- paths./v1/accounts/{account}/persons.get.parameters.in in body should be one of [header]
+- "paths./v1/bitcoin/transactions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/bitcoin/transactions.get.parameters is required
+- paths./v1/bitcoin/transactions.get.parameters.in in body should be one of [header]
+- "paths./v1/charges/{charge}/refunds.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/charges/{charge}/refunds.get.parameters is required
+- paths./v1/charges/{charge}/refunds.get.parameters.in in body should be one of [header]
+- "paths./v1/refunds.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/refunds.get.parameters is required
+- paths./v1/refunds.get.parameters.in in body should be one of [header]
+- "paths./v1/skus/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/skus/{id}.get.parameters is required
+- paths./v1/skus/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/terminal/readers.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/terminal/readers.get.parameters is required
+- paths./v1/terminal/readers.get.parameters.in in body should be one of [header]
+- "paths./v1/terminal/locations.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/terminal/locations.get.parameters is required
+- paths./v1/terminal/locations.get.parameters.in in body should be one of [header]
+- "paths./v1/balance.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/balance.get.parameters is required
+- paths./v1/balance.get.parameters.in in body should be one of [header]
+- "paths./v1/events/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/events/{id}.get.parameters is required
+- paths./v1/events/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/cardholders/{cardholder}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/cardholders/{cardholder}.get.parameters is required
+- paths./v1/issuing/cardholders/{cardholder}.get.parameters.in in body should be one of [header]
+- "paths./v1/reporting/report_runs/{report_run}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reporting/report_runs/{report_run}.get.parameters is required
+- paths./v1/reporting/report_runs/{report_run}.get.parameters.in in body should be one of [header]
+- "paths./v1/bitcoin/receivers.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/bitcoin/receivers.get.parameters is required
+- paths./v1/bitcoin/receivers.get.parameters.in in body should be one of [header]
+- "paths./v1/exchange_rates/{currency}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/exchange_rates/{currency}.get.parameters is required
+- paths./v1/exchange_rates/{currency}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/authorizations/{authorization}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/authorizations/{authorization}.get.parameters is required
+- paths./v1/issuing/authorizations/{authorization}.get.parameters.in in body should be one of [header]
+- "paths./v1/issuing/settlements/{settlement}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/settlements/{settlement}.get.parameters is required
+- paths./v1/issuing/settlements/{settlement}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/people.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/people.get.parameters is required
+- paths./v1/accounts/{account}/people.get.parameters.in in body should be one of [header]
+- "paths./v1/account/people/{person}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/people/{person}.get.parameters is required
+- paths./v1/account/people/{person}.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/cards/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/cards/{id}.get.parameters is required
+- paths./v1/customers/{customer}/cards/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/sources/{source}/mandate_notifications/{mandate_notification}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sources/{source}/mandate_notifications/{mandate_notification}.get.parameters is required
+- paths./v1/sources/{source}/mandate_notifications/{mandate_notification}.get.parameters.in in body should be one of [header]
+- "paths./v1/subscription_items.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/subscription_items.get.parameters is required
+- paths./v1/subscription_items.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/people/{person}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/people/{person}.get.parameters is required
+- paths./v1/accounts/{account}/people/{person}.get.parameters.in in body should be one of [header]
+- "paths./v1/balance/history.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/balance/history.get.parameters is required
+- paths./v1/balance/history.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/invoices.post.parameters.schema.properties.custom_fields is required
+- "paths./v1/invoices.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoices.get.parameters is required
+- paths./v1/invoices.get.parameters.in in body should be one of [header]
+- "paths./v1/payment_intents.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/payment_intents.get.parameters is required
+- paths./v1/payment_intents.get.parameters.in in body should be one of [header]
+- "paths./v1/sigma/scheduled_query_runs/{scheduled_query_run}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sigma/scheduled_query_runs/{scheduled_query_run}.get.parameters is required
+- paths./v1/sigma/scheduled_query_runs/{scheduled_query_run}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/accounts/{account}.post.parameters.schema.properties.legal_entity.properties.additional_owners is required
+- "paths./v1/accounts/{account}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}.get.parameters is required
+- paths./v1/accounts/{account}.get.parameters.in in body should be one of [header]
+- "paths./v1/charges.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/charges.get.parameters is required
+- paths./v1/charges.get.parameters.in in body should be one of [header]
+- "paths./v1/reporting/report_types.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reporting/report_types.get.parameters is required
+- paths./v1/reporting/report_types.get.parameters.in in body should be one of [header]
+- "paths./v1/bitcoin/receivers/{receiver}/transactions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/bitcoin/receivers/{receiver}/transactions.get.parameters is required
+- paths./v1/bitcoin/receivers/{receiver}/transactions.get.parameters.in in body should be one of [header]
+- "paths./v1/charges/{charge}/dispute.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/charges/{charge}/dispute.get.parameters is required
+- paths./v1/charges/{charge}/dispute.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount.get.parameters is required
+- paths./v1/customers/{customer}/subscriptions/{subscription_exposed_id}/discount.get.parameters.in in body should be one of [header]
+- "paths./v1/plans/{plan}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/plans/{plan}.get.parameters is required
+- paths./v1/plans/{plan}.get.parameters.in in body should be one of [header]
+- "paths./v1/balance/history/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/balance/history/{id}.get.parameters is required
+- paths./v1/balance/history/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/webhook_endpoints/{webhook_endpoint}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/webhook_endpoints/{webhook_endpoint}.get.parameters is required
+- paths./v1/webhook_endpoints/{webhook_endpoint}.get.parameters.in in body should be one of [header]
+- "paths./v1/bitcoin/receivers/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/bitcoin/receivers/{id}.get.parameters is required
+- paths./v1/bitcoin/receivers/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/file_links/{link}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/file_links/{link}.get.parameters is required
+- paths./v1/file_links/{link}.get.parameters.in in body should be one of [header]
+- "paths./v1/payouts/{payout}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/payouts/{payout}.get.parameters is required
+- paths./v1/payouts/{payout}.get.parameters.in in body should be one of [header]
+- "paths./v1/sources/{source}/source_transactions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sources/{source}/source_transactions.get.parameters is required
+- paths./v1/sources/{source}/source_transactions.get.parameters.in in body should be one of [header]
+- "paths./v1/radar/value_list_items.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/radar/value_list_items.get.parameters is required
+- paths./v1/radar/value_list_items.get.parameters.in in body should be one of [header]
+- "paths./v1/radar/value_list_items/{item}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/radar/value_list_items/{item}.get.parameters is required
+- paths./v1/radar/value_list_items/{item}.get.parameters.in in body should be one of [header]
+- "paths./v1/accounts/{account}/external_accounts.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/accounts/{account}/external_accounts.get.parameters is required
+- paths./v1/accounts/{account}/external_accounts.get.parameters.in in body should be one of [header]
+- "paths./v1/coupons.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/coupons.get.parameters is required
+- paths./v1/coupons.get.parameters.in in body should be one of [header]
+- "paths./v1/coupons/{coupon}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/coupons/{coupon}.get.parameters is required
+- paths./v1/coupons/{coupon}.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/subscriptions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/subscriptions.get.parameters is required
+- paths./v1/customers/{customer}/subscriptions.get.parameters.in in body should be one of [header]
+- "paths./v1/tokens.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/tokens.post.parameters.schema.properties.account.properties.legal_entity.properties.additional_owners is required
+- "paths./v1/account/persons.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/persons.get.parameters is required
+- paths./v1/account/persons.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/sources/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/sources/{id}.get.parameters is required
+- paths./v1/customers/{customer}/sources/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/events.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/events.get.parameters is required
+- paths./v1/events.get.parameters.in in body should be one of [header]
+- "paths./v1/issuer_fraud_records/{issuer_fraud_record}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuer_fraud_records/{issuer_fraud_record}.get.parameters is required
+- paths./v1/issuer_fraud_records/{issuer_fraud_record}.get.parameters.in in body should be one of [header]
+- "paths./v1/application_fees/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/application_fees/{id}.get.parameters is required
+- paths./v1/application_fees/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/reporting/report_runs.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/reporting/report_runs.get.parameters is required
+- paths./v1/reporting/report_runs.get.parameters.in in body should be one of [header]
+- "paths./v1/customers/{customer}/sources.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/customers/{customer}/sources.get.parameters is required
+- paths./v1/customers/{customer}/sources.get.parameters.in in body should be one of [header]
+- "paths./v1/sources/{source}/source_transactions/{source_transaction}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/sources/{source}/source_transactions/{source_transaction}.get.parameters is required
+- paths./v1/sources/{source}/source_transactions/{source_transaction}.get.parameters.in in body should be one of [header]
+- "paths./v1/refunds/{refund}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/refunds/{refund}.get.parameters is required
+- paths./v1/refunds/{refund}.get.parameters.in in body should be one of [header]
+- "paths./v1/webhook_endpoints.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/webhook_endpoints.get.parameters is required
+- paths./v1/webhook_endpoints.get.parameters.in in body should be one of [header]
+- "paths./v1/3d_secure/{three_d_secure}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/3d_secure/{three_d_secure}.get.parameters is required
+- paths./v1/3d_secure/{three_d_secure}.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices/{invoice}/lines.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoices/{invoice}/lines.get.parameters is required
+- paths./v1/invoices/{invoice}/lines.get.parameters.in in body should be one of [header]
+- "paths./v1/recipients.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/recipients.get.parameters is required
+- paths./v1/recipients.get.parameters.in in body should be one of [header]
+- "paths./v1/terminal/readers/{reader}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/terminal/readers/{reader}.get.parameters is required
+- paths./v1/terminal/readers/{reader}.get.parameters.in in body should be one of [header]
+- "paths./v1/tokens/{token}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/tokens/{token}.get.parameters is required
+- paths./v1/tokens/{token}.get.parameters.in in body should be one of [header]
+- "paths./v1/products.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/products.get.parameters is required
+- paths./v1/products.get.parameters.in in body should be one of [header]
+- "paths./v1/recipients/{id}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/recipients/{id}.get.parameters is required
+- paths./v1/recipients/{id}.get.parameters.in in body should be one of [header]
+- "paths./v1/account/external_accounts.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/account/external_accounts.get.parameters is required
+- paths./v1/account/external_accounts.get.parameters.in in body should be one of [header]
+- "paths./v1/country_specs.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/country_specs.get.parameters is required
+- paths./v1/country_specs.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices/{invoice}.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/invoices/{invoice}.get.parameters is required
+- paths./v1/invoices/{invoice}.get.parameters.in in body should be one of [header]
+- "paths./v1/invoices/{invoice}.post.parameters" must validate one and only one schema (oneOf). Found none valid
+- type in paths./v1/invoices/{invoice}.post.parameters.schema.properties.custom_fields is required
+- "paths./v1/issuing/transactions.get.parameters" must validate one and only one schema (oneOf). Found none valid
+- items in paths./v1/issuing/transactions.get.parameters is required
+- paths./v1/issuing/transactions.get.parameters.in in body should be one of [header]
+- param "expand" for "GetAccounts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetOrderReturnsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCoupons" is a collection without an element type (array requires item definition)
+- param "expand" for "GetDisputes" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRecipients" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRadarValueLists" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRadarValueListItems" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSubscriptions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountPersonsPerson" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerDiscount" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoiceitemsInvoiceitem" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTerminalLocationsLocation" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountPersons" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTerminalReaders" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingSettlementsSettlement" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBitcoinReceivers" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountPeople" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBitcoinReceiversReceiverTransactions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSubscriptionItemsItem" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountPersonsPerson" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRadarValueListItemsItem" is a collection without an element type (array requires item definition)
+- param "expand" for "GetChargesChargeRefunds" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSourcesSource" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPaymentIntentsIntent" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountExternalAccounts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplicationFeesIdRefunds" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPayouts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCouponsCoupon" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSigmaScheduledQueryRuns" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplicationFeesId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingSettlements" is a collection without an element type (array requires item definition)
+- param "expand" for "GetDisputesDispute" is a collection without an element type (array requires item definition)
+- param "expand" for "GetEventsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetChargesChargeDispute" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountBankAccountsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuerFraudRecordsIssuerFraudRecord" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCountrySpecsCountry" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSubscriptionItems" is a collection without an element type (array requires item definition)
+- param "expand" for "GetOrderReturns" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoicesInvoiceLines" is a collection without an element type (array requires item definition)
+- param "expand" for "GetOrders" is a collection without an element type (array requires item definition)
+- param "ids" for "GetOrders" is a collection without an element type (array requires item definition)
+- param "upstream_ids" for "GetOrders" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCountrySpecs" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountPeople" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplicationFeesFeeRefundsId" is a collection without an element type (array requires item definition)
+- param "ids" for "GetProducts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetProducts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTopups" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerSubscriptionsSubscriptionExposedId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountPeoplePerson" is a collection without an element type (array requires item definition)
+- param "expand" for "GetFileLinksLink" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerSourcesId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBalanceHistory" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerCardsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetChargesCharge" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRefundsRefund" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReportingReportRuns" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReportingReportTypes" is a collection without an element type (array requires item definition)
+- param "expand" for "GetChargesChargeRefundsRefund" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerBankAccountsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSourcesSourceSourceTransactions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerSources" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSigmaScheduledQueryRunsScheduledQueryRun" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSubscriptionItemsSubscriptionItemUsageRecordSummaries" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSkusId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetFileLinks" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplePayDomains" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerSubscriptionsSubscriptionExposedIdDiscount" is a collection without an element type (array requires item definition)
+- param "expand" for "GetOrdersId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetFiles" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSourcesSourceMandateNotificationsMandateNotification" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCards" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPlansPlan" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingAuthorizationsAuthorization" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCardsCardDetails" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerSubscriptions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSourcesSourceSourceTransactionsSourceTransaction" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReviews" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPlans" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCardsCardPin" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuerFraudRecords" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTokensToken" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTransfersTransfer" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoices" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerBankAccounts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTerminalLocations" is a collection without an element type (array requires item definition)
+- param "expand" for "GetExchangeRates" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountExternalAccounts" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingDisputes" is a collection without an element type (array requires item definition)
+- param "expand" for "GetWebhookEndpointsWebhookEndpoint" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPaymentIntents" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBalance" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoicesUpcoming" is a collection without an element type (array requires item definition)
+- param "subscription_items" for "GetInvoicesUpcoming" is a collection without an element type (array requires item definition)
+- param "invoice_items" for "GetInvoicesUpcoming" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplicationFees" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingTransactions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccount" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBitcoinTransactions" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTransfersTransferReversalsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomers" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingAuthorizations" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSubscriptionsSubscriptionExposedId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCardholders" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTransfersIdReversals" is a collection without an element type (array requires item definition)
+- param "expand" for "GetFilesFile" is a collection without an element type (array requires item definition)
+- param "expand" for "GetSkus" is a collection without an element type (array requires item definition)
+- param "ids" for "GetSkus" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountPeoplePerson" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomerCards" is a collection without an element type (array requires item definition)
+- param "expand" for "Get3dSecureThreeDSecure" is a collection without an element type (array requires item definition)
+- param "expand" for "GetPayoutsPayout" is a collection without an element type (array requires item definition)
+- param "types" for "GetEvents" is a collection without an element type (array requires item definition)
+- param "expand" for "GetEvents" is a collection without an element type (array requires item definition)
+- param "expand" for "GetWebhookEndpoints" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCharges" is a collection without an element type (array requires item definition)
+- param "expand" for "GetApplePayDomainsDomain" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReviewsReview" is a collection without an element type (array requires item definition)
+- param "expand" for "GetProductsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccount" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountExternalAccountsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRadarValueListsValueList" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingTransactionsTransaction" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTransfers" is a collection without an element type (array requires item definition)
+- param "expand" for "GetExchangeRatesCurrency" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountPersons" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBitcoinReceiversId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountBankAccountsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCardholdersCardholder" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoicesInvoice" is a collection without an element type (array requires item definition)
+- param "expand" for "GetCustomersCustomer" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRecipientsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTerminalReadersReader" is a collection without an element type (array requires item definition)
+- param "expand" for "GetRefunds" is a collection without an element type (array requires item definition)
+- param "expand" for "GetBalanceHistoryId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingDisputesDispute" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReportingReportRunsReportRun" is a collection without an element type (array requires item definition)
+- param "expand" for "GetReportingReportTypesReportType" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoiceitems" is a collection without an element type (array requires item definition)
+- param "expand" for "GetAccountsAccountExternalAccountsId" is a collection without an element type (array requires item definition)
+- param "expand" for "GetInvoicesUpcomingLines" is a collection without an element type (array requires item definition)
+- param "invoice_items" for "GetInvoicesUpcomingLines" is a collection without an element type (array requires item definition)
+- param "subscription_items" for "GetInvoicesUpcomingLines" is a collection without an element type (array requires item definition)
+- param "expand" for "GetIssuingCardsCard" is a collection without an element type (array requires item definition)
+- param "expand" for "GetTopupsTopup" is a collection without an element type (array requires item definition)
+

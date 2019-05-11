@@ -1,0 +1,11 @@
+#
+# The go-swagger custom templates configuration to generate chaincode skeletons
+#
+layout:
+  application:
+    - name: configure
+      source:     "asset:serverConfigureapi"
+      target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}"
+      file_name:   "configure_{{ (snakize (pascalize .Name)) }}.go"
+      skip_exists: false
+      skip_format: false

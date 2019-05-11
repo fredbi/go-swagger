@@ -1,0 +1,108 @@
+swagger: '2.0'
+info:
+  description: server
+  title: server
+  version: '1.0'
+host: some.domain.com
+basePath: /
+schemes:
+  - http
+paths:
+  /file:
+    get:
+      produces:
+        - application/octet
+      parameters:
+        - description: Path of the file to extract.
+          in: query
+          name: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The desired file.
+          schema:
+            format: binary
+            type: string
+        '400':
+          description: Bad request. Path does not exist.
+        '401':
+          description: Authorization information is missing or invalid.
+        '500':
+          description: Internal server error.
+      tags:
+        - Files
+      description: Given a path retrieves a file in the massive storage.
+      summary: Retrieves a file from massive storage
+    post:
+      consumes:
+        - multipart/form-data
+      parameters:
+        - description: 'Binary '
+          format: binary
+          in: formData
+          name: fileName
+          type: string
+      responses:
+        '200':
+          description: File stored.
+        '400':
+          description: Bad request. Wrong file or path.
+        '401':
+          description: Authorization information is missing or invalid.
+        '500':
+          description: Internal server error.
+      tags:
+        - Files
+      description: >-
+        Receives binary data and a path and stores it into internal massive
+        storage.
+      summary: Insert a file on massive storage
+  /metadata:
+    get:
+      produces:
+        - text/plain
+      parameters:
+        - description: ' '
+          in: query
+          name: ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Request is succesful.
+          schema:
+            example: '{"id": 12345, "vendor": "Dell", ...}'
+            type: string
+      tags:
+        - Metadata
+      description: ' '
+      summary: Retrieves metadata element from DB.
+    post:
+      produces:
+        - text/plain
+      parameters:
+        - description: String with the data to insert.
+          in: query
+          name: data
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Request is succesful. Returns ID of inserted element.
+          schema:
+            example: 123456
+            type: integer
+      tags:
+        - Metadata
+      description: >-
+        Receives a JSON formatted string with the data to insert on the internal
+        DB.
+      summary: Inserts metadata into DB
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
+x-components: {}
+
