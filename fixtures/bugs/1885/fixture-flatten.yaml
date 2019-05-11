@@ -1,0 +1,56 @@
+swagger: "2.0"
+info:
+  description: test
+  title: test
+  version: 0.1.0
+paths:
+  /collections:
+    get:
+      description: test
+      produces:
+      - application/json
+      parameters:
+      - name: serverRequest
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/writeRequest'
+    post:
+      description: test
+      produces:
+      - application/json
+      parameters:
+      - name: serverRequest
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/baseRequest'
+      responses:
+        "200":
+          description: test
+          schema:
+            $ref: '#/definitions/response'
+definitions:
+  baseRequest:
+    type: object
+    properties:
+      '@type':
+        type: string
+    discriminator: '@type'
+  response:
+    type: object
+    properties:
+      test:
+        type: string
+  writeRequest:
+    type: object
+    allOf:
+    - type: object
+      properties:
+        '@type':
+          type: string
+      discriminator: '@type'
+    - type: object
+      properties:
+        test:
+          type: string

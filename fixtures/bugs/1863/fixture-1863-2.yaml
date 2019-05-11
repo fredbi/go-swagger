@@ -1,0 +1,177 @@
+swagger: '2.0'
+info:
+  description: server
+  title: server
+  version: '1.0'
+host: some.domain.com
+basePath: /
+schemes:
+  - http
+paths:
+  /file/{streamInPath}:
+    get:
+      produces:
+        - application/octet
+      parameters:
+        - description: a binary string as path param
+          in: path
+          name: streamInPath
+          required: true
+          type: string
+          format: binary
+      responses:
+        '200':
+          description: a binary string in header
+          headers:
+            X-Binary:
+              type: string
+              format: binary
+  /file:
+    get:
+      produces:
+        - application/octet
+      parameters:
+        - description: a binary string as query param
+          in: query
+          name: streamInQueryAllowEmpty
+          required: false
+          allowEmptyValue: true
+          type: string
+          format: binary
+        - description: a binary string as query param
+          in: query
+          name: streamInQueryEmptyNotAllowed
+          required: false
+          allowEmptyValue: false
+          type: string
+          format: binary
+        - description: a binary string as query param
+          in: query
+          name: streamInQueryRequired
+          required: true
+          type: string
+          format: binary
+      responses:
+        '200':
+          description: a file
+          schema:
+            type: file
+        '201':
+          description: a file with format
+          schema:
+            type: file
+            format: binary   # <- should be ignored
+        '203':
+          description: a binary string
+          schema:
+            type: string
+            format: binary
+        '400':
+          description: Bad request. Path does not exist.
+        '401':
+          description: Authorization information is missing or invalid.
+        '500':
+          description: Internal server error.
+      description: Given a path retrieves a file in the massive storage.
+      summary: Retrieves a file from massive storage
+    post:
+      consumes:
+        - multipart/form-data
+      parameters:
+        - description: a required file in formData
+          in: formData
+          name: someRequiredFile
+          type: file
+          required: true
+        - description: a non required file in formData
+          in: formData
+          name: someNonRequiredFile
+          type: file
+          required: false
+        - description: a byte string in formData
+          in: formData
+          name: someBytes
+          type: string
+          format: byte
+        - description: a required byte string in formData
+          in: formData
+          name: someRequiredBytes
+          type: string
+          format: byte
+          required: true
+        - description: a required binary string in formData
+          in: formData
+          name: someRequiredStream
+          type: string
+          format: binary
+          required: true
+        - description: a non required binary string in formData
+          in: formData
+          name: someNonRequiredStream
+          type: string
+          format: binary
+          required: false
+      responses:
+        '200':
+          description: File stored.
+        '400':
+          description: Bad request. Wrong file or path.
+        '401':
+          description: Authorization information is missing or invalid.
+        '500':
+          description: Internal server error.
+      description: >-
+        Receives binary data and a path and stores it into internal massive
+        storage.
+      summary: Insert a file on massive storage
+  /another-file:
+    post:
+      consumes:
+        - multipart/form-data
+      parameters:
+        - description: a required file in formData
+          in: formData
+          name: fileRequired
+          type: file
+          required: true
+          minLength: 1000
+          maxLength: 10000
+        - description: a non required file in formData
+          in: formData
+          name: fileNonRequired
+          type: file
+        - description: a nullable binary string in formData
+          in: formData
+          name: binaryNullableString
+          type: string
+          format: binary
+          x-nullable: true
+          minLength: 1000
+          maxLength: 10000
+      responses:
+        '200':
+          description: File stored.
+          schema:
+            type: string
+            format: binary
+        '201':
+          description: File stored.
+          schema:
+            type: object
+            properties:
+              thisProperty:
+                type: string
+              thisBinaryString:
+                type: string
+                format: binary
+                minLength: 100
+        '400':
+          description: Bad request. Wrong file or path.
+        '401':
+          description: Authorization information is missing or invalid.
+        '500':
+          description: Internal server error.
+      description: >-
+        Receives binary data and a path and stores it into internal massive
+        storage.
+      summary: Insert a file on massive storage

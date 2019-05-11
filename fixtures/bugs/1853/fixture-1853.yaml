@@ -1,0 +1,1893 @@
+swagger: "2.0"
+
+info:
+  description: Nutanix Insights REST API Services.
+  title: Nutanix Insights REST APIs
+  version: 1.0.0
+  contact:
+    email: nutanix-insights-dev@nutanix.com
+basePath: /api/nutanix/insights/v1
+host: insights.nutanix.com
+
+schemes:
+- http
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    in: header
+    name: authorization
+
+  X-Ntnx-Nusightsgui-Auth-Cookie:
+    type: apiKey
+    in: header
+    name: Cookie
+
+paths:
+
+  /remote_collection/capability/{cluster_uuid}/:
+    parameters:
+    - in: path
+      name: cluster_uuid
+      description: cluster uuid of the remote collection request
+      type: string
+      format: uuid
+      required: true
+    put:
+      summary: Enable or disable remote collection on a cluster.
+      description: Update remote collection capability on a cluster.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "put"]
+      operationId: update_remote_collection_capability_by_cluster_uuid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              enum : ["enabled", "disabled"]
+      responses:
+        200:
+          description: remote collection capability on cluster updated successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Remote collection capability on cluster updated successfully."
+        default:
+          description: Failed to update remote collection capability on cluster.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Failed to update remote collection capability on cluster due to Elastic search mapping error."
+
+  /remote_collection/capability/{cluster_uuid}/status:
+    parameters:
+    - in: path
+      name: cluster_uuid
+      description: cluster uuid of the remote collection request
+      type: string
+      format: uuid
+      required: true
+    get:
+      summary: Check remote collection capability for a cluster
+      description: Retrieve remote collection capability on a given cluster
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "get"]
+      operationId: get_remote_collection_capability_status
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Remote collection capability status for a cluster.
+          schema:
+            properties:
+              status:
+                type: string
+                enum: ["enabled", "disabled"]
+        default:
+          description: Failed to retrieve remote collection capability on a given cluster.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why GET remote collection capability failed."
+                example: "Unable to get remote collection capability on the cluster due to elastic search timeout."
+
+  /remote_collection/requests/file/{request_uuid}:
+    parameters:
+    - in: path
+      name: request_uuid
+      description: uuid of the remote collection request
+      type: string
+      format: uuid
+      required: true
+    get:
+      summary: Get remote collection request result tar file.
+      description: Fetch the resulting tar ball from remote  request.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "get"]
+      operationId: get_remote_collection_result_file
+      produces:
+      - application/zip
+      responses:
+        200:
+          description: Remote collection result tar.gz file.
+          schema:
+            type: file
+        default:
+          description: Failed to retrieve remote collection capability on a given cluster.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why fetch on Remote collection result file failed."
+                example: "Unable to get remote collection result file due to AFS server connection error."
+
+  /remote_collection/requests/{request_uuid}:
+    get:
+      summary: Get request details for a particular request.
+      description: Get remote collection request details by request_uuid.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "get"]
+      operationId: get_remote_collection_request_details_by_uuid
+      parameters:
+      - in: path
+        name: request_uuid
+        description: uuid of the remote collection request
+        type: string
+        format: uuid
+        required: true
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Remote collection request details.
+          schema:
+            $ref: '#/definitions/remote_collection_request_output'
+        default:
+          description: Failed to retrieve remote collection request info for the given request_uuid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why fetch on remote collection request details failed."
+                example: "Unable to get remote collection result details for the given request due to elastic search error."
+
+  /remote_collection/requests/sources:
+    get:
+      summary: Get list of sources for a remote collection request to be run on a cluster
+      description: Get remote collection request data sources.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      parameters:
+      - in: query
+        name: cluster_uuid
+        type: string
+        format: uuid
+        description: "uuid of the cluster."
+      - in: query
+        name: start_timestamp_ms
+        type: integer
+        format: int64
+        description: The start of timestamp in epoch ms range for the collection data source.
+      - in: query
+        name: end_timestamp_ms
+        type: integer
+        format: int64
+        description: The end of timestamp in epoch ms range for the collection data source.
+      tags: ["remote_collection", "get"]
+      operationId: get_remote_collection_request_sources
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Remote collection request details.
+          schema:
+            type: object
+            allOf:
+            - required: [source_list]
+              properties:
+                source_list:
+                  type: array
+                  description: |
+                    "Different types of remote collection requests."
+                  items:
+                    $ref: '#/definitions/remote_collection_request_source'
+                time_ranges:
+                  type: array
+                  description: "Time Ranges in milliseconds for low, medium impact calculation"
+                  items:
+                    type: integer
+                  example: [120000, 240000]
+                size_ranges:
+                  type: array
+                  description: "Size Ranges in bytes for low, medium impact calculation"
+                  items:
+                    type: integer
+                  example: [62914560, 104857600]
+
+        default:
+          description: Failed to retrieve sources for a remote collection request on a cluster.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why fetch on remote collection data sources failed."
+                example: "Unable to get remote collection data sources due to elastic search error."
+
+  /remote_collection/requests/{cluster_uuid}:
+    post:
+      summary: Send remote collection request to collect info from a cluster through Nutanix Insights.
+      description: |
+        Send a collection request on the remote cluster. The collection types include panacea logs, log collector files, triggering ncc checks.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "put"]
+      operationId: remote_collection_put_requests
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: cluster_uuid
+        description: cluster uuid of the remote collection request
+        type: string
+        format: uuid
+        required: true
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: ["request_list", "approval_info"]
+          properties:
+            request_list:
+              type: array
+              items:
+                $ref: '#/definitions/remote_collection_request_input'
+            user:
+              type: string
+              description: "User who triggered the remote request."
+              example: "john@nutanix.com"
+            approval_info:
+              $ref: '#/definitions/remote_collection_request_approval_info'
+
+      responses:
+        200:
+          description: Remote request successfully created.
+          schema:
+            type: object
+            allOf:
+            - required: [remote_request_list]
+              properties:
+                message:
+                  type: string
+                  description: "All Remote Collection Requests added Successfully."
+                  example: "All Remote Collection Requests added Successfully."
+                request_list:
+                  type: array
+                  description: |
+                    "Details of created requests."
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        description: type of the remote collection request
+                        example: "Log Collector"
+                      request_uuid:
+                        description:  uuid of the stored request.
+                        type: string
+                        pattern: '#/definitions/uuid_pattern'
+                        example: "72febb06-135f-4b35-6d19-4ce52b671720"
+                      status:
+                        description: status of the request.
+                        type: string
+                        example: "Pending"
+
+
+        default:
+          description: Failed to add one or more remote collection requests.
+          schema:
+            type: object
+            allOf:
+            - required: [remote_request_list]
+              properties:
+                message:
+                  type: string
+                  example: "Failed to add remote collection requests due to ES connection failure."
+                request_list:
+                  type: array
+                  description: |
+                    "Details of remote collection operation requests."
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        description: type of the remote collection request
+                        example: "Log Collector"
+                      status:
+                        description: status of the request.
+                        type: string
+                        example: "Failed"
+                      request_uuid:
+                        description:  uuid of the request if successful.
+                        type: string
+                        pattern: '#/definitions/uuid_pattern'
+                        example: "72febb06-135f-4b35-6d19-4ce52b671720"
+                      message:
+                        description: status of the request.
+                        type: string
+                        example: "Log collector request couldnt be added due to too many existing requests for the cluster."
+
+  /remote_collection/requests/list:
+    parameters:
+    - in: query
+      name: cluster_uuid
+      type: string
+      format: uuid
+      required: true
+      description: "uuid of the cluster."
+    - in: query
+      name: status
+      type: string
+      description: "The status of the request."
+    - in: query
+      name: offset
+      type: integer
+      default: 0
+      description: "The number of remote collection requests to skip before starting to collect the result set."
+    - in: query
+      name: count
+      type: integer
+      default : 20
+      maximum: 200
+      description: The numbers of remote collection requests to return.
+    - in: query
+      name: sort_attribute
+      type: string
+      description: "The attribute to sort the results."
+    - in: query
+      name: sort_order
+      type: string
+      enum: ['asc', 'desc']
+      default: 'desc'
+      description: "The sort order for requests if sort_attribute is specified"
+    - in: query
+      name: start_timestamp_ms
+      type: integer
+      description: The start of timestamp in epoch ms range when the request was issued.
+    - in: query
+      name: end_timestamp_ms
+      type: integer
+      description: The end of timestamp in epoch ms range when the request was issued.
+    get:
+      summary: Retrieve all remote collection requests.
+      description: Retrieve all remote collection requests sorted by created time in descending order.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["remote_collection", "get", "list"]
+      operationId: get_all_remote_requests.
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Remote collection requests from the offset specified.
+          schema:
+            type: object
+            allOf:
+            - required: [remote_collection_requests_list]
+              properties:
+                total_count:
+                  type: integer
+                  description: "Total number of remote collection requests present for the cluster."
+                  example: 10
+                offset:
+                  type: integer
+                  description: "The number of remote collection requests for the cluster that were  skipped before starting to collect the result set."
+                  example: 10
+                length:
+                  type: integer
+                  default : 10
+                  description: "The numbers of remote collection requests that were returned."
+                  example: 10
+                request_list:
+                  type: array
+                  description: "List of remote collection requests."
+                  items:
+                    $ref: '#/definitions/remote_collection_request_output'
+        default:
+          description: Failed to get the remote collection requests for the cluster.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get remote collection requests for the cluster failed."
+                example: "Get remote collection request failed since offset is invalid."
+  /file:
+    post:
+      summary: Put File into Nusights Data Pipeline.
+      description: |
+        Upload file from user vm(s) or CVM(s) into Nusights
+        pipeline. Additional file metadata can be passed as key,
+        value pairs in file headers. Currently only one file of max size
+        of 20MB per request is supported.
+      tags: ["files","put"]
+      operationId: fileupload
+      consumes:
+      - multipart/form-data
+      produces:
+      - application/json
+      parameters:
+      - name: service
+        type: string
+        in: formData
+        required: true
+        minLength: 1
+        maxLength: 32
+        description: |
+          Team or component that is uploading the file.
+          Each service that wants to upload would be assigned a
+          unique service  ID that would have to be used in this field.
+      - name: source
+        type: string
+        enum: [CLUSTER, UVM, TOOLS_VM]
+        in: formData
+        required: true
+        minLength: 1
+        maxLength: 32
+        description: Entity that is uploading the file, i.e cluster or node
+          or uvm
+      - name: namespace
+        type: string
+        in: formData
+        minLength: 1
+        maxLength: 32
+        required: true
+        description: Subcomponent of service that is uploading the file.
+      - name: file
+        type: file
+        in: formData
+        required: true
+        maxLength: 20971520  #20MB
+        description: File that is being uploaded.
+
+      responses:
+        200:
+          description: File Upload Successful.
+          schema:
+            type: object
+            allOf:
+            - required: [file_uuid]
+              properties:
+                file_uuid:
+                  description:  UUID of the uploaded file.
+                  type: string
+                  pattern: '#/definitions/uuid_pattern'
+                message:
+                  description: "File Upload Successful."
+                  type: string
+                  example: "File Upload Successful."
+        default:
+          description: File Upload Failed.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: |
+                  "Contains description as to why file upload failed."
+
+  /metrics/table:
+    post:
+      summary: Send table metrics to Nutanix Insights.
+      description: |
+        Send dimension fact table style metrics into Nutanix Insights
+        Data  Pipeline. It is required that values in each row begin
+        with the values for dimensions, followed by values for all
+        columns. The number of values for each data row should be equal
+        to the sum of number of dimensions and number of columns
+        specified in the API.
+      tags: ["metrics", "put"]
+      operationId: tablemetrics
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: ['table_name', 'timestamp_msecs',
+                     'dimension_list', 'column_list', 'row_list']
+          properties:
+            table_name:
+              type: string
+              description: 'Name of the fact table'
+              minLength: 1
+              maxLength: 128
+              example: "atlas_if_flow_stats"
+            timestamp_msecs:
+              type: integer
+              format: int64
+              description: |
+                Epoch Timestamp in millisecs for all the
+                metrics. Time has to be within last 2 weeks.
+              minimum: 946684800000 #01-01-2000:00:00:00
+              maximum: 1924991999000 #31-12-2030:23:59:59
+              example: 1508357497000
+            dimension_list:
+              type: array
+              minItems: 1
+              maxItems: 10
+              items:
+                type: string
+                maxLength: 32
+                description: |
+                  "Dimension columns for the table which are
+                  essentially primary keys."
+              example : ["source_vm_uuid", "dest_vm_uuid"]
+            column_list:
+              type: array
+              minItems: 1
+              maxItems: 1000
+              items:
+                type: string
+                maxLength: 32
+                description: |
+                  'Different metrics that need to updated in the fact table'
+              example: ["packets", "bytes", "protocol"]
+            row_list:
+              type: array
+              description: |
+                'Different rows of metrics where each row contains values for
+                 the metrics specified'
+              example: [[ "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+                          "zzzzzzzz-bbbb-cccc-dddd-eeeeeeeeeeee",
+                          20000,
+                          10000000000,
+                          "ospf"
+                        ],
+                        [ "fffffffff-bbbb-cccc-dddd-eeeeeeeeeeee",
+                          "Zzzzzzzz-bbbb-cccc-dddd-eeeeeeeeeeee",
+                          5000,
+                          100000.0,
+                          "ospf"
+                        ]
+              ]
+
+              minItems: 1
+              items:
+                type: array
+                description: |
+                  Row of metrics which correspond to value for
+                  each metric
+                minItems: 1
+                items:
+                  type: object
+                  description: Value for metrics or dimensions
+      responses:
+        200:
+          description: Metrics Succesfully added.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Put Metrics Successful."
+                example: "Put Metrics Successful."
+        default:
+          description: Failed to add Metrics.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Put Metrics Failed."
+              row_status_list:
+                type: array
+                items:
+                  $ref: '#/definitions/error'
+                description: |
+                  "Status for every data row that was specified in
+                  input. The index in output matches the index position
+                  of row in input.""
+
+
+  /events:
+    post:
+      summary: Send events to Nutanix Insights.
+      description: |
+        Send group of event objects into Nutanix Insights Data Pipeline.
+        If successful, API returns a UUID for every event.
+      tags: ["events", "put"]
+      operationId: putevents
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required: ["event_list"]
+          properties:
+            event_list:
+              type: array
+              items:
+                $ref: '#/definitions/event'
+
+      responses:
+        200:
+          description: Event Successfully recorded.
+          schema:
+            type: object
+            allOf:
+            - required: [event_list]
+              properties:
+                message:
+                  type: string
+                  description: "PutEvents Successful."
+                event_list:
+                  type: array
+                  description: |
+                    "UUIDS of all created events. The order of the
+                    uuids correlate to order of event objects in the
+                    input list."
+                  items:
+                    type: object
+                    properties:
+                      uuid:
+                        description:  uuid of the generated event.
+                        type: string
+                        pattern: '#/definitions/uuid_pattern'
+
+        default:
+          description: Failed to add event.
+          schema:
+            type: object
+            allOf:
+            - required: [event_list]
+              properties:
+                message:
+                  type: string
+                event_list:
+                  type: array
+                  items:
+                    $ref: '#/definitions/uuid_error'
+
+  /events/{uuid}:
+    parameters:
+    - in: path
+      name: uuid
+      description: UUID of the entity
+      type: string
+      pattern:  '#/definitions/uuid_pattern'
+      required: true
+    get:
+      summary: Retrieve a particular event.
+      description: Retrieve an event by its uuid.
+      tags: ["events", "get"]
+      operationId: getevent
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Details of the event.
+          schema:
+            $ref: '#/definitions/event'
+        default:
+          description: Failed to retrieve event.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get Event Failed."
+                example: "Event with the given uuid is not present."
+  /groups:
+    post:
+      summary: Get Entities.
+      description: Get entities from entity db.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["groups", "get"]
+      operationId: groups
+      parameters:
+      - in: body
+        name: get_entities_request
+        required: true
+        schema:
+          $ref: '#/definitions/groups_get_entities_request'
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Get Entities Response.
+          headers:
+            X-Ntnx-ES-Query:
+              type: string
+              description: ES query performed on the request.
+            X-Ntnx-Query-Time:
+              type: string
+              description: Time Taken to execute various stages of the request.
+          schema:
+            $ref: '#/definitions/groups_get_entities_response'
+        default:
+          description: Failed to Get Entities.
+          headers:
+            X-Ntnx-ES-Index-Names:
+              type: string
+              description: Index names used in ES query.
+            X-Ntnx-ES-Query:
+              type: string
+              description: ES query performed on the request.
+            X-Ntnx-Query-Time:
+              type: string
+              description: Time Taken to execute various stages of the request.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Groups API failed."
+                example: "Groups API failed due to missing group attributes."
+  /userdata:
+    post:
+      summary: Send app user data.
+      description: TODO ADD DESC
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["userdata", "put"]
+      operationId: app_userdata
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user_data_info'
+      responses:
+        200:
+          description: User Data added successfuly.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+        default:
+          description: Failed to add user data.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    get:
+      summary: Retrieve user data from either keys or types.
+      description: Retrieve user data from either keys or types.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["userdata", "get"]
+      operationId: app_get_userdata_items
+      produces:
+      - application/json
+      parameters:
+      - in: query
+        name: types
+        type: array
+        items:
+          type: string
+      - in: query
+        name: keys
+        type: array
+        items:
+          type: string
+      responses:
+        200:
+          description: All user data items matching the query.
+          schema:
+            type: object
+            allOf:
+            - required: [user_data_list]
+              properties:
+                message:
+                  type: string
+                  description: "Fetch user data successful."
+                user_data_list:
+                  type: array
+                  description: "List of user data matching the query parameters."
+                  items:
+                    $ref: '#/definitions/user_data_response'
+        default:
+          description: Failed to retrieve user data.
+          schema:
+            type: object
+            allOf:
+            - required: [user_data_list]
+              properties:
+                message:
+                  type: string
+                  description: "Details on why Get User data Failed."
+                  example: "Get User data failed due to due to missing key."
+                user_data_list:
+                  type: array
+                  description: "List of user data matching the query parameters."
+                  items:
+                    $ref: '#/definitions/user_data_response'
+
+  /userdata/{key}:
+    parameters:
+    - in: path
+      name: key
+      description: key for user data
+      type: string
+      required: true
+    get:
+      summary: Retrieve user data for particular key
+      description: Retrieve user data for particular key.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["userdata", "get"]
+      operationId: app_get_userdata_key
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Details of user data
+          schema:
+            $ref: '#/definitions/user_data_response'
+        default:
+          description: Failed to retrieve user data by key.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get User Data Failed."
+                example: "Get User Data failed due to missing key."
+    delete:
+      summary: Delete user data for a particular key.
+      description: Delete user data for a particular key.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["userdata", "delete"]
+      operationId: app_delete_userdata_key
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Details of user data
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "User data deleted for the particular key."
+                example: "User data deleted for key 1234"
+        default:
+          description: Failed to delete user data by key.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why delete User Data Failed."
+                example: "Delete User Data failed due to missing key."
+
+  /entity_type:
+    post:
+      summary: Get all entity type info .
+      description: Get all entity type info .
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["entity_type", "get"]
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            entity_type:
+              type: string
+              description: "Entity type that we want to fetch attributes for."
+
+      operationId: groups_entity_type
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Get Entity types Response
+          schema:
+            $ref: '#/definitions/groups_entity_type_response'
+        default:
+          description: Failed to Get Entities
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Groups entity type API failed."
+                example: "Groups get entity type API failed due to missing group attributes."
+  /entity_types:
+    get:
+      summary: Retrieve all entity_types.
+      description: Retrieve all entity_types.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["entity_types", "get"]
+      operationId: app_get_entity_types
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Details of all entity_types
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              $ref: '#/definitions/groups_entity_type_response'
+
+        default:
+          description: Failed to retrieve all entity_types
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get Entity_types failed."
+                example: "Get entity_Types data failed due to bad ES
+                  connectivity."
+  /login:
+    get:
+      summary: Login a user.
+      description: API to allow a user to login.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["login", "nusights-gui"]
+      operationId: ui_login
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Login a user, return dashboard json.
+          schema:
+            type: object
+        default:
+          description: Failed to login user
+          schema:
+            type: object
+  /logout:
+    get:
+      summary: Logout a user.
+      description: API to allow a user to logout
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["logout", "nusights-gui"]
+      operationId: ui_logout
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Logout a user.
+          schema:
+            type: object
+        default:
+          description: Failed to logout a user.
+          schema:
+            type: object
+  /status:
+    get:
+      summary: Status of user login.
+      description: API to get status of user login.
+      security:
+      - X-Ntnx-Nusightsgui-Auth-Cookie: []
+      - Bearer: []
+      tags: ["status", "nusights-gui"]
+      operationId: ui_status
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Status of user login.
+          schema:
+            type: object
+        default:
+          description: Failed to get status of user login.
+          schema:
+            type: object
+
+  /streaming_policies:
+    post:
+      summary: Create a streaming policy.
+      description: Create a streaming policy in sinapsi to create alerts on data.
+      tags: ['streaming_policy', "put"]
+      operationId: create_streaming_policy
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/streaming_policy_info'
+      responses:
+        200:
+          description: Streaming policy added successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example : "Created streaming policy successfully."
+              uuid:
+                description:  uuid of the created policy.
+                type: string
+                format: uuid
+                example: "b09e9b3c-85d8-4e92-a1c9-9b52cee98f4e"
+
+        default:
+          description: Failed to add streaming policy.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example : "Failed to create streaming policy, invalid sql string."
+
+  /streaming_policies/list:
+    get:
+      summary: Retrieve all streaming policies.
+      description: Retrieve all streaming policies by offset and length sorted by created time.
+      tags: ["streaming_policy", "get", "list"]
+      parameters:
+      - in: query
+        name: offset
+        type: integer
+        default: 0
+        description: "The number of streaming policies to skip before starting to collect the result set."
+      - in: query
+        name: length
+        type: integer
+        default : 20
+        maximum: 200
+        description: The numbers of streaming policies to return.
+      operationId: get_all_streaming_policies
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Streaming policies from the offset specified.
+          schema:
+            type: object
+            allOf:
+            - required: [streaming_policy_list]
+              properties:
+                total_count:
+                  type: integer
+                  description: "Total number of streaming policies present."
+                  example: 100
+                offset:
+                  type: integer
+                  description: "The number of streaming policies that
+                    were  skipped before starting to collect the result set."
+                  example: 10
+                length:
+                  type: integer
+                  default : 10
+                  description: "The numbers of streaming policies that were
+                     returned."
+                  example: 10
+                streaming_policy_list:
+                  type: array
+                  description: "List of streaming policies."
+                  items:
+                    $ref: '#/definitions/streaming_policy_output'
+        default:
+          description: Failed to get the streaming policies.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get Streaming Policy Failed."
+                example: "Get streaming policy failed since offset is invalid."
+
+  /streaming_policies/{uuid}:
+    parameters:
+    - in: path
+      name: uuid
+      description: UUID of the streaming policy
+      type: string
+      format: uuid
+      required: true
+    get:
+      summary: Retrieve a particular streaming policy.
+      description: Retrieve a particular streaming policy by uuid.
+      tags: ["streaming_policy", "get"]
+      operationId: get_streaming_policy_by_uuid
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Details of streaming policy.
+          schema:
+            $ref: '#/definitions/streaming_policy_output'
+        default:
+          description: Failed to retrieve streaming policy by uuid.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why Get Streaming Policy Failed."
+                example: "Get streaming policy failed since data is missing in Db."
+
+    put:
+      summary: Update a streaming policy.
+      description: Update a streaming policy.
+      tags: ["streaming_policy", "put"]
+      operationId: update_streaming_policy_by_uuid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/streaming_policy_info'
+      responses:
+        200:
+          description: Streaming policy updated successfully.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Streaming policy with uuid c09e9b3c-85d8-4e92-a1c9-9b52cee98f4e was updated successfully."
+        default:
+          description: Failed to update streaming policy.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Failed to update streaming policy with uuid
+                c09e9b3c-85d8-4e92-a1c9-9b52cee98f4e, item missing in db."
+
+    delete:
+      summary: Delete a particular streaming policy.
+      description: Delete a particular streaming policy.
+      tags: ["streaming_policy", "delete"]
+      operationId: delete_streaming_policy_by_uuid
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        200:
+          description: Streaming policy deleted.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Streaming policy deleted for given uuid."
+                example: "Streaming policy deleted for uuid c09e9b3c-85d8-4e92-a1c9-9b52cee98f4e"
+        default:
+          description: Failed to delete streaming policy.
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: "Details on why delete streaming policy failed."
+                example: "Delete streaming policy failed due to missing item in Db."
+
+definitions:
+  duration:
+    type: string
+    title: Duration for streaming policies
+    description: Duration for streaming policies
+    enum: &DURATION
+    - THIRTY_SECONDS
+    - ONE_MINUTE
+    - FIVE_MINUTES
+    - TEN_MINUTES
+    - THIRTY_MINUTES
+    - ONE_HOUR
+    - TWO_HOURS
+
+  pdseverity:
+    type: string
+    title: Severity of Pagerduty event for streaming policies
+    description: Severity of Pagerduty event for streaming policies
+    enum: &PDSEVERITY
+    - INFO
+    - WARNING
+    - ERROR
+    - CRITICAL
+
+  pager_duty:
+    type: object
+    title: Pagerduty configuration entity.
+    description: Pagerduty configuration entity.
+    required:
+    - service_reference
+    properties:
+      service_reference:
+        description: Service reference.
+        type: string
+        maxLength: 256
+        example: "2abcd"
+      severity:
+        description: Defines the severity of pager duty.
+        type: string
+        default: ERROR
+        enum: *PDSEVERITY
+      event_action:
+        description: Event action to be taken.
+        type: string
+        default: trigger
+        maxLength: 128
+        example: "trigger"
+      source:
+        description: Event source.
+        type: string
+        default: source_sinapsi
+        maxLength: 1024
+        example: "sinapsi"
+      component:
+        description: Component name.
+        type: string
+        maxLength: 1024
+        example: "Insights REST API Server"
+      group:
+        description: Group name.
+        type: string
+        default: group_sinapsi
+        maxLength: 1024
+        example: "Insights"
+      pd_class:
+        description: Event class name
+        type: string
+        default: class_sinapsi
+        maxLength: 1024
+        example: "performance"
+      dedup_key:
+        description: Dedup Key.
+        type: string
+        maxLength: 1024
+        example: "host_id"
+
+  streaming_policy_info:
+    type: object
+    title: Streaming Policy details.
+    description: Streaming Policy details.
+    required:
+    - name
+    - description
+    - sql_query
+    properties:
+      uuid:
+        description: "uuid of the policy, if not provided server will create one."
+        type: string
+        format: uuid
+        example: "c09e9b3c-85d8-4e92-a1c9-9b52cee98f4e"
+      name:
+        description: Policy name.
+        type: string
+        maxLength: 64
+        example: "REST API Server Memory Usage Alert."
+      description:
+        description: Policy description.
+        type: string
+        maxLength: 1000
+        example: "Policy to monitor/alert when REST API server's memory exceeds 1GB"
+      sql_query:
+        description: "Policy as SQL string. REST API service does not
+        validate the sql_query."
+        type: string
+        example: |
+          "select host, max(timestamp_usecs) from
+          metric___telemetry_rest_api_server_system_resource_usage_table___default_metricDataSample where host = \"10.0.0.1" and max(timestamp_usecs) < UNIX_TIMESTAMP()*1000000 - 300000000"
+      window_duration:
+        description: Time window on which policy needs to be applied.
+        type: string
+        default: FIVE_MINUTES
+        enum: *DURATION
+      execution_frequency:
+        description: How often policy needs to be evaluated.
+        type: string
+        default: FIVE_MINUTES
+        enum: *DURATION
+      is_enabled:
+        description: If policy is enabled.
+        default: true
+        type: boolean
+      transformation_list:
+        description: |
+          "List of intended transformations topic names. Only one of
+          transformation_list or pager_duty_list should be provided in input."
+        type: array
+        items:
+          type: string
+      pager_duty_list:
+        description: |
+          "List of intended pager duty events definitions.Only one of
+          transformation_list or pager_duty_list should be provided in input."
+        type: array
+        items:
+          $ref: '#/definitions/pager_duty'
+
+  streaming_policy_output:
+    description: 'Details of streaming policy.'
+    allOf:
+    - required : [last_updated_time_ms]
+      properties:
+        last_updated_time_ms:
+          type: integer
+          description: |
+            Epoch Timestamp in millisecs when the policy was last updated.
+    - $ref: '#/definitions/streaming_policy_info'
+
+  event:
+    type: object
+    required: ['source_entity_type', 'source_entity_id', 'category',
+               'type', 'timestamp_msecs']
+    description: |
+      Details of the event object. Additional data about related
+      entities or user defined fields can be passed as key/value pairs
+      in input JSON.
+    properties:
+      source_entity_type:
+        type: string
+        description: |
+          Entity type generating the events, examples are
+          cluster, vm, node
+        minLength: 1
+        maxLength: 32
+        example: "cluster"
+      source_entity_id:
+        type: string
+        description: 'Identifier of entity that is generating event.'
+        minLength: 1
+        maxLength: 64
+      category:
+        type: string
+        description: 'Category for the event.'
+        minLength: 1
+        maxLength: 32
+        example: "clickstream"
+      type:
+        type: string
+        description: 'Type of the event'
+        minLength: 1
+        maxLength: 32
+        example: "login"
+      timestamp_msecs:
+        type: integer
+        description: |
+          Epoch Timestamp in millisecs when the event was
+          generated. Time has to be within last 2 weeks.
+        minimum: 946684800000 #01-01-2000:00:00:00
+        maximum: 1924991999000 #31-12-2030:23:59:59
+        format: int64
+        example: 1508357497000
+      additional_fields:
+        description: |
+          ' Pass additional fields related to event here in form  of key, value pairs'
+        type: object
+        additionalProperties: True
+        example:
+          cluster_uuid: 27473df6-24be-4199-ab6c-0609bb394aed
+
+  uuid_pattern:
+    type: string
+    default: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+
+  uuid_error:
+    description: 'Error details for each uuid.'
+    allOf:
+    - required : [uuid]
+      properties:
+        uuid:
+          type: string
+          description: 'UUID of the failed event.'
+    - $ref: '#/definitions/error'
+
+  error:
+    description: 'Error object details for RPC failures'
+    type: object
+    properties:
+      error_type:
+        type: integer
+        description:  'Error code for failure'
+      error_details:
+        type: string
+        description: 'Error string'
+
+  user_data_info:
+    description: 'User data details'
+    type: object
+    properties:
+      key:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+
+  user_data_response:
+    description: 'User data response details'
+    type: object
+    properties:
+      key:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+      created_by:
+        type: string
+
+  groups_get_entities_request:
+    title: Get Entities Request
+    description: Get Entities Request.
+    type: object
+    required:
+    - entity_type
+    properties:
+      entity_type:
+        description: The entity type that will be requested.
+        type: string
+      filter_criteria:
+        description: >
+          FIQL filter criteria that will be used to filter the returned data.
+        type: string
+      grouping_attributes:
+        type: array
+        items:
+          $ref: '#/definitions/grouping_attribute_type'
+      group_attributes:
+        type: array
+        items:
+          $ref: '#/definitions/group_attribute_type'
+      group_count:
+        description: The maximum number of groups to return in the result.
+        type: integer
+        format: int64
+      group_offset:
+        description: The offset into the total set of groups to return.
+        type: integer
+        format: int64
+      group_member_count:
+        description: The maximum number of members to return per group.
+        type: integer
+        format: int64
+      group_member_offset:
+        description: The offset into the total member set to return per group.
+        type: integer
+        format: int64
+      group_member_sort_attribute:
+        description: >
+          The name of the attribute that will be used to sort group members.
+        type: string
+      group_member_sort_order:
+        type: string
+        enum : ["asc", "desc"]
+      group_member_attributes:
+        type: array
+        items:
+          $ref: '#/definitions/group_member_attribute'
+      query_name:
+        description: A custom name to use for tagging the query when debugging.
+        type: string
+
+  group_attribute_type:
+    title: Group Attribute type
+    description: TODO ADD DESCR
+    type: object
+    properties:
+      operation:
+        type: string
+        enum: ["min", "max", "avg", "unique_count", "sum", "value_count", "stats", "percentiles"]
+      attribute:
+        type: string
+      script:
+        type: string
+
+  grouping_attribute_type:
+    title: Grouping Attribute type
+    description: TODO ADD DESCR
+    type: object
+    properties:
+      attribute:
+        type: string
+      data_type:
+        type: string
+        enum: ["term","date", "range"]
+      interval:
+        type: string
+      start:
+        type: integer
+        format: int64
+      end:
+        type: integer
+        format: int64
+      range:
+        type: object
+        properties:
+          start:
+            type: number
+            format: float
+          size:
+            type: number
+            format: float
+          count:
+            type: integer
+            format: int64
+      min_doc_count:
+        type: integer
+        format: int64
+      sort_order:
+        type: string
+        enum: ['asc', 'desc']
+      order_by:
+        type: string
+
+  group_member_attribute:
+    title: Entities Attribute
+    description: >
+      An attribute that has been requested to be returned in the response.
+    type: object
+    required:
+    - attribute
+    properties:
+      attribute:
+        type: string
+      script:
+        type: string
+
+  groups_get_entities_response:
+    title: Get Entities Response
+    description: Get Entities Response.
+    type: object
+    required: ['total_entity_count', 'filtered_entity_count', 'total_group_count']
+    properties:
+      total_entity_count:
+        type: integer
+        format: int64
+      filtered_entity_count:
+        type: integer
+        format: int64
+      total_group_count:
+        type: integer
+        format: int64
+      filtered_group_count:
+        type: integer
+        format: int64
+      entity_type:
+        type: string
+      group_results:
+        type: array
+        items:
+          $ref: '#/definitions/groups_group_result'
+
+  groups_group_result:
+    title: Group Result
+    description: Group Result.
+    type: object
+    properties:
+      total_entity_count:
+        type: integer
+        format: int64
+        default: 0
+      group_by_column_value:
+        type: string
+      group_summaries:
+        $ref: '#/definitions/groups_group_summary_map'
+      entity_results:
+        type: array
+        items:
+          $ref: '#/definitions/groups_entity'
+
+  groups_group_summary_map:
+    # This is a map from string:groups_field_data
+    title: Group Summary Map
+    description: Group Summary Info Map.
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/groups_field_data'
+
+  groups_field_data:
+    title: Group Summary Data
+    description: Group Summary Data.
+    type: object
+    properties:
+      name:
+        type: string
+        maxLength: 64
+      values:
+        type: array
+        items:
+          $ref: '#/definitions/groups_timevalue_pair'
+
+  groups_timevalue_pair:
+    title: Time-Value Pair
+    description: Time-Value Pair Data.
+    type: object
+    properties:
+      time:
+        type: object
+      values:
+        type: array
+        items:
+          type: object
+
+  groups_entity:
+    title: Entity
+    description: An Individual Entity.
+    type: object
+    properties:
+      entity_id:
+        type: string
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/groups_field_data'
+
+  groups_entity_type_response:
+    title: Entity Type
+    description: An Entity type
+    type: object
+    properties:
+      entity:
+        type: string
+      camel:
+        type: string
+      namespace:
+        type: string
+      key:
+        type: string
+      label:
+        type: string
+      attributes:
+        type: object
+        additionalProperties:
+          $ref: '#/definitions/groups_entity_attribute'
+
+  groups_entity_attribute:
+    title: groups entity attribute
+    description: Groups entity attribute
+    type: object
+    properties:
+      key:
+        type: string
+      type:
+        type: object
+
+  principal:
+    type: string
+
+  remote_collection_request_input:
+    title: Remote request input.
+    type: object
+    description: Properties of remote collection input request.
+    properties:
+      type:
+        type: string
+        title: remote collection request type
+        description: Type of remote collection info fetch request.
+        enum: ['Log Collector', 'NCC Checks', 'Panacea']
+      collection_start_time_ms:
+        type: integer
+        description: Start time of collection in milli seconds since epoch for this collection type.
+        format: int64
+        example: 1545784907000
+      collection_end_time_ms:
+        type: integer
+        description: End time of collection in milli seconds since epoch for this collection type.
+        format: int64
+        example: 1545794907000
+      option_list:
+        description: The supported options are CVM Config, CVM Kernel Logs
+        $ref: '#/definitions/remote_collection_request_option_list'
+      force:
+        type: boolean
+        default: false
+      anonymize_output:
+        type: boolean
+        default: true
+      timeout_ms:
+        type: integer
+        format: int64
+        default: 3600000
+
+  remote_collection_request_option_list:
+    title: List of options for Remote collection request.
+    type: array
+    items:
+      $ref: '#/definitions/remote_collection_request_option'
+
+  remote_collection_request_option:
+    title: Option details for a  Remote collection request.
+    type: object
+    properties:
+      type:
+        type: string
+        description: The particular option name in the request.
+        example: "CVM Config"
+      option_list:
+        $ref: '#/definitions/remote_collection_request_option_list'
+
+  remote_collection_request_output:
+    title: Remote collection request output details.
+    type: object
+    description: Remote collection request details.
+    properties:
+      type:
+        type: string
+        title: remote collection request type
+        description: Type of remote collection info fetch request.
+        enum: ['Log Collector', 'NCC Checks', 'Panacea']
+      request_uuid:
+        type: string
+        format: uuid
+        description: uuid of the request.
+        example: "72febb06-135f-4b35-6d19-4ce52b671720"
+      status:
+        type: string
+        example: "Completed."
+      option_list:
+        $ref: '#/definitions/remote_collection_request_option_list'
+      created_timestamp_ms:
+        type: integer
+        format: int64
+        example: 1545784907000
+      force:
+        type: boolean
+        default: false
+      anonymize_output:
+        type: boolean
+        default: true
+      timeout_ms:
+        type: integer
+        format: int64
+        default: 3600000
+      file_size_bytes:
+        type: integer
+        format: int64
+        example: 2000000
+      approval_info:
+        $ref: "#/definitions/remote_collection_request_approval_info"
+      collection_start_time_ms:
+        type: integer
+        description: Start time of collection in milli seconds since epoch for this collection type.
+        format: int64
+        example: 1545784907000
+      collection_end_time_ms:
+        type: integer
+        description: End time of collection in milli seconds since epoch for this collection type.
+        format: int64
+        example: 1545794907000
+      user:
+        type: string
+        description: "User who triggered the remote request."
+        example: "john@nutanix.com"
+
+  remote_collection_request_source:
+    type: object
+    description: A data source for a request.
+    properties:
+      type:
+        type: string
+      duration_costs_ms:
+        type: integer
+        format: int64
+        example: 10000
+      size_costs_bytes:
+        type: integer
+        format: int64
+        example: 1024000
+      costs_option_list:
+        $ref: '#/definitions/remote_collection_costs_option_list'
+
+  remote_collection_costs_option_list:
+    description: list specifiying the options selected and the costs for each selected option.
+    type: array
+    items:
+      $ref: '#/definitions/remote_collection_costs_option'
+
+  remote_collection_costs_option:
+    type: object
+    description: A data source for a request.
+    properties:
+      type:
+        type: string
+        example: "CVM Kernel Logs"
+      duration_costs_ms:
+        type: integer
+        format: int64
+        example: 600000
+      size_costs_bytes:
+        type: integer
+        format: int64
+        example: 1000000
+      costs_option_list:
+        $ref: '#/definitions/remote_collection_costs_option_list'
+
+  remote_collection_request_approval_info:
+    title: Approval Info for remote collection request.
+    type: object
+    description: Contains approval information for a remote collection request.
+    properties:
+      email:
+        type: string
+        format: email
+        example: "pete@carmax.com"
+      comments:
+        type: string
+        example: "Pete, Enterprise VP provided approval."
+      reason:
+        type: string
+        example: "Debug ONC-1234"
+      obtained:
+        type: boolean
+        example: true

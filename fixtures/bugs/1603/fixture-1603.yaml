@@ -1,0 +1,23 @@
+swagger: '2.0'
+basePath: /
+info:
+  title: test-server
+  version: 0.0.1
+  description: 'Test Server'
+consumes:
+  - application/x-yaml
+produces:
+  - application/json
+paths:
+  '/health':
+    get:
+      operationId: GetHealth
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+      tags:
+        - Health
