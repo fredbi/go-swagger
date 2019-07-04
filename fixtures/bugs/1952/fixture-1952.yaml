@@ -1,0 +1,967 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Account Information Service
+  description: >-
+    Account Information Service allows easily interact with the accounts of a
+    Tatra banka client on his behalf, including account type, status, balance
+    and transaction history.
+  contact:
+    name: Open banking TB
+    url: 'https://developer.tatrabanka.sk'
+    email: developer@tatrabanka.sk
+host: 'api.tatrabanka.sk'
+schemes:
+  - https
+securityDefinitions:
+  psd2ConsentAuth:
+    type: oauth2
+    description: OAuth 2.0 Provider
+    authorizationUrl: 'https://api.tatrabanka.sk/auth/oauth/v2/authorize'
+    tokenUrl: 'https://api.tatrabanka.sk/auth/oauth/v2/token'
+    flow: accessCode
+    scopes:
+      AISP: Account Information Service Provider scope
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  RequestIdHeader:
+    in: header
+    name: Request-ID
+    description: >-
+      An unique identifier of a particular request message. Although it may be
+      arbitrary string, it is strongly recommended to use a Universally Unique
+      Ifentifier (UUID) version 4 form (RFC4122
+      https://tools.ietf.org/html/rfc4122).
+    required: true
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+  ResponseIdHeader:
+    in: header
+    name: Response-ID
+    description: >-
+      An unique identifier of a particular response message. Although it may be
+      arbitrary string, it is strongly recommended to use a Universally Unique
+      Ifentifier (UUID) version 4 form (RFC4122
+      https://tools.ietf.org/html/rfc4122).
+    required: true
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+  CorrelationIdHeader:
+    in: header
+    name: Correlation-ID
+    description: >-
+      An unique correlation identifier correlates the request and the response
+      messages as a pair especially useful for audit logs. Although it may be
+      arbitrary string, it is strongly recommended to use a Universally Unique
+      Ifentifier (UUID) version 4 form (RFC4122
+      https://tools.ietf.org/html/rfc4122).
+    required: false
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+  ProcessIdHeader:
+    in: header
+    name: Process-ID
+    description: >-
+      Identifier of a business or technical process to what the set of requests
+      and response pairs are organized. Although it may be arbitrary string, it
+      is strongly recommended to use a Universally Unique Ifentifier (UUID)
+      version 4 form (RFC4122 https://tools.ietf.org/html/rfc4122).
+    required: false
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+  PsuIpAddressIdHeader:
+    in: header
+    name: PSU-IP-Address
+    description: >-
+      Identifier of a customer's IP address from which he/she is connected to
+      the TPP infrastructure. It might be in the format of IPv4 o IPv6 address.
+    required: false
+    type: string
+  PsuDeviceOsIdHeader:
+    in: header
+    name: PSU-Device-OS
+    description: >-
+      A customer's device and/or operating system identification from which
+      he/she is connected to the TPP infrastructure.
+    required: false
+    type: string
+  PsuUserAgentIdHeader:
+    in: header
+    name: PSU-User-Agent
+    description: >-
+      A customer's web browser of other client device identification from which
+      he/she is connected to the TPP infrastructure.
+    required: false
+    type: string
+  PsuGeoLocationIdHeader:
+    in: header
+    name: PSU-Geo-Location
+    description: >-
+      The GPS coordinates of the current customer's location in the moment of
+      connection to the TPP infrastructure.
+    required: false
+    type: string
+  PageSizeQuery:
+    in: query
+    name: pageSize
+    description: The number of records included in one page for displaying.
+    required: false
+    type: number
+    format: integer
+    multipleOf: 10
+    minimum: 10
+    maximum: 100
+    default: 50
+  PageCountQuery:
+    in: query
+    name: pageCount
+    description: >-
+      The total number of pages of determined size within the defined date
+      range.
+    required: false
+    type: number
+    format: integer
+    minimum: 0
+    maximum: 99999999
+  PageNumberQuery:
+    in: query
+    name: page
+    description: >-
+      The sequence number of a page in regards to page size for a record set.
+      Because it starts at number 1, it should be considered as an offset from
+      the beginning from a page set.
+    required: false
+    type: number
+    format: integer
+    minimum: 1
+    maximum: 99999999
+    default: 1
+  SortOrderQuery:
+    in: query
+    name: order
+    description: The direction of sorting records in a page.
+    required: false
+    type: string
+    enum:
+      - asc
+      - desc
+    default: desc
+paths:
+  /accounts:
+    get:
+      description: >-
+        The operation provides the relevant data about bank customer's accounts
+        in form of a list.
+      summary: Account list
+      operationId: getAccounts
+      parameters:
+        - $ref: '#/parameters/RequestIdHeader'
+        - $ref: '#/parameters/CorrelationIdHeader'
+        - $ref: '#/parameters/ProcessIdHeader'
+        - $ref: '#/parameters/PsuIpAddressIdHeader'
+        - $ref: '#/parameters/PsuDeviceOsIdHeader'
+        - $ref: '#/parameters/PsuUserAgentIdHeader'
+        - $ref: '#/parameters/PsuGeoLocationIdHeader'
+        - $ref: '#/parameters/PageSizeQuery'
+        - $ref: '#/parameters/PageCountQuery'
+        - $ref: '#/parameters/PageNumberQuery'
+        - $ref: '#/parameters/SortOrderQuery'
+      responses:
+        '200':
+          description: Bank account information set.
+          schema:
+            $ref: '#/definitions/AccountListType'
+          headers:
+            Response-ID:
+              description: >-
+                An unique identifier of a particular response message. Although
+                it may be arbitrary string, it is strongly recommended to use a
+                Universally Unique Ifentifier (UUID) version 4 form (RFC4122
+                https://tools.ietf.org/html/rfc4122).
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+            Correlation-ID:
+              description: >-
+                The mirrored correlation identifier from the corresponding
+                request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+            Process-ID:
+              description: The mirrored process identifier from the corresponding request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '500':
+          $ref: '#/responses/InternalServerError'
+        '503':
+          $ref: '#/responses/ServiceUnavailable'
+      security:
+        - psd2ConsentAuth:
+            - AISP
+  /accounts/information:
+    post:
+      description: >-
+        The operation provides the relevant data from a bank customer's account
+        identified by IBAN. Only AISP is allowed to use current operation.
+      summary: Account information
+      operationId: postAccountInfo
+      parameters:
+        - $ref: '#/parameters/RequestIdHeader'
+        - $ref: '#/parameters/CorrelationIdHeader'
+        - $ref: '#/parameters/ProcessIdHeader'
+        - $ref: '#/parameters/PsuIpAddressIdHeader'
+        - $ref: '#/parameters/PsuDeviceOsIdHeader'
+        - $ref: '#/parameters/PsuUserAgentIdHeader'
+        - $ref: '#/parameters/PsuGeoLocationIdHeader'
+        - in: body
+          name: AccountInfoQuery
+          required: true
+          schema:
+            type: object
+            required:
+              - iban
+            properties:
+              iban:
+                $ref: '#/definitions/IbanType'
+      responses:
+        '201':
+          description: Bank account information set.
+          schema:
+            $ref: '#/definitions/AccountInfoType'
+          headers:
+            Response-ID:
+              description: >-
+                An unique identifier of a particular response message. Although
+                it may be arbitrary string, it is strongly recommended to use a
+                Universally Unique Ifentifier (UUID) version 4 form (RFC4122
+                https://tools.ietf.org/html/rfc4122).
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+            Correlation-ID:
+              description: >-
+                The mirrored correlation identifier from the corresponding
+                request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+            Process-ID:
+              description: The mirrored process identifier from the corresponding request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '500':
+          $ref: '#/responses/InternalServerError'
+        default:
+          $ref: '#/responses/GeneralError'
+      security:
+        - psd2ConsentAuth:
+            - AISP
+  /accounts/transactions:
+    post:
+      description: >-
+        The list of financial transactions perfomed on a customer's bank account
+        withing a date period.
+      summary: Transaction history
+      operationId: postTransactions
+      parameters:
+        - $ref: '#/parameters/RequestIdHeader'
+        - $ref: '#/parameters/CorrelationIdHeader'
+        - $ref: '#/parameters/ProcessIdHeader'
+        - $ref: '#/parameters/PsuIpAddressIdHeader'
+        - $ref: '#/parameters/PsuDeviceOsIdHeader'
+        - $ref: '#/parameters/PsuUserAgentIdHeader'
+        - $ref: '#/parameters/PsuGeoLocationIdHeader'
+        - in: body
+          name: TransactionQuery
+          required: true
+          schema:
+            $ref: '#/definitions/TransactionsQueryType'
+      responses:
+        '201':
+          description: Transaction history listing.
+          schema:
+            $ref: '#/definitions/TransactionListType'
+          headers:
+            Response-ID:
+              description: >-
+                An unique identifier of a particular response message. Although
+                it may be arbitrary string, it is strongly recommended to use a
+                Universally Unique Ifentifier (UUID) version 4 form (RFC4122
+                https://tools.ietf.org/html/rfc4122).
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+            Correlation-ID:
+              description: >-
+                The mirrored correlation identifier from the corresponding
+                request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+            Process-ID:
+              description: The mirrored process identifier from the corresponding request.
+              type: string
+              pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '403':
+          $ref: '#/responses/Unauthorized'
+        '500':
+          $ref: '#/responses/InternalServerError'
+        '503':
+          $ref: '#/responses/ServiceUnavailable'
+        default:
+          $ref: '#/responses/GeneralError'
+      security:
+        - psd2ConsentAuth:
+            - AISP
+responses:
+  GeneralError:
+    description: General error response.
+    schema:
+      $ref: '#/definitions/ErrorStructureType'
+    headers:
+      Response-ID:
+        description: >-
+          An unique identifier of a particular response message. Although it may
+          be arbitrary string, it is strongly recommended to use a Universally
+          Unique Ifentifier (UUID) version 4 form (RFC4122
+          https://tools.ietf.org/html/rfc4122).
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+      Correlation-ID:
+        description: The mirrored correlation identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+      Process-ID:
+        description: The mirrored process identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+  BadRequest:
+    description: >-
+      The request could not be understood by the bank server due to malformed
+      syntax. Your application should not repeat the request without
+      modifications.
+    schema:
+      $ref: '#/definitions/ErrorStructureType'
+    headers:
+      Response-ID:
+        description: >-
+          An unique identifier of a particular response message. Although it may
+          be arbitrary string, it is strongly recommended to use a Universally
+          Unique Ifentifier (UUID) version 4 form (RFC4122
+          https://tools.ietf.org/html/rfc4122).
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+      Correlation-ID:
+        description: The mirrored correlation identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+      Process-ID:
+        description: The mirrored process identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+    examples:
+      application/json:
+        errorCode: INVALID_PARAMETER
+        errorDescription: Invalid parameter
+  Unauthorized:
+    description: The request requires user authentication.
+    schema:
+      $ref: '#/definitions/ErrorStructureType'
+    headers:
+      Response-ID:
+        description: >-
+          An unique identifier of a particular response message. Although it may
+          be arbitrary string, it is strongly recommended to use a Universally
+          Unique Ifentifier (UUID) version 4 form (RFC4122
+          https://tools.ietf.org/html/rfc4122).
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+      Correlation-ID:
+        description: The mirrored correlation identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+      Process-ID:
+        description: The mirrored process identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+    examples:
+      application/json:
+        errorCode: NO_CONSENT
+        errorDescription: Consent does not exist
+  ServiceUnavailable:
+    description: >-
+      The bank server is currently unable to handle the request due to
+      maintenance of the server.
+    schema:
+      $ref: '#/definitions/ErrorStructureType'
+    headers:
+      Response-ID:
+        description: >-
+          An unique identifier of a particular response message. Although it may
+          be arbitrary string, it is strongly recommended to use a Universally
+          Unique Ifentifier (UUID) version 4 form (RFC4122
+          https://tools.ietf.org/html/rfc4122).
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+      Correlation-ID:
+        description: The mirrored correlation identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+      Process-ID:
+        description: The mirrored process identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+    examples:
+      application/json:
+        errorCode: TEMPORARY_OFFLINE
+        errorDescription: Temporary offline
+  InternalServerError:
+    description: >-
+      The bank server encountered an unexpected condition which prevented it
+      from fulfilling the request.
+    schema:
+      $ref: '#/definitions/ErrorStructureType'
+    headers:
+      Response-ID:
+        description: >-
+          An unique identifier of a particular response message. Although it may
+          be arbitrary string, it is strongly recommended to use a Universally
+          Unique Ifentifier (UUID) version 4 form (RFC4122
+          https://tools.ietf.org/html/rfc4122).
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{1,36}$'
+      Correlation-ID:
+        description: The mirrored correlation identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+      Process-ID:
+        description: The mirrored process identifier from the corresponding request.
+        type: string
+        pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,36}$'
+    examples:
+      application/json:
+        errorCode: INTERNAL_ERROR
+        errorDescription: Internal error
+definitions:
+  AccountListType:
+    description: Collection of information sets about customer's bank accounts.
+    type: object
+    required:
+      - creationDateTime
+      - accounts
+    properties:
+      creationDateTime:
+        $ref: '#/definitions/CreationDateTimeType'
+      accounts:
+        type: array
+        items:
+          type: object
+          allOf:
+            - type: object
+              required:
+                - identification
+              properties:
+                identification:
+                  type: object
+                  required:
+                    - iban
+                  properties:
+                    iban:
+                      $ref: '#/definitions/IbanType'
+            - $ref: '#/definitions/AccountType'
+            - type: object
+              required:
+                - servicer
+              properties:
+                servicer:
+                  type: object
+                  required:
+                    - financialInstitutionIdentification
+                  properties:
+                    financialInstitutionIdentification:
+                      $ref: '#/definitions/BicType'
+            - type: object
+              required:
+                - consent
+              properties:
+                consent:
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - AISP
+                      - PISP
+                      - PIISP
+                  uniqueItems: true
+                  maxItems: 3
+  AccountInfoType:
+    description: Information set about a customer's bank account.
+    type: object
+    required:
+      - account
+      - balances
+    properties:
+      account:
+        $ref: '#/definitions/AccountType'
+      balances:
+        description: >-
+          The list of different balances of the customer's bank account, usually
+          disposable and bookkeeping one.
+        type: array
+        items:
+          $ref: '#/definitions/BalanceType'
+        uniqueItems: true
+        maxItems: 2
+  AccountType:
+    description: The set of relevant data about a bank customer's account.
+    type: object
+    required:
+      - name
+      - baseCurrency
+    properties:
+      name:
+        description: Name of the account.
+        type: string
+        maxLength: 70
+        example: John Doe
+      productName:
+        description: Product name of the account.
+        type: string
+        maxLength: 70
+        example: BestAccount
+      type:
+        $ref: '#/definitions/AccountTypeList'
+      baseCurrency:
+        $ref: '#/definitions/CurrencyType'
+  AccountTypeList:
+    description: The list of utilized types of the bank accounts.
+    type: string
+    enum:
+      - CACC
+  AmountType:
+    description: Numeric value of the amount as a fractional number.
+    type: number
+    format: float
+    multipleOf: 0.01
+    minimum: 0
+    maximum: 9999999999.99
+    example: 1234.56
+  BalanceType:
+    description: >-
+      The set of relevant data about particular balance of a bank customer's
+      account.
+    type: object
+    required:
+      - typeCodeOrProprietary
+      - amount
+      - creditDebitIndicator
+    properties:
+      typeCodeOrProprietary:
+        $ref: '#/definitions/BalanceTypeList'
+      amount:
+        $ref: '#/definitions/MoneyType'
+      creditDebitIndicator:
+        $ref: '#/definitions/CreditDebitIndicatorType'
+      dateTime:
+        description: >-
+          Date and time of the account's balance validity in RFC3339 format
+          (https://tools.ietf.org/html/rfc3339).
+        type: string
+        format: date-time
+        example: '2017-07-31T14:54:32+01:00'
+  BalanceTypeList:
+    description: >-
+      Enumerated balance types are adopted from ISO 20022 - Balance Type
+      Code.<br /> ITBD - Interim booked balance<br /> ITAV - Interim available
+      balance
+    type: string
+    enum:
+      - ITBD
+      - ITAV
+  BicType:
+    description: >-
+      Corresponding identification of a bank managing an account, usually Bank
+      Identification Code (BIC).
+    type: string
+    maxLength: 11
+    example: TATRSKBX
+  CreationDateTimeType:
+    description: >-
+      The date and time in RFC3339 format (https://tools.ietf.org/html/rfc3339)
+      at which a particular action has been requested or executed.
+    type: string
+    format: date-time
+    example: '2017-07-31T14:54:32+01:00'
+  CreditDebitIndicatorType:
+    description: >-
+      The enumerated sign indicator of the amount value<br /> CRDT - Credit,
+      Credere<br /> DBIT - Debit, Debere
+    type: string
+    enum:
+      - CRDT
+      - DBIT
+  CurrencyType:
+    description: Alphabetic codes from ISO 4712.
+    type: string
+    pattern: '^[A-Z]{3}$'
+    example: EUR
+  DateRangeType:
+    description: Set of parameters for determning requesting date range.
+    type: object
+    properties:
+      dateFrom:
+        description: The starting date of a date period for a searching condition.
+        type: string
+        format: date
+        example: '2017-07-31'
+      dateTo:
+        description: The end date of a date period for a searching condition.
+        type: string
+        format: date
+        example: '2017-08-01'
+  End2EndType:
+    description: >-
+      Unique identification defined by a requestor. Mandatory in case this
+      attribute is provided by a client.
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,35}$'
+    maxLength: 35
+    example: /VS123/SS456/KS0308
+  ErrorStructureType:
+    description: General error structure returned in erroneous responses as a message body.
+    type: object
+    required:
+      - errorCode
+    properties:
+      errorCode:
+        description: An error code.
+        type: string
+        example: NO_ACCOUNT
+      errorDescription:
+        description: A human-readable description of the error.
+        type: string
+        example: Account does not exist
+  ExchangeRateType:
+    description: Numeric value of the exchange rate as a fractional number.
+    type: number
+    format: float
+    multipleOf: 0.0001
+    minimum: -9999999999.9999
+    maximum: 9999999999.9999
+    example: 1234.5678
+  ChequeNumberType:
+    description: >-
+      For card transactions, this is the card number in format **** **** ****
+      1111.
+    type: string
+    maxLength: 35
+    example: '**** **** **** 1111'
+  IbanType:
+    description: >-
+      International Bank Account Number (IBAN) - identification used
+      internationally by financial institutions to uniquely identify the account
+      of a customer. Further specifications of the format and content of the
+      IBAN can be found in the standard ISO 13616 "Banking and related financial
+      services - International Bank Account Number (IBAN)" version 1997-10-01,
+      or later revisions. Here used EBS204 V3.2 — AUGUST 2003, chapter 5.1.1.
+    type: string
+    pattern: '^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$'
+    example: SK6807200002891987426353
+  InstructionDetailType:
+    description: >-
+      The text aimed as the information for a receiver of the transaction.
+      Mandatory in case this attribute is provided by a client.
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,140}$'
+    maxLength: 140
+    example: Message for the receiver.
+  InstructionIdentType:
+    description: Technical identification of the payment generated by a client.
+    type: string
+    pattern: '^[a-zA-Z0-9/\-?:().,'';+\s]{0,35}$'
+    maxLength: 35
+    example: 9b76608457de48b2be531bd2804ae0b7
+  MerchantCategoryCodeType:
+    description: A Merchant Category Code (MCC) coordinated by MasterCard and Visa.
+    type: string
+    minLength: 4
+    maxLength: 4
+    example: '3370'
+  MoneyType:
+    description: Generic object for expression of financial amounts.
+    type: object
+    required:
+      - value
+      - currency
+    properties:
+      value:
+        $ref: '#/definitions/AmountType'
+      currency:
+        $ref: '#/definitions/CurrencyType'
+  PageNumberType:
+    description: >-
+      The sequence number of a page in regards to page size for a record set.
+      Because it starts at number 1, it should be considered as an offset from
+      the beginning from a page set.
+    type: number
+    format: integer
+    minimum: 1
+    maximum: 99999999
+    default: 1
+    example: 1
+  PageRangeType:
+    description: >-
+      Set of parameters for determining requesting paging and sorting of long
+      output lists.
+    type: object
+    properties:
+      pageSize:
+        $ref: '#/definitions/PageSizeType'
+      page:
+        $ref: '#/definitions/PageNumberType'
+  PageSizeType:
+    description: The number of records included in one page for displaying.
+    type: number
+    format: integer
+    multipleOf: 10
+    minimum: 10
+    maximum: 100
+    default: 50
+    example: 50
+  TransactionHistoryType:
+    description: >-
+      Set of data item about a executed financial transaction on a customer's
+      bank account.
+    type: object
+    required:
+      - amount
+      - creditDebitIndicator
+      - status
+      - valueDate
+      - bankTransactionCode
+    properties:
+      amount:
+        $ref: '#/definitions/MoneyType'
+      creditDebitIndicator:
+        $ref: '#/definitions/CreditDebitIndicatorType'
+      reversalIndicator:
+        description: >-
+          The flag determining that it is the reversal transaction for some
+          previous one.
+        type: boolean
+        default: false
+      status:
+        description: >-
+          The enumerated status of a transaction, usually related to the query
+          parameter 'transactionType'.<br /> BOOK - booked transaction<br />
+          INFO - settled  transaction
+        type: string
+        enum:
+          - BOOK
+          - INFO
+      bookingDate:
+        description: >-
+          The date of the execustion of the transaction. Mandatory for booked
+          transactions.
+        type: string
+        format: date
+        example: '2017-08-11'
+      valueDate:
+        description: The requested date by a bank customer to execute the transaction.
+        type: string
+        format: date
+        example: '2017-08-11'
+      bankTransactionCode:
+        description: The category code of the transaction type from the SBA's code list.
+        type: string
+        maxLength: 11
+        example: CO11
+      transactionDetails:
+        description: The container for detailed information items of the transaction.
+        type: object
+        properties:
+          references:
+            description: The set of reference data of the transaction.
+            type: object
+            properties:
+              accountServicerReference:
+                description: >-
+                  The unique identifier of the transaction generated by a bank
+                  that it should be considered as a bank reference. Although it
+                  may be arbitrary string, it is strongly recommended to use a
+                  Universally Unique Ifentifier (UUID) version 4 form (RFC4122
+                  https://tools.ietf.org/html/rfc4122).
+                type: string
+                maxLength: 35
+                example: 0e24e604dbf144d5ae64a19b1baedd27
+              instructionIdentification:
+                $ref: '#/definitions/InstructionIdentType'
+              endToEndIdentification:
+                $ref: '#/definitions/End2EndType'
+              transactionIdentification:
+                description: The payment reference for related fees.
+                type: string
+                maxLength: 35
+                example: 9579749f59a74af5ab1778ac26e42f3b
+              mandateIdentification:
+                description: >-
+                  The mandate referece as its reference number. Mandatory for
+                  Direct debit transactions.
+                type: string
+                maxLength: 35
+                example: 343ed098e0c74e15b3813a04cf529a1f
+              chequeNumber:
+                $ref: '#/definitions/ChequeNumberType'
+          counterValueAmount:
+            type: object
+            properties:
+              amount:
+                $ref: '#/definitions/MoneyType'
+              currencyExchange:
+                type: object
+                properties:
+                  exchangeRate:
+                    $ref: '#/definitions/ExchangeRateType'
+          relatedParties:
+            description: Participants of the transaction.
+            type: object
+            properties:
+              debtor:
+                type: object
+                properties:
+                  name:
+                    description: Name of the debtor.
+                    type: string
+                    maxLength: 140
+                    example: Joe Doe
+              debtorAccount:
+                type: object
+                properties:
+                  identification:
+                    description: 'Unique identification of the debtor account, usually IBAN.'
+                    type: string
+                    maxLength: 34
+                    example: SK6807200002891987426353
+              creditor:
+                type: object
+                properties:
+                  name:
+                    description: Name of the creditor.
+                    type: string
+                    maxLength: 140
+                    example: Jane Doe
+                  identification:
+                    description: >-
+                      The creditor identifier (CID) in the direct debit
+                      transaction.
+                    type: string
+                    maxLength: 35
+                    example: c28a41eaee9e4bf78e1b654df1672bc1
+              creditorAccount:
+                type: object
+                properties:
+                  identification:
+                    description: >-
+                      Unique identification of the creditor account, usually
+                      IBAN.
+                    type: string
+                    maxLength: 34
+                    example: SK6807200002891987426353
+              tradingParty:
+                type: object
+                properties:
+                  name:
+                    description: >-
+                      Name of a third party. For card transaction, this is the
+                      name of merchant.
+                    type: string
+                    maxLength: 140
+                    example: Merchant ID
+                  identification:
+                    description: >-
+                      Unique identification of a third party. For card
+                      transaction, this is ID of merchant.
+                    type: string
+                    maxLength: 35
+                    example: AAA-GG-SSSS
+                  merchantCode:
+                    $ref: '#/definitions/MerchantCategoryCodeType'
+          relatedAgents:
+            type: object
+            properties:
+              debtorAgent:
+                type: object
+                properties:
+                  financialInstitutionIdentification:
+                    $ref: '#/definitions/BicType'
+              creditorAgent:
+                type: object
+                properties:
+                  financialInstitutionIdentification:
+                    $ref: '#/definitions/BicType'
+          remittanceInformation:
+            $ref: '#/definitions/InstructionDetailType'
+          relatedDates:
+            type: object
+            properties:
+              acceptanceDateTime:
+                description: >-
+                  Transaction entry date. The date of receiving the transaction
+                  in a bank.
+                type: string
+                format: date
+                example: '2017-08-11'
+          additionalTransactionInformation:
+            description: Bank transaction description.
+            type: string
+            maxLength: 140
+            example: Payment order (EB Sporopay)
+  TransactionListType:
+    description: >-
+      Collection of information sets about customer's financial transactions
+      executed at their bank account.
+    type: object
+    properties:
+      pageCount:
+        description: >-
+          The total number of pages of requested size within the requested date
+          range.
+        type: number
+        format: integer
+        minimum: 0
+        example: 100
+      transactions:
+        type: array
+        items:
+          $ref: '#/definitions/TransactionHistoryType'
+  TransactionsQueryType:
+    description: >-
+      Set of query, sorting, and filtering parameters for determining financial
+      transactions to be retrieved.
+    allOf:
+      - type: object
+        required:
+          - iban
+        properties:
+          iban:
+            $ref: '#/definitions/IbanType'
+      - $ref: '#/definitions/DateRangeType'
+      - $ref: '#/definitions/PageRangeType'
+      - type: object
+        properties:
+          status:
+            description: Possible statuses of transactions requested from the history.
+            type: string
+            enum:
+              - BOOK
+              - INFO
+              - ALL
+            default: ALL
+
