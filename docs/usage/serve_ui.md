@@ -1,3 +1,8 @@
+---
+title: swagger serve
+date: 2023-01-01T01:01:01-08:00
+draft: true
+---
 # Serve a documentation site
 
 The toolkit has a command to serve a spec json document and optionally a UI for a given spec. 
