@@ -300,9 +300,21 @@
         continue
       }
         {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
+        // DEBUG: ICI
+        // in .AdditionalProperties
+        // Required: {{ .Required }}
+        // IsNullable: {{ .IsNullable }}
+        // IsInterface: {{ .IsInterface }}
+        // IsMapNullOverride: {{ .IsMapNullOverride }}
+          {{- if .IsInterface }}{{/* for interface{}, ignore the artificial check against nil: empty values are allowed */}}
+      if {{ $validatedValues }}[{{ $keyVar }}] == nil {
+        return errors.Required({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}])
+      }
+          {{- else }}
       if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
+          {{- end }}
         {{- end }}
         {{- if and  .IsPrimitive (not .SkipExternalValidation ) }}
           {{- if .IsAliased }}
