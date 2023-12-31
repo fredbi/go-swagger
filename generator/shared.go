@@ -353,6 +353,7 @@ type GenOptsCommon struct {
 	WantsRootedErrorPath   bool
 
 	templates *Repository // a shallow clone of the global template repository
+	logger    genLogger
 }
 
 // CheckOpts carries out some global consistency checks on options.

@@ -29,7 +29,17 @@ var (
 	Debug = os.Getenv("DEBUG") != "" || os.Getenv("SWAGGER_DEBUG") != ""
 	// generatorLogger is a debug logger for this package
 	generatorLogger *log.Logger
+
+	// defaultLogger is a logger to report about codegen
+	defaultLogger genLogger
 )
+
+type genLogger interface {
+	Printf(format string, v ...any)
+	Println(v ...any)
+	Fatal(v ...any)
+	Fatalf(format string, v ...any)
+}
 
 func debugOptions() {
 	generatorLogger = log.New(os.Stdout, "generator:", log.LstdFlags)

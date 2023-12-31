@@ -325,6 +325,7 @@ type Repository struct {
 	funcs         template.FuncMap
 	allowOverride bool
 	mux           sync.Mutex
+	log           genLogger
 }
 
 // ShallowClone a repository.

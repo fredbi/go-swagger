@@ -41,6 +41,8 @@ type LanguageOpts struct {
 	formatFunc           func(string, []byte) ([]byte, error)
 	fileNameFunc         func(string) string // language specific source file naming rules
 	dirNameFunc          func(string) string // language specific directory naming rules
+
+	log genLogger
 }
 
 // Init the language option
@@ -53,6 +55,7 @@ func (l *LanguageOpts) Init() {
 	for _, rw := range l.ReservedWords {
 		l.reservedWordsSet[rw] = struct{}{}
 	}
+	l.log = defaultLogger
 }
 
 // MangleName makes sure a reserved word gets a safe name

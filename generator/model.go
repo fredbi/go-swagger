@@ -117,6 +117,7 @@ type definitionGenerator struct {
 	SpecDoc *loads.Document
 	Target  string
 	opts    *GenOpts
+	log     genLogger
 }
 
 func (m *definitionGenerator) Generate() error {
@@ -130,12 +131,12 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.IncludeModel {
-		log.Println("including additional model")
+		m.log.Println("including additional model")
 		if err := m.generateModel(mod); err != nil {
 			return fmt.Errorf("could not generate model: %w", err)
 		}
 	}
-	log.Println("generated model", m.Name)
+	m.log.Println("generated model", m.Name)
 
 	return nil
 }
@@ -478,6 +479,8 @@ type schemaGenContext struct {
 	IsElem bool
 	// indicates is the schema is part of a struct
 	IsProperty bool
+
+	log genLogger
 }
 
 func (sg *schemaGenContext) NewSliceBranch(schema *spec.Schema) *schemaGenContext {
