@@ -1,0 +1,36 @@
+---
+swagger: "2.0"
+info:
+  description: multiple auth
+  title: test
+  version: "0.0.0"
+
+security:
+- apiKeyHeader: []
+  oauth2CLX API: []
+- apiKeyQuery: []
+  oauth2CLX API: []
+
+securityDefinitions:
+  apiKeyHeader:
+    type: "apiKey"
+    name: "Ocp-Apim-Subscription-Key"
+    in: "header"
+  apiKeyQuery:
+    type: "apiKey"
+    name: "subscription-key"
+    in: "query"
+  oauth2CLX API:
+    type: "oauth2"
+    tokenUrl: "https://backend.api.clx.com/Token"
+    flow: "password"
+    scopes: {}
+
+paths:
+  /auth:
+    get:
+      responses:
+        200:
+          description: Successful
+          schema:
+            type: string
