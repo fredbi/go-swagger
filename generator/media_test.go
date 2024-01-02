@@ -10,31 +10,46 @@ import (
 )
 
 func TestMediaWellKnownMime(t *testing.T) {
-	w, ok := wellKnownMime(runtime.JSONMime)
-	assert.True(t, ok)
-	assert.Equal(t, jsonSerializer, w)
+	t.Run("should recognize application/json", func(t *testing.T) {
+		w, ok := wellKnownMime(runtime.JSONMime)
+		assert.True(t, ok)
+		assert.Equal(t, jsonSerializer, w)
+	})
 
-	w, ok = wellKnownMime(runtime.YAMLMime)
-	assert.True(t, ok)
-	assert.Equal(t, "yaml", w)
+	t.Run("should recognize application/yaml", func(t *testing.T) {
+		w, ok := wellKnownMime(runtime.YAMLMime)
+		assert.True(t, ok)
+		assert.Equal(t, "yaml", w)
+	})
 
-	w, ok = wellKnownMime(runtime.JSONMime + "+version=1;param=1")
-	assert.True(t, ok)
-	assert.Equal(t, jsonSerializer, w)
+	t.Run("should recognize mime with extensions", func(t *testing.T) {
+		w, ok := wellKnownMime(runtime.JSONMime + "+version=1;param=1")
+		assert.True(t, ok)
+		assert.Equal(t, jsonSerializer, w)
+	})
 
-	w, ok = wellKnownMime("unknown")
-	assert.False(t, ok)
-	assert.Equal(t, "", w)
+	t.Run("should NOT recognize mime", func(t *testing.T) {
+		w, ok := wellKnownMime("unknown")
+		assert.False(t, ok)
+		assert.Equal(t, "", w)
+	})
 }
 
 func TestMediaMime(t *testing.T) {
-	params := "param=1;param=2"
-	withParams := runtime.JSONMime + ";" + params
-	assert.Equal(t, runtime.JSONMime, mediaMime(runtime.JSONMime))
-	assert.Equal(t, runtime.JSONMime, mediaMime(withParams))
+	const (
+		params     = "param=1;param=2"
+		withParams = runtime.JSONMime + ";" + params
+	)
 
-	assert.Equal(t, params, mediaParameters(withParams))
-	assert.Equal(t, "", mediaParameters(runtime.JSONMime))
+	t.Run("should extract mime from a full mime with parameters", func(t *testing.T) {
+		assert.Equal(t, runtime.JSONMime, mediaMime(runtime.JSONMime))
+		assert.Equal(t, runtime.JSONMime, mediaMime(withParams))
+	})
+
+	t.Run("should extract parameters from a full mime with parameters", func(t *testing.T) {
+		assert.Equal(t, params, mediaParameters(withParams))
+		assert.Equal(t, "", mediaParameters(runtime.JSONMime))
+	})
 }
 
 func TestMediaGoName(t *testing.T) {
