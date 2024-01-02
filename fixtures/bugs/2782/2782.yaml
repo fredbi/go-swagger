@@ -1,0 +1,39 @@
+---
+swagger: "2.0"
+info:
+  description: patch with array
+  title: test
+  version: "0.0.0"
+paths:
+  /change/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+
+      - name: myArray
+        description: array to post
+        in: body
+        required: true
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/item'
+    post:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+
+    patch:
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+
+definitions:
+  item:
+    type: string
