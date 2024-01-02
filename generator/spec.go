@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -20,6 +19,8 @@ import (
 )
 
 func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
+	l := g.Logger()
+
 	// Load spec document
 	specDoc, err := loads.Spec(g.Spec)
 	if err != nil {
@@ -36,7 +37,7 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 
 	// Validate if needed
 	if g.ValidateSpec {
-		log.Printf("validating spec %v", g.Spec)
+		l.Infof("validating spec %v", g.Spec)
 		validationErrors := validate.Spec(specDoc, strfmt.Default)
 		if validationErrors != nil {
 			str := fmt.Sprintf("The swagger spec at %q is invalid against swagger specification %s. see errors :\n",
@@ -133,7 +134,7 @@ func (g *GenOpts) printFlattenOpts() {
 	default:
 		preprocessingOption = "full flattening"
 	}
-	log.Printf("preprocessing spec with option:  %s", preprocessingOption)
+	g.logger.Infof("preprocessing spec with option:  %s", preprocessingOption)
 }
 
 // findSwaggerSpec fetches a default swagger spec if none is provided

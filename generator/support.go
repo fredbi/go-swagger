@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"path"
 	"path/filepath"
 	"sort"
@@ -150,6 +149,7 @@ type appGenerator struct {
 }
 
 func (a *appGenerator) Generate() error {
+	l := a.GenOpts.Logger()
 	app, err := a.makeCodegenApp()
 	if err != nil {
 		return err
@@ -163,7 +163,7 @@ func (a *appGenerator) Generate() error {
 	// IPC removed concurrent execution because of the FuncMap that is being shared
 	// templates are now lazy loaded so there is concurrent map access I can't guard
 	if a.GenOpts.IncludeModel {
-		log.Printf("rendering %d models", len(app.Models))
+		l.Info("rendering %d models", len(app.Models))
 		for _, md := range app.Models {
 			mod := md
 			mod.IncludeModel = true
@@ -175,10 +175,10 @@ func (a *appGenerator) Generate() error {
 	}
 
 	if a.GenOpts.IncludeHandler {
-		log.Printf("rendering %d operation groups (tags)", app.OperationGroups.Len())
+		l.Info("rendering %d operation groups (tags)", app.OperationGroups.Len())
 		for _, g := range app.OperationGroups {
 			opg := g
-			log.Printf("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
+			l.Infof("rendering %d operations for %s", opg.Operations.Len(), opg.Name)
 			for _, p := range opg.Operations {
 				op := p
 				if err := a.GenOpts.renderOperation(&op); err != nil {
@@ -193,7 +193,7 @@ func (a *appGenerator) Generate() error {
 	}
 
 	if a.GenOpts.IncludeSupport {
-		log.Printf("rendering support")
+		l.Info("rendering support")
 		if err := a.GenerateSupport(&app); err != nil {
 			return err
 		}
@@ -251,7 +251,8 @@ func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {
 }
 
 func (a *appGenerator) makeCodegenApp() (GenApp, error) {
-	log.Println("building a plan for generation")
+	l := a.GenOpts.Logger()
+	l.Info("building a plan for generation")
 
 	sw := a.SpecDoc.Spec()
 	receiver := a.Receiver
@@ -260,7 +261,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	produces, _ := a.makeProduces()
 	security := a.makeSecuritySchemes()
 
-	log.Println("generation target", a.Target)
+	l.Info("generation target", a.Target)
 
 	baseImport := a.GenOpts.LanguageOpts.baseImport(a.Target)
 	defaultImports := a.GenOpts.defaultImports()
@@ -279,7 +280,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		imports[implAlias] = a.GenOpts.ImplementationPackage
 	}
 
-	log.Printf("planning definitions (found: %d)", len(a.Models))
+	l.Infof("planning definitions (found: %d)", len(a.Models))
 
 	genModels := make(GenDefinitions, 0, len(a.Models))
 	for mn, m := range a.Models {
@@ -308,7 +309,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(genModels)
 
-	log.Printf("planning operations (found: %d)", len(a.Operations))
+	l.Infof("planning operations (found: %d)", len(a.Operations))
 
 	genOps := make(GenOperations, 0, len(a.Operations))
 	consumesIndex := make(map[string][]string)
@@ -408,11 +409,11 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		opsGroupedByPackage[operation.PackageAlias] = append(opsGroupedByPackage[operation.PackageAlias], operation)
 	}
 
-	log.Printf("grouping operations into packages (packages: %d)", len(opsGroupedByPackage))
+	l.Infof("grouping operations into packages (packages: %d)", len(opsGroupedByPackage))
 
 	opGroups := make(GenOperationGroups, 0, len(opsGroupedByPackage))
 	for k, v := range opsGroupedByPackage {
-		log.Printf("operations for package %q (found: %d)", k, len(v))
+		l.Infof("operations for package %q (found: %d)", k, len(v))
 		sort.Sort(v)
 
 		consumesInGroup := make([]string, 0, 2)
@@ -472,7 +473,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 	}
 	sort.Sort(opGroups)
 
-	log.Println("planning meta data and facades")
+	l.Info("planning meta data and facades")
 
 	var collectedSchemes, extraSchemes []string
 	for _, op := range genOps {

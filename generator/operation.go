@@ -256,11 +256,11 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
 		if _, found := idMapping[p.In]; !found {
-			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In)
+			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In) // TODO(fred)
 			continue
 		}
 		if p.Name == "" {
-			log.Printf(`warning: unnamed parameter (%+v). Skipped`, p)
+			log.Printf(`warning: unnamed parameter (%+v). Skipped`, p) // TODO(fred)
 			continue
 		}
 
@@ -1113,6 +1113,7 @@ func (b *codeGenOpBuilder) buildOperationSchema(schemaPath, containerName, schem
 		StrictAdditionalProperties: b.GenOpts.StrictAdditionalProperties,
 		ExtraSchemas:               make(map[string]GenSchema),
 		StructTags:                 b.GenOpts.StructTags,
+		log:                        b.GenOpts.Logger(),
 	}
 
 	var (

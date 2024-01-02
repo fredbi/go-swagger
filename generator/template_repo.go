@@ -388,7 +388,8 @@ func (t *Repository) LoadDir(templatePath string) error {
 
 // LoadContrib loads template from contrib directory
 func (t *Repository) LoadContrib(name string) error {
-	log.Printf("loading contrib %s", name)
+	l := t.log
+	l.Infof("loading contrib %s", name)
 	const pathPrefix = "templates/contrib/"
 	basePath := pathPrefix + name
 	filesAdded := 0
@@ -402,7 +403,7 @@ func (t *Repository) LoadContrib(name string) error {
 			if err != nil {
 				return err
 			}
-			log.Printf("added contributed template %s from %s", target, aname)
+			l.Infof("added contributed template %s from %s", target, aname)
 			filesAdded++
 		}
 	}
@@ -600,7 +601,7 @@ func (t *Repository) DumpTemplates() {
 		}
 		fmt.Fprintln(buf, "\n---")
 	}
-	log.Println(buf.String())
+	log.Println(buf.String()) // TODO(fred)
 }
 
 // FuncMap functions

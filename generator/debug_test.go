@@ -38,11 +38,11 @@ func TestDebugLog(t *testing.T) {
 
 	// mutex for -race
 	Debug = true
-	debugOptions()
+	initDebug()
 	defer func() {
-		generatorLogger.SetOutput(os.Stdout)
+		debugLogger.SetOutput(os.Stdout)
 	}()
-	generatorLogger.SetOutput(tmpFile)
+	debugLogger.SetOutput(tmpFile)
 
 	debugLog("A debug")
 	_ = tmpFile.Close()
@@ -59,7 +59,7 @@ func TestDebugLog(t *testing.T) {
 	defer func() {
 		_ = os.Remove(tmpJSONName)
 	}()
-	generatorLogger.SetOutput(tmpJSONFile)
+	debugLogger.SetOutput(tmpJSONFile)
 	debugLogAsJSON("A short debug")
 
 	sch := struct {

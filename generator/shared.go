@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -49,7 +48,8 @@ const (
 
 func init() {
 	// all initializations for the generator package
-	debugOptions()
+	initDebug()
+	initLogger()
 	initLanguage()
 	initTemplateRepo()
 	initTypes()
@@ -468,6 +468,10 @@ func (g *GenOpts) EnsureDefaults() error {
 		g.LanguageOpts = DefaultLanguageFunc()
 	}
 
+	if g.logger == nil {
+		g.logger = defaultLogger
+	}
+
 	DefaultSectionOpts(g)
 
 	// set defaults for flattening options
@@ -509,14 +513,14 @@ func (g *GenOpts) location(t *TemplateOpts, data interface{}) (string, string, e
 	fld := v.FieldByName("Name")
 	var name string
 	if fld.IsValid() {
-		log.Println("name field", fld.String())
+		g.logger.Info("name field", fld.String())
 		name = fld.String()
 	}
 
 	fldpack := v.FieldByName("Package")
 	pkg := g.APIPackage
 	if fldpack.IsValid() {
-		log.Println("package field", fldpack.String())
+		g.logger.Info("package field", fldpack.String())
 		pkg = fldpack.String()
 	}
 
@@ -627,7 +631,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 	if err := templ.Execute(&tBuf, data); err != nil {
 		return nil, fmt.Errorf("template execution failed for template %s: %w", t.Name, err)
 	}
-	log.Printf("executed template %s", t.Source)
+	g.logger.Infof("executed template %s", t.Source)
 
 	return tBuf.Bytes(), nil
 }
@@ -637,6 +641,7 @@ func (g *GenOpts) render(t *TemplateOpts, data interface{}) ([]byte, error) {
 // additional level of checking. If this step fails, the generated
 // code is still dumped, for template debugging purposes.
 func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
+	l := g.logger
 	dir, fname, err := g.location(t, data)
 	if err != nil {
 		return fmt.Errorf("failed to resolve template location for template %s: %w", t.Name, err)
@@ -648,7 +653,7 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 		return nil
 	}
 
-	log.Printf("creating generated file %q in %q as %s", fname, dir, t.Name)
+	l.Infof("creating generated file %q in %q as %s", fname, dir, t.Name)
 	content, err := g.render(t, data)
 	if err != nil {
 		return fmt.Errorf("failed rendering template data for %s: %w", t.Name, err)
@@ -673,12 +678,12 @@ func (g *GenOpts) write(t *TemplateOpts, data interface{}) error {
 	if !t.SkipFormat {
 		formatted, err = g.LanguageOpts.FormatContent(filepath.Join(dir, fname), content)
 		if err != nil {
-			log.Printf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
+			l.Warnf("source formatting failed on template-generated source (%q for %s). Check that your template produces valid code", filepath.Join(dir, fname), t.Name)
 			writeerr = os.WriteFile(filepath.Join(dir, fname), content, 0o644) // #nosec
 			if writeerr != nil {
 				return fmt.Errorf("failed to write (unformatted) file %q in %q: %w", fname, dir, writeerr)
 			}
-			log.Printf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
+			l.Warnf("unformatted generated source %q has been dumped for template debugging purposes. DO NOT build on this source!", fname)
 			return fmt.Errorf("source formatting on generated source %q failed: %w", t.Name, err)
 		}
 	}
@@ -711,7 +716,7 @@ func (g *GenOpts) shouldRenderOperations() bool {
 }
 
 func (g *GenOpts) renderApplication(app *GenApp) error {
-	log.Printf("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
+	g.logger.Infof("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
 	for _, tp := range g.Sections.Application {
 		templ := tp
 		if !g.shouldRenderApp(&templ, app) {
@@ -723,7 +728,7 @@ func (g *GenOpts) renderApplication(app *GenApp) error {
 	}
 
 	if len(g.Sections.PostModels) > 0 {
-		log.Printf("post-rendering from %d models", len(app.Models))
+		g.logger.Printf("post-rendering from %d models", len(app.Models))
 		for _, templateToPin := range g.Sections.PostModels {
 			templateConfig := templateToPin
 			for _, modelToPin := range app.Models {
@@ -739,7 +744,7 @@ func (g *GenOpts) renderApplication(app *GenApp) error {
 }
 
 func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
-	log.Printf("rendering %d templates for operation group %s", len(g.Sections.OperationGroups), g.Name)
+	g.logger.Infof("rendering %d templates for operation group %s", len(g.Sections.OperationGroups), g.Name)
 	for _, tp := range g.Sections.OperationGroups {
 		templ := tp
 		if !g.shouldRenderOperations() {
@@ -754,7 +759,7 @@ func (g *GenOpts) renderOperationGroup(gg *GenOperationGroup) error {
 }
 
 func (g *GenOpts) renderOperation(gg *GenOperation) error {
-	log.Printf("rendering %d templates for operation %s", len(g.Sections.Operations), g.Name)
+	g.logger.Infof("rendering %d templates for operation %s", len(g.Sections.Operations), g.Name)
 	for _, tp := range g.Sections.Operations {
 		templ := tp
 		if !g.shouldRenderOperations() {
@@ -769,7 +774,7 @@ func (g *GenOpts) renderOperation(gg *GenOperation) error {
 }
 
 func (g *GenOpts) renderDefinition(gg *GenDefinition) error {
-	log.Printf("rendering %d templates for model %s", len(g.Sections.Models), gg.Name)
+	g.logger.Infof("rendering %d templates for model %s", len(g.Sections.Models), gg.Name)
 	for _, tp := range g.Sections.Models {
 		templ := tp
 		if !g.IncludeModel {
@@ -865,6 +870,10 @@ func (g *GenOpts) resolvePrincipal() (string, string, string) {
 	// NOTE(fred): we do not check here for conflicts with packages created from operation tags, only standard imports
 	alias := deconflictPrincipal(importAlias(g.Principal[:dotLocation]))
 	return alias, alias + g.Principal[dotLocation:], g.Principal[:dotLocation]
+}
+
+func (g *GenOpts) Logger() genLogger {
+	return g.logger
 }
 
 func fileExists(target, name string) bool {

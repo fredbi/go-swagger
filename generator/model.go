@@ -101,6 +101,7 @@ func GenerateDefinition(modelNames []string, opts *GenOpts) error {
 				opts.Target,
 				filepath.FromSlash(opts.LanguageOpts.ManglePackagePath(opts.ModelPackage, ""))),
 			opts: opts,
+			log:  opts.Logger(),
 		}
 
 		if err := generator.Generate(); err != nil {
@@ -131,12 +132,12 @@ func (m *definitionGenerator) Generate() error {
 	}
 
 	if m.opts.IncludeModel {
-		m.log.Println("including additional model")
+		m.log.Info("including additional model")
 		if err := m.generateModel(mod); err != nil {
 			return fmt.Errorf("could not generate model: %w", err)
 		}
 	}
-	m.log.Println("generated model", m.Name)
+	m.log.Info("generated model", m.Name)
 
 	return nil
 }
@@ -174,7 +175,7 @@ func shallowValidationLookup(sch GenSchema) bool {
 	// The latter was almost not used anyhow.
 
 	if sch.HasAdditionalProperties && sch.AdditionalProperties == nil {
-		log.Printf("warning: schema for additional properties in schema %q is empty. skipped", sch.Name)
+		log.Printf("warning: schema for additional properties in schema %q is empty. skipped", sch.Name) // TODO(fred)
 	}
 
 	if sch.IsArray && sch.HasValidations {
@@ -236,6 +237,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 	analyzed := analysis.New(specDoc.Spec())
 
 	di := discriminatorInfo(analyzed)
+	l := opts.Logger()
 
 	pg := schemaGenContext{
 		Path:                       "",
@@ -256,6 +258,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		WithXML:                    opts.WithXML,
 		StructTags:                 opts.StructTags,
 		WantsRootedErrorPath:       opts.WantsRootedErrorPath,
+		log:                        opts.Logger(),
 	}
 	if err := pg.makeGenSchema(); err != nil {
 		return nil, fmt.Errorf("could not generate schema for %s: %w", name, err)
@@ -298,7 +301,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		swsp := specDoc.Spec()
 		for i, ss := range schema.AllOf {
 			if pg.GenSchema.AllOf == nil {
-				log.Printf("warning: resolved schema for subtype %q.AllOf[%d] is empty. skipped", name, i)
+				l.Warnf("resolved schema for subtype %q.AllOf[%d] is empty. skipped", name, i)
 				continue
 			}
 			ref := ss.Ref
@@ -691,7 +694,7 @@ func (sg *schemaGenContext) schemaValidations() sharedValidations {
 		// when readOnly or default is specified, this disables Required validation (Swagger-specific)
 		isRequired = false
 		if sg.Required {
-			log.Printf("warning: properties with a default value or readOnly should not be required [%s]", sg.Name)
+			sg.log.Warnf("properties with a default value or readOnly should not be required [%s]", sg.Name)
 		}
 	}
 
@@ -923,7 +926,7 @@ func (sg *schemaGenContext) buildProperties() error {
 			if ok {
 				emprop.GenSchema.CustomTag = tagAsStr
 			} else {
-				log.Printf("warning: expect %s extension to be a string, got: %v. Skipped", xGoCustomTag, customTag)
+				sg.log.Warnf("expect %s extension to be a string, got: %v. Skipped", xGoCustomTag, customTag)
 			}
 		}
 		sg.GenSchema.Properties = append(sg.GenSchema.Properties, emprop.GenSchema)
@@ -1023,7 +1026,7 @@ func (sg *schemaGenContext) buildAllOf() error {
 	}
 
 	if hasArray > 1 || (hasArray > 0 && hasNonArray > 0) {
-		log.Printf("warning: cannot generate serializable allOf with conflicting array definitions in %s", sg.Container)
+		sg.log.Warnf("cannot generate serializable allOf with conflicting array definitions in %s", sg.Container)
 	}
 
 	// AllOf types are always considered nullable, except when an extension says otherwise
@@ -1439,6 +1442,7 @@ func (sg *schemaGenContext) makeNewStruct(name string, schema spec.Schema) *sche
 		IncludeModel:               sg.IncludeModel,
 		StrictAdditionalProperties: sg.StrictAdditionalProperties,
 		StructTags:                 sg.StructTags,
+		log:                        sg.log,
 	}
 	if schema.Ref.String() == "" {
 		pg.TypeResolver = sg.TypeResolver.NewWithModelName(name)
@@ -2069,7 +2073,7 @@ func (sg *schemaGenContext) makeGenSchema() error {
 			sg.GenSchema.HasValidations = !(tpe.IsInterface || tpe.IsStream || tpe.SkipExternalValidation)
 			sg.GenSchema.IsAliased = sg.GenSchema.HasValidations
 
-			log.Printf("INFO: type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
+			sg.log.Info("type %s is external, with inferred spec type %s, referred to as %s", sg.GenSchema.Name, sg.GenSchema.GoType, extType)
 			sg.GenSchema.GoType = extType
 			sg.GenSchema.AliasedType = extType
 
