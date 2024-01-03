@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -37,16 +38,20 @@ func configureAPI(api *operations.SwaggerAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	if api.PatchChangeIDHandler == nil {
-		api.PatchChangeIDHandler = operations.PatchChangeIDHandlerFunc(func(params operations.PatchChangeIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.PatchChangeID has not yet been implemented")
+	api.PatchChangeIDHandler = operations.PatchChangeIDHandlerFunc(func(params operations.PatchChangeIDParams) middleware.Responder {
+		return middleware.ResponderFunc(func(w http.ResponseWriter, producer runtime.Producer) {
+			producer.Produce(w,
+				fmt.Sprintf("PATCH received: %v, %v", params.ID, params.MyArray),
+			)
 		})
-	}
-	if api.PostChangeIDHandler == nil {
-		api.PostChangeIDHandler = operations.PostChangeIDHandlerFunc(func(params operations.PostChangeIDParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.PostChangeID has not yet been implemented")
+	})
+	api.PostChangeIDHandler = operations.PostChangeIDHandlerFunc(func(params operations.PostChangeIDParams) middleware.Responder {
+		return middleware.ResponderFunc(func(w http.ResponseWriter, producer runtime.Producer) {
+			producer.Produce(w,
+				fmt.Sprintf("POST received: %v, %v", params.ID, params.MyArray),
+			)
 		})
-	}
+	})
 
 	api.PreServerShutdown = func() {}
 
