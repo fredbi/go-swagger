@@ -1,9 +1,9 @@
 package generator
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"os"
@@ -589,8 +589,7 @@ func (t *Repository) Get(name string) (*template.Template, error) {
 }
 
 // DumpTemplates prints out a dump of all the defined templates, where they are defined and what their dependencies are.
-func (t *Repository) DumpTemplates() {
-	buf := bytes.NewBuffer(nil)
+func (t *Repository) DumpTemplates(buf io.Writer) {
 	fmt.Fprintln(buf, "\n# Templates")
 	for name, templ := range t.templates {
 		fmt.Fprintf(buf, "## %s\n", name)
@@ -601,7 +600,6 @@ func (t *Repository) DumpTemplates() {
 		}
 		fmt.Fprintln(buf, "\n---")
 	}
-	log.Println(buf.String()) // TODO(fred)
 }
 
 // FuncMap functions

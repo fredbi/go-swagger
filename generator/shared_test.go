@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -26,7 +25,6 @@ const (
 // This allows to run tests unitarily (e.g. go test -run xxx ).
 func TestMain(m *testing.M) {
 	// initializations to run tests in this package
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	templates.LoadDefaults()
 	initSchemaValidationTest()
 	os.Exit(m.Run())

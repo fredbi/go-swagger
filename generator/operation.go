@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -239,7 +238,7 @@ type codeGenOpBuilder struct {
 }
 
 // paramMappings yields a map of safe parameter names for an operation
-func paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string) {
+func (b *codeGenOpBuilder) paramMappings(params map[string]spec.Parameter) (map[string]map[string]string, string) {
 	idMapping := map[string]map[string]string{
 		"query":    make(map[string]string, len(params)),
 		"path":     make(map[string]string, len(params)),
@@ -256,11 +255,11 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 		debugLog("paramMappings: params: id=%s, In=%q, Name=%q", id, p.In, p.Name)
 		// guard against possible validation failures and/or skipped issues
 		if _, found := idMapping[p.In]; !found {
-			log.Printf(`warning: parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In) // TODO(fred)
+			b.GenOpts.Logger().Warn(`parameter named %q has an invalid "in": %q. Skipped`, p.Name, p.In) // TODO(fred)
 			continue
 		}
 		if p.Name == "" {
-			log.Printf(`warning: unnamed parameter (%+v). Skipped`, p) // TODO(fred)
+			b.GenOpts.Logger().Warn(`unnamed parameter (%+v). Skipped`, p) // TODO(fred)
 			continue
 		}
 
@@ -335,7 +334,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	var hasQueryParams, hasPathParams, hasHeaderParams, hasFormParams, hasFileParams, hasFormValueParams, hasBodyParams bool
 	paramsForOperation := b.Analyzed.ParamsFor(b.Method, b.Path)
 
-	idMapping, timeoutName := paramMappings(paramsForOperation)
+	idMapping, timeoutName := b.paramMappings(paramsForOperation)
 
 	for _, p := range paramsForOperation {
 		cp, err := b.MakeParameter(receiver, resolver, p, idMapping)

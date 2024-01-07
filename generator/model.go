@@ -17,7 +17,6 @@ package generator
 import (
 	"errors"
 	"fmt"
-	"log"
 	"path"
 	"path/filepath"
 	"sort"
@@ -174,10 +173,6 @@ func shallowValidationLookup(sch GenSchema) bool {
 	// and NeedsValidation (e.g. should have a Validate method with something in it).
 	// The latter was almost not used anyhow.
 
-	if sch.HasAdditionalProperties && sch.AdditionalProperties == nil {
-		log.Printf("warning: schema for additional properties in schema %q is empty. skipped", sch.Name) // TODO(fred)
-	}
-
 	if sch.IsArray && sch.HasValidations {
 		return true
 	}
@@ -222,8 +217,8 @@ func shallowValidationLookup(sch GenSchema) bool {
 	return false
 }
 
-func isExternal(schema spec.Schema) bool {
-	extType, ok := hasExternalType(schema.Extensions)
+func (pg *schemaGenContext) isExternal(schema spec.Schema) bool {
+	extType, ok := pg.TypeResolver.hasExternalType(schema.Extensions)
 	return ok && !extType.Embedded
 }
 
@@ -376,7 +371,7 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		DefaultImports: defaultImports,
 		ExtraSchemas:   gatherExtraSchemas(pg.ExtraSchemas),
 		Imports:        findImports(&pg.GenSchema),
-		External:       isExternal(schema),
+		External:       pg.isExternal(schema),
 	}, nil
 }
 

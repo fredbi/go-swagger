@@ -524,10 +524,10 @@ func TestTemplates_LoadContrib(t *testing.T) {
 // test DumpTemplates()
 func TestTemplates_DumpTemplates(t *testing.T) {
 	var buf bytes.Buffer
-	defer captureOutput(&buf)()
 
-	templates.DumpTemplates()
+	templates.DumpTemplates(&buf)
 	assert.NotEmpty(t, buf)
+
 	// Sample output
 	assert.Contains(t, buf.String(), "## tupleSerializer")
 	assert.Contains(t, buf.String(), "Defined in `tupleserializer.gotmpl`")

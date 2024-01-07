@@ -4,7 +4,6 @@
 package generator
 
 import (
-	"log"
 	"plugin"
 	"text/template"
 )
@@ -31,7 +30,7 @@ func (g *GenOpts) setTemplates() error {
 // which can add any number of functions to the template repository funcMap.
 // Any existing sprig or go-swagger templates with the same name will be overridden.
 func (t *Repository) LoadPlugin(pluginPath string) error {
-	log.Printf("Attempting to load template plugin: %s", pluginPath)
+	t.log.Info("attempting to load template plugin: %s", pluginPath)
 
 	p, err := plugin.Open(pluginPath)
 	if err != nil {

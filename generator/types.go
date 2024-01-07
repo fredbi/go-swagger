@@ -194,7 +194,7 @@ type externalTypeDefinition struct {
 	Embedded bool
 }
 
-func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
+func (t typeResolver) hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 	v, ok := ext[xGoType]
 	if !ok {
 		return nil, false
@@ -211,7 +211,7 @@ func hasExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
 }
 
 func (t typeResolver) resolveExternalType(ext spec.Extensions) (*externalTypeDefinition, bool) {
-	extType, hasExt := hasExternalType(ext)
+	extType, hasExt := t.hasExternalType(ext)
 	if !hasExt {
 		return nil, false
 	}
