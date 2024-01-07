@@ -1,11 +1,16 @@
 # Installing
 
-**IMPORTANT NOTE**: `go-swagger` is a tool to mainly generate or analyze source code. In order to make it work after successful
-installation, see [the prerequisites](https://goswagger.io/generate/requirements.html) on your development environment.
+> **IMPORTANT NOTE**: `go-swagger` is a tool to generate or analyze source code.
+> In order to make it work after a successful installation,
+> see [the prerequisites](https://goswagger.io/generate/requirements.html) on your development environment.
 
-## Installing from binary distributions
+> **NOTE**: go-swagger works on *nix as well as Windows OS 
 
-go-swagger releases are distributed as binaries that are built from signed tags. It is published [as github release](https://github.com/go-swagger/go-swagger/tags),
+## Installing from a binary distribution
+
+go-swagger releases are distributed as binaries that are built from signed tags.
+
+Each release is published [as a github release](https://github.com/go-swagger/go-swagger/tags),
 rpm, deb and docker image.
 
 ### Docker image [![Docker Repository on Quay](https://quay.io/repository/goswagger/swagger/status "Docker Repository on Quay")](https://quay.io/repository/goswagger/swagger)
@@ -22,7 +27,7 @@ or
 docker pull ghcr.io/go-swagger/go-swagger
 ```
 
-#### For Mac And Linux users:
+#### For Mac And Linux users
 
 ```bash
 alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $PWD quay.io/goswagger/swagger'
@@ -36,7 +41,7 @@ alias swagger='docker run --rm -it  --user $(id -u):$(id -g) -v $HOME:$HOME -w $
 swagger version
 ```
 
-#### For windows users:
+#### For windows users
 
 ```cmd
 docker run --rm -it  -v %CD%:/app -w /app quay.io/goswagger/swagger
@@ -69,14 +74,6 @@ docker run --rm -it -v %CD%:/app -w /app ghcr.io/go-swagger/go-swagger %*
 ```
 brew tap go-swagger/go-swagger
 brew install go-swagger
-```
-
-## Install to GOPATH using go install
-
-If you have `go` version `1.16` or greater installed the binary  can be installed by running:
-
-```
-go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 ```
 
 ### Static binary
@@ -130,7 +127,36 @@ dnf -q makecache -y --disablerepo='*' --enablerepo='go-swagger-go-swagger' --ena
 dnf install -y swagger
 ```
 
+
+## Installing from source
+
 ### Installing from source
+
+Install and build the latest release:
+```
+go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+```
+
+To install a specific release (e.g. `v0.30.5`):
+```
+go install github.com/go-swagger/go-swagger/cmd/swagger@v0.30.5
+
+swagger version
+version: v0.30.5
+commit: (unknown, mod sum: "h1:SQ2+xSonWjjoEMOV5tcOnZJVlfyUfCBhGQGArS1b9+U=")
+```
+
+To install latest (unreleased) master:
+```
+go install github.com/go-swagger/go-swagger/cmd/swagger@master
+
+swagger version
+version: v0.30.6-0.20240107083817-1e29a3d03ec7
+commit: (unknown, mod sum: "h1:wxCxSHPmJbViD1aaIRqZAbPaZp+GUGY/Gnpyem8LzXc=")
+```
+
+
+### Installing from a git clone
 
 Install or update from current source master:
 
@@ -156,4 +182,3 @@ You are welcome to clone this repo and start contributing:
 git clone https://github.com/go-swagger/go-swagger
 ```
 
-> **NOTE**: go-swagger works on *nix as well as Windows OS 

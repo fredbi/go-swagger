@@ -10,11 +10,9 @@ and conventions. That will save yourself much time and frustration.
 ### Standard golang environment
 
 * version: we support the two latest versions of the go compiler
-* `GOPATH` environment variable set: all sources reside under `$GOPATH/src`
-* it is recommended, but not mandatory, to use the `dep` tool to manage dependencies
-(see [here](https://golang.github.io/dep/docs/introduction.html))
-
-The target directory for your generated code _must_ be under GOPATH/src.
+* go module: when you analyze or produce code in a target directory,
+  make sure it is declared as a go module (i.e. run `go mod init` there)
+  or reside under the `$GOPATH/src` tree.
 
 ## Getting dependencies
 
@@ -35,28 +33,19 @@ The following required dependencies may be fetched by using `go get`:
 - [`github.com/go-openapi/swag`](https://www.github.com/go-openapi/swag)
 - [`github.com/go-openapi/validate`](https://www.github.com/go-openapi/validate)
 
-You may also build a vendor directory in your planned target: a way to achieve that is to copy there an example from the
-`go-swagger/examples` repository then run `dep` - see [how to use dep here](https://github.com/golang/dep).
-This will produce `Gopkg.toml` and `Gopkg.lock` files and construct a vendor directory with all required dependencies
-(the ones above and all transitive dependencies). Another way is to proceed in two steps, first with `go get`, then generate code, 
-then build the vendor tree with `dep`.
-
 > **NOTE** : the code generation process ends with a message indicating the packages required for your generated code.
-
 
 ### What are the dependencies required by the generated server?
 
-Additional packages required by the (default) generated server
-depend on your generation options, a command line flags handling package:
+Additional packages required by the (default) generated server depend on your generation options,
+a command line flags handling package:
 
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
 - [`github.com/spf13/pflag`](https://www.github.com/spf13/pflag)
 
 ### What are the dependencies required by the generated client?
 
-Same as above, plus:
-
-- `context`
+Same as above.
 
 ### What are the dependencies required by the generated models?
 
