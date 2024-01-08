@@ -11,7 +11,7 @@ and conventions. That will save yourself much time and frustration.
 
 * version: we support the two latest versions of the go compiler
 * go module: when you analyze or produce code in a target directory,
-  make sure it is declared as a go module (i.e. run `go mod init` there)
+  make sure it is declared as a go module (i.e. run `go mod init {module name}` there)
   or reside under the `$GOPATH/src` tree.
 
 ## Getting dependencies
@@ -19,9 +19,6 @@ and conventions. That will save yourself much time and frustration.
 Before generating code, you should make sure your target is going to properly resolve dependencies.
 
 > **NOTE**: generation makes use of the `goimports` tool and dependencies must be matched at code generation time.
-
-If your target is located under the `go-swagger` install directory (when installed from source), dependencies are directly
-provided by the `vendor` directory that ships with `go-swagger`.
 
 The following required dependencies may be fetched by using `go get`:
 
@@ -35,7 +32,7 @@ The following required dependencies may be fetched by using `go get`:
 
 > **NOTE** : the code generation process ends with a message indicating the packages required for your generated code.
 
-### What are the dependencies required by the generated server?
+### What are the additional dependencies required by the generated server?
 
 Additional packages required by the (default) generated server depend on your generation options,
 a command line flags handling package:
@@ -43,9 +40,13 @@ a command line flags handling package:
 - [`github.com/jessevdk/go-flags`](https://www.github.com/jessevdk/go-flags), or
 - [`github.com/spf13/pflag`](https://www.github.com/spf13/pflag)
 
-### What are the dependencies required by the generated client?
+### What are the additional dependencies required by the generated client?
 
-Same as above.
+None
+
+### What are the additional dependencies required by the generated CLI?
+
+TODO
 
 ### What are the dependencies required by the generated models?
 

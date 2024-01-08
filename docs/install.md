@@ -17,12 +17,14 @@ rpm, deb and docker image.
 
 First grab the image:
 
+* From Quay container registry
 ```
 docker pull quay.io/goswagger/swagger
 ```
 
 or 
 
+* From github registry
 ```
 docker pull ghcr.io/go-swagger/go-swagger
 ```
