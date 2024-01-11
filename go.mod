@@ -2,7 +2,10 @@ module github.com/go-swagger/go-swagger
 
 go 1.19
 
-replace github.com/go-openapi/swag => github.com/fredbi/swag v0.22.8-fred
+replace (
+	github.com/go-openapi/spec => github.com/fredbi/spec v0.20.14-fred-pool
+	github.com/go-openapi/swag => github.com/fredbi/swag v0.22.8-fred
+)
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
@@ -47,6 +50,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect
 	github.com/go-openapi/jsonreference v0.20.4 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
