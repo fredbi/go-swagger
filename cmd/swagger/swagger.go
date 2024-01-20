@@ -31,15 +31,6 @@ var opts struct {
 }
 
 func main() {
-	/*
-		ici, _ := os.Getwd()
-		tmp, _ := os.MkdirTemp(filepath.Join(ici, "prof"), "prof-")
-			defer profile.Start(
-				profile.MemProfile,
-				// profile.CPUProfile,
-				profile.ProfilePath(tmp),
-			).Stop()
-	*/
 	// TODO: reactivate 'defer catch all' once product is stable
 	// Recovering from internal panics
 	// Stack may be printed in Debug mode
