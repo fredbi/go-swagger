@@ -2,7 +2,7 @@ name: "Update documentation"
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master" , "exp/follow-up-hugo" ]
     paths: [ "docs/*", "hack/hugo/*" ]
 
 permissions:
@@ -28,7 +28,8 @@ jobs:
       -
         name: Run Hugo
         uses: crazy-max/ghaction-hugo@v3
-        working-directory: hack/hugo/hugo-test
+        run:
+          working-directory: hack/hugo/hugo-test
         with:
           version: latest
           extended: false
@@ -37,7 +38,8 @@ jobs:
         name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request'
         uses: crazy-max/ghaction-github-pages@v4
-        working-directory: hack/hugo/hugo-test
+        run:
+          working-directory: hack/hugo/hugo-test
         with:
           target_branch: gh-pages
           build_dir: public
