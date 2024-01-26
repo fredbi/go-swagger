@@ -1,0 +1,49 @@
+name: "Update documentation"
+
+on:
+  push:
+    branches: [ "master" ]
+    paths: [ "docs/*", "hack/hugo/*" ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  hugo:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Run Hugo
+        uses: crazy-max/ghaction-hugo@v3
+        working-directory: hack/hugo/hugo-test
+        with:
+          version: latest
+          extended: false
+          args: --cleanDestinationDir --minify -D
+      -
+        name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: crazy-max/ghaction-github-pages@v4
+        working-directory: hack/hugo/hugo-test
+        with:
+          target_branch: gh-pages
+          build_dir: public
+          #repo: github.com/fredbi/go-swagger.github.io
+          allow_empty_commit: false
+          jekyll: false
+          verbose: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
