@@ -55,7 +55,6 @@ jobs:
             --minify
             --printPathWarnings
             --ignoreCache
-            --cleanDestinationDir
             --noBuildLock
             --verbose
             --source ${{ github.workspace }}/hack/hugo/hugo-test"
