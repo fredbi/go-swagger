@@ -63,7 +63,7 @@ jobs:
         name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: hack/hugo/hugo-test/public
         #if: github.event_name != 'pull_request' # <- TODO
         #uses: crazy-max/ghaction-github-pages@v4
         #with:
