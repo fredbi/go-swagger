@@ -7,13 +7,13 @@ on:
     branches: [ "master" ]
     paths:
     - docs/*
-    - hack/hugo/*
+    - hack/doc-site/*
     - .github/workflows/update-doc.yaml
 
   pull_request_target:
     paths:
     - docs/*
-    - hack/hugo/*
+    - hack/doc-site/*
     - .github/workflows/update-doc.yaml
 
 permissions:
@@ -43,6 +43,11 @@ jobs:
             docs/
 
       -
+        name: Initialize themes
+        run: |
+          (cd hack/doc-site/hugo/ && git clone https://github.com/alex-shpak/hugo-book themes/hugo-book)
+
+      -
         name: Build site with Hugo
         uses: crazy-max/ghaction-hugo@v3
         with:
@@ -57,27 +62,14 @@ jobs:
             --ignoreCache
             --noBuildLock
             --verbose
-            --source ${{ github.workspace }}/hack/hugo/hugo-test"
+            --source ${{ github.workspace }}/hack/doc-site/hugo"
+
       -
         name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: hack/hugo/hugo-test/public
-        #if: github.event_name != 'pull_request' # <- TODO
-        #uses: crazy-max/ghaction-github-pages@v4
-        #with:
-        #  target_branch: gh-pages
-        #  build_dir: ${{ github.workspace }}/hack/hugo/hugo-test/public # <- TODO
-        #  absolute_build_dir: true
-        #  repo: fredbi/go-swagger.github.io  # <- TODO
-        # allow_empty_commit: false
-        #  jekyll: false
-        #  verbose: false
-        #  # commit_message: # <- TODO
-        #  # committer # <- TODO
-        #  # author: # <- TODO
-        #env:
-        #  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: hack/doc-site/hugo/public
+
   deploy-doc:
     environment:
       name: github-pages
