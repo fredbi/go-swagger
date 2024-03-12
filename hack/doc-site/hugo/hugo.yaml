@@ -16,6 +16,13 @@ module:
       target: 'assets'
     - source: 'themes/go-swagger-static'
       target: 'static'
+    # Versions
+    - source: 'themes/master'
+      target: 'content/versions/master'
+    #- source: 'themes/v0.30.5/docs'
+    #  target: 'content/v0.30.5'
+    - source: 'themes/v0.29.0'
+      target: 'content/versions/v0.29.0'
 
 sitemap:
   changeFreq: ""

@@ -41,9 +41,12 @@ jobs:
           sparse-checkout: |
             hack/
             docs/
+            examples/
 
       -
         name: Initialize themes
+        # NOTE: we prefer to clone during the CI process rather than
+        # declaring submodules in the main repo. This is debatable.
         run: |
           (cd hack/doc-site/hugo/ && git clone https://github.com/alex-shpak/hugo-book themes/hugo-book)
 

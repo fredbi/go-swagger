@@ -1,0 +1,9 @@
+  <ul>
+  {{ range readDir "public/versions" }}
+    {{ if .IsDir }}
+    <li>
+      <a href="{{ .Name }}/index.html">{{ .Name }}</a>
+    </li>
+    {{ end }}
+  {{ end }}
+  </ul>
