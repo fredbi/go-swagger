@@ -1,0 +1,141 @@
+name: "Release documentation set"
+
+on:
+  push:
+    tags:
+    - v*
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  #SITE="https://goswagger.io"
+  SITE: "https://fredbi.github.io"
+  GH_PAGES_REPO: fredbi/go-swagger.github.io
+  GH_PAGES_STAGING: hack/doc-site/github-pages
+
+jobs:
+  build-doc:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Generate token authorized to site repository
+        # This step requires an organization app to be configured
+        # and installed with write permissions on GH_PAGES_REPO
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GH_DOC_BOT_APP_ID }}
+          private-key: ${{ secrets.GH_DOC_BOT_KEY }}
+
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+          #fetch-tags: 'true'
+          submodules: recursive
+          sparse-checkout: |
+            hack/
+            docs/
+
+      - name: Get all tags
+        run: git fetch --prune --unshallow --tags
+
+      -
+        name: Initialize themes
+        run: |
+          (cd hack/doc-site/hugo/ && git clone https://github.com/alex-shpak/hugo-book themes/hugo-book)
+
+      -
+        name: Checkout github pages main site
+        uses: actions/checkout@v4
+        with:
+          repository: ${{env.GH_PAGES_REPO}}
+          path: $${{env.GH_PAGES_STAGING}}
+          # We don't need to checkout all this content. Remember later to git add with --sparse.
+          sparse-checkout: |
+            index.html
+          fetch-depth: '1'
+
+      -
+        name: Prepare config
+        run: |
+          # For released documentation, we use a slightly different configuration than for master,
+          # as the baseURL will be {site}/{release} instead of {site}/go-swagger.
+          #
+          # Also, we disable the "edit" button on this frozen version and add a banner to mention the released doc set.
+          cd hack/doc-site/hugo
+
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          VERSION_MESSAGE="Documentation set for release ${LATEST_RELEASE}."
+          ROOT=$(git rev-parse --show-toplevel)
+          REQUIRED_GO_VERSION=$(grep "^go\s" "${ROOT}"/go.mod|cut -d" " -f2)
+          printf \
+          "params:\n  goswagger:\n    goVersion: '%s'\n    latestRelease: '%s'\n    versionMessage: '%s'\n" \
+          "${REQUIRED_GO_VERSION}" "${LATEST_RELEASE}" "${VERSION_MESSAGE}" > goswagger.yaml
+
+          # Tweak HUGO configuration to produce released documentation site at {url}/vx.y.z.
+          sed 's/^baseURL:[[:space:]]*\(.\+\)$/baseURL: '$(echo "${SITE}/${LATEST_RELEASE}"|sed 's/\//\\\//g')'/' hugo.yaml | \
+          sed 's/^[[:space:]]\+BookEditPath:\(.\+\)$/  #BookEditPath:\1/' > release.yaml
+
+      -
+        name: Build site with Hugo for release documentation set
+        uses: crazy-max/ghaction-hugo@v3
+        with:
+          version: v0.123.8  # <- pin the HUGO version, at they often break things
+          extended: true
+          args: >
+            --config release.yaml,goswagger.yaml
+            --buildDrafts
+            --cleanDestinationDir
+            --minify
+            --printPathWarnings
+            --ignoreCache
+            --noBuildLock
+            --logLevel info
+            --source ${{ github.workspace }}/hack/doc-site/hugo"
+
+      -
+        name: Copy generated site
+        run: |
+          ROOT=$(git rev-parse --show-toplevel)
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          cd ${{env.GH_PAGES_STAGING}}
+          mkdir "${LATEST_RELEASE}"
+
+          (cd "${ROOT}"/hack/doc-site/hugo/public;tar cf - .)|(cd "${LATEST_RELEASE}";tar xf -)
+
+      -
+        name: Create PR for goswagger.github.io
+        # TODO: directly push to master & tag
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          cd $(git rev-parse --show-toplevel)
+          LATEST_RELEASE=$(git describe --tags --abbrev=0)
+          BRANCH="doc/${LATEST_RELEASE}"
+          cd ${{env.GH_PAGES_STAGING}}
+
+          gh auth status
+          gh auth setup-git
+
+          git checkout -b "${BRANCH}"
+          git config --global user.email "doc-bot@goswagger.io"
+          git config --global user.name "doc-bot@goswagger.io"
+          git add "${LATEST_RELEASE}" --sparse
+          git commit -m "doc: release documentation set for release ${LATEST_RELEASE}"
+          git push --set-upstream origin "${BRANCH}"
+
+          echo "pushing content to ${GH_PAGES_REPO}"
+          gh pr create -R ${GH_PAGES_REPO} --fill --base master --label release --label "${LATEST_RELEASE}"
