@@ -1,4 +1,4 @@
-name: "Update documentation TEST"
+name: "Update documentation TEST 2"
 
 on:
   push:
