@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-	"github.com/go-openapi/swag"
+	"github.com/go-openapi/swag/yamlutils"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -57,7 +57,7 @@ func writeToFile(swspec *spec.Swagger, pretty bool, format string, output string
 		// marshals as YAML
 		b, err = json.Marshal(swspec)
 		if err == nil {
-			var data swag.JSONMapSlice
+			var data yamlutils.YAMLMapSlice
 			if erg := json.Unmarshal(b, &data); erg != nil {
 				log.Fatalln(erg)
 			}

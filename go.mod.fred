@@ -96,16 +96,16 @@ require (
 )
 
 replace (
-	github.com/go-openapi/swag => /home/fred/src/github.com/go-openapi/swag
-	github.com/go-openapi/swag/cmdutils => /home/fred/src/github.com/go-openapi/swag/cmdutils
-	github.com/go-openapi/swag/conv => /home/fred/src/github.com/go-openapi/swag/conv
-	github.com/go-openapi/swag/fileutils => /home/fred/src/github.com/go-openapi/swag/fileutils
-	github.com/go-openapi/swag/jsonname => /home/fred/src/github.com/go-openapi/swag/jsonname
-	github.com/go-openapi/swag/jsonutils => /home/fred/src/github.com/go-openapi/swag/jsonutils
-	github.com/go-openapi/swag/loading => /home/fred/src/github.com/go-openapi/swag/loading
-	github.com/go-openapi/swag/mangling => /home/fred/src/github.com/go-openapi/swag/mangling
-	github.com/go-openapi/swag/netutils => /home/fred/src/github.com/go-openapi/swag/netutils
-	github.com/go-openapi/swag/stringutils => /home/fred/src/github.com/go-openapi/swag/stringutils
-	github.com/go-openapi/swag/typeutils => /home/fred/src/github.com/go-openapi/swag/typeutils
-	github.com/go-openapi/swag/yamlutils => /home/fred/src/github.com/go-openapi/swag/yamlutils
+	github.com/go-openapi/swag => github.com/fredbi/swag v0.24.0-fred
+	github.com/go-openapi/swag/cmdutils => github.com/fredbi/swag/cmdutils v0.24.0-fred
+	github.com/go-openapi/swag/conv => github.com/fredbi/swag/conv v0.24.0-fred
+	github.com/go-openapi/swag/fileutils => github.com/fredbi/swag/fileutils v0.24.0-fred
+	github.com/go-openapi/swag/jsonname => github.com/fredbi/swag/jsonname v0.24.0-fred
+	github.com/go-openapi/swag/jsonutils => github.com/fredbi/swag/jsonutils v0.24.0-fred
+	github.com/go-openapi/swag/loading => github.com/fredbi/swag/loading v0.24.0-fred
+	github.com/go-openapi/swag/mangling => github.com/fredbi/swag/mangling v0.24.0-fred
+	github.com/go-openapi/swag/netutils => github.com/fredbi/swag/netutils v0.24.0-fred
+	github.com/go-openapi/swag/stringutils => github.com/fredbi/swag/stringutils v0.24.0-fred
+	github.com/go-openapi/swag/typeutils => github.com/fredbi/swag/typeutils v0.24.0-fred
+	github.com/go-openapi/swag/yamlutils => github.com/fredbi/swag/yamlutils v0.24.0-fred
 )
