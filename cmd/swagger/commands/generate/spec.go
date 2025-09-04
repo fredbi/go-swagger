@@ -58,20 +58,20 @@ func (s *SpecFile) Execute(args []string) error {
 		return err
 	}
 
-	var opts codescan.Options
-	opts.Packages = args
-	opts.WorkDir = s.WorkDir
-	opts.InputSpec = input
-	opts.ScanModels = s.ScanModels
-	opts.BuildTags = s.BuildTags
-	opts.Include = s.Include
-	opts.Exclude = s.Exclude
-	opts.IncludeTags = s.IncludeTags
-	opts.ExcludeTags = s.ExcludeTags
-	opts.ExcludeDeps = s.ExcludeDeps
-	opts.SetXNullableForPointers = s.SetXNullableForPointers
-	opts.RefAliases = s.RefAliases
-	swspec, err := codescan.Run(&opts)
+	swspec, err := codescan.Run(
+		codescan.WithPackages(args),
+		codescan.WithWorkDir(s.WorkDir),
+		codescan.WithInputSpec(input),
+		codescan.WithScanModels(s.ScanModels),
+		codescan.WithBuildTags(s.BuildTags),
+		codescan.WithIncludePkgs(s.Include),
+		codescan.WithExcludePkgs(s.Exclude),
+		codescan.WithIncludeTags(s.IncludeTags),
+		codescan.WithExcludeTags(s.ExcludeTags),
+		codescan.WithExcludeDeps(s.ExcludeDeps),
+		codescan.WithXNullableForPointers(s.SetXNullableForPointers),
+		codescan.WithRefAliases(s.RefAliases),
+	)
 	if err != nil {
 		return err
 	}

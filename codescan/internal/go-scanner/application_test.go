@@ -1,4 +1,4 @@
-package codescan
+package scanner
 
 /*
 import (
@@ -10,15 +10,15 @@ import (
 	"testing"
 
 	"github.com/go-openapi/spec"
-	"github.com/go-swagger/go-swagger/codescan/internal/go-scanner"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	petstoreCtx       *scanner.ScanContext
-	classificationCtx *scanner.ScanContext
+	petstoreCtx       *ScanContext
+	classificationCtx *ScanContext
 )
 
 var (
@@ -90,7 +90,7 @@ func TestAppScanner_Definitions(t *testing.T) {
 	}
 }
 
-func loadPetstorePkgsCtx(t testing.TB) *scanner.ScanContext {
+func loadPetstorePkgsCtx(t testing.TB) *ScanContext {
 	if petstoreCtx != nil {
 		return petstoreCtx
 	}
@@ -102,7 +102,7 @@ func loadPetstorePkgsCtx(t testing.TB) *scanner.ScanContext {
 	return petstoreCtx
 }
 
-func loadClassificationPkgsCtx(t testing.TB, extra ...string) *scanner.ScanContext {
+func loadClassificationPkgsCtx(t testing.TB, extra ...string) *ScanContext {
 	if classificationCtx != nil {
 		return classificationCtx
 	}
