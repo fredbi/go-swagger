@@ -12,142 +12,13 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 
 	oaispec "github.com/go-openapi/spec"
+
 	parsers "github.com/go-swagger/go-swagger/codescan/internal/comment-parsers"
 	"github.com/go-swagger/go-swagger/codescan/internal/debug"
 	"github.com/go-swagger/go-swagger/codescan/internal/go-scanner"
+	"github.com/go-swagger/go-swagger/codescan/internal/ifaces"
+	rules "github.com/go-swagger/go-swagger/codescan/internal/type-rules"
 )
-
-type ResponseTypable struct {
-	in       string
-	header   *oaispec.Header
-	response *oaispec.Response
-}
-
-func (ht ResponseTypable) In() string { return ht.in }
-
-func (ht ResponseTypable) Level() int { return 0 }
-
-func (ht ResponseTypable) Typed(tpe, format string) {
-	ht.header.Typed(tpe, format)
-}
-
-func bodyTypable(in string, schema *oaispec.Schema) (swaggerTypable, *oaispec.Schema) {
-	if in == "body" {
-		// get the schema for items on the schema property
-		if schema == nil {
-			schema = new(oaispec.Schema)
-		}
-		if schema.Items == nil {
-			schema.Items = new(oaispec.SchemaOrArray)
-		}
-		if schema.Items.Schema == nil {
-			schema.Items.Schema = new(oaispec.Schema)
-		}
-		schema.Typed("array", "")
-		return schemaTypable{schema.Items.Schema, 1}, schema
-	}
-	return nil, nil
-}
-
-func (ht ResponseTypable) Items() swaggerTypable {
-	bdt, schema := bodyTypable(ht.in, ht.response.Schema)
-	if bdt != nil {
-		ht.response.Schema = schema
-		return bdt
-	}
-
-	if ht.header.Items == nil {
-		ht.header.Items = new(oaispec.Items)
-	}
-	ht.header.Type = "array"
-	return itemsTypable{ht.header.Items, 1, "header"}
-}
-
-func (ht ResponseTypable) SetRef(ref oaispec.Ref) {
-	// having trouble seeing the usefulness of this one here
-	ht.Schema().Ref = ref
-}
-
-func (ht ResponseTypable) Schema() *oaispec.Schema {
-	if ht.response.Schema == nil {
-		ht.response.Schema = new(oaispec.Schema)
-	}
-	return ht.response.Schema
-}
-
-func (ht ResponseTypable) SetSchema(schema *oaispec.Schema) {
-	ht.response.Schema = schema
-}
-
-func (ht ResponseTypable) CollectionOf(items *oaispec.Items, format string) {
-	ht.header.CollectionOf(items, format)
-}
-
-func (ht ResponseTypable) AddExtension(key string, value interface{}) {
-	ht.response.AddExtension(key, value)
-}
-
-func (ht ResponseTypable) WithEnum(values ...interface{}) {
-	ht.header.WithEnum(values)
-}
-
-func (ht ResponseTypable) WithEnumDescription(_ string) {
-	// no
-}
-
-type headerValidations struct {
-	current *oaispec.Header
-}
-
-func (sv headerValidations) SetMaximum(val float64, exclusive bool) {
-	sv.current.Maximum = &val
-	sv.current.ExclusiveMaximum = exclusive
-}
-
-func (sv headerValidations) SetMinimum(val float64, exclusive bool) {
-	sv.current.Minimum = &val
-	sv.current.ExclusiveMinimum = exclusive
-}
-
-func (sv headerValidations) SetMultipleOf(val float64) {
-	sv.current.MultipleOf = &val
-}
-
-func (sv headerValidations) SetMinItems(val int64) {
-	sv.current.MinItems = &val
-}
-
-func (sv headerValidations) SetMaxItems(val int64) {
-	sv.current.MaxItems = &val
-}
-
-func (sv headerValidations) SetMinLength(val int64) {
-	sv.current.MinLength = &val
-}
-
-func (sv headerValidations) SetMaxLength(val int64) {
-	sv.current.MaxLength = &val
-}
-
-func (sv headerValidations) SetPattern(val string) {
-	sv.current.Pattern = val
-}
-
-func (sv headerValidations) SetUnique(val bool) {
-	sv.current.UniqueItems = val
-}
-
-func (sv headerValidations) SetCollectionFormat(val string) {
-	sv.current.CollectionFormat = val
-}
-
-func (sv headerValidations) SetEnum(val string) {
-	sv.current.Enum = parseEnum(val, &oaispec.SimpleSchema{Type: sv.current.Type, Format: sv.current.Format})
-}
-
-func (sv headerValidations) SetDefault(val interface{}) { sv.current.Default = val }
-
-func (sv headerValidations) SetExample(val interface{}) { sv.current.Example = val }
 
 type Builder struct {
 	ctx       *scanner.ScanContext
@@ -177,7 +48,7 @@ func (r *Builder) Build(responses map[string]oaispec.Response) error {
 	debug.Log("building response: %s", name)
 
 	// analyze doc comment for the model
-	sp := new(parsers.SectionedParser)
+	sp := parsers.NewSectionedParser()
 	sp.setDescription = func(lines []string) { response.Description = r.ctx.Matcher().JoinDropLast(lines) }
 	if err := sp.Parse(r.decl.Comments); err != nil {
 		return err
@@ -197,12 +68,12 @@ func (r *Builder) Build(responses map[string]oaispec.Response) error {
 	return nil
 }
 
-func (r *Builder) buildFromField(fld *types.Var, tpe types.Type, typable swaggerTypable, seen map[string]bool) error {
+func (r *Builder) buildFromField(fld *types.Var, tpe types.Type, typable ifaces.SwaggerTypable, seen map[string]bool) error {
 	debug.Log("build from field %s: %T", fld.Name(), tpe)
 
 	switch ftpe := tpe.(type) {
 	case *types.Basic:
-		return swaggerSchemaForType(ftpe.Name(), typable)
+		return rules.SwaggerSchemaForType(ftpe.Name(), typable)
 	case *types.Struct:
 		return r.buildFromFieldStruct(ftpe, typable)
 	case *types.Pointer:
@@ -225,7 +96,7 @@ func (r *Builder) buildFromField(fld *types.Var, tpe types.Type, typable swagger
 	}
 }
 
-func (r *Builder) buildFromFieldStruct(ftpe *types.Struct, typable swaggerTypable) error {
+func (r *Builder) buildFromFieldStruct(ftpe *types.Struct, typable ifaces.SwaggerTypable) error {
 	sb := schemaBuilder{
 		decl: r.decl,
 		ctx:  r.ctx,
@@ -240,7 +111,7 @@ func (r *Builder) buildFromFieldStruct(ftpe *types.Struct, typable swaggerTypabl
 	return nil
 }
 
-func (r *Builder) buildFromFieldMap(ftpe *types.Map, typable swaggerTypable) error {
+func (r *Builder) buildFromFieldMap(ftpe *types.Map, typable ifaces.SwaggerTypable) error {
 	schema := new(oaispec.Schema)
 	typable.Schema().Typed("object", "").AdditionalProperties = &oaispec.SchemaOrBool{
 		Schema: schema,
@@ -260,7 +131,7 @@ func (r *Builder) buildFromFieldMap(ftpe *types.Map, typable swaggerTypable) err
 	return nil
 }
 
-func (r *Builder) buildFromFieldInterface(tpe types.Type, typable swaggerTypable) error {
+func (r *Builder) buildFromFieldInterface(tpe types.Type, typable ifaces.SwaggerTypable) error {
 	sb := schemaBuilder{
 		decl: r.decl,
 		ctx:  r.ctx,
@@ -309,7 +180,7 @@ func (r *Builder) buildNamedType(tpe *types.Named, resp *oaispec.Response, seen 
 			typable := schemaTypable{schema: &schema, level: 0}
 
 			d := decl.Obj()
-			if isStdTime(d) {
+			if rules.IsStdTime(d) {
 				typable.Typed("string", "date-time")
 				return nil
 			}
@@ -377,7 +248,7 @@ func (r *Builder) buildAlias(tpe *types.Alias, resp *oaispec.Response, seen map[
 	return r.buildFromType(rhs, resp, seen)
 }
 
-func (r *Builder) buildNamedField(ftpe *types.Named, typable swaggerTypable) error {
+func (r *Builder) buildNamedField(ftpe *types.Named, typable ifaces.SwaggerTypable) error {
 	decl, found := r.ctx.DeclForType(ftpe.Obj().Type())
 	if !found {
 		return fmt.Errorf("unable to find package and source file for: %s", ftpe.String())
@@ -406,7 +277,7 @@ func (r *Builder) buildNamedField(ftpe *types.Named, typable swaggerTypable) err
 	return nil
 }
 
-func (r *Builder) buildFieldAlias(tpe *types.Alias, typable swaggerTypable, fld *types.Var, seen map[string]bool) error {
+func (r *Builder) buildFieldAlias(tpe *types.Alias, typable ifaces.SwaggerTypable, fld *types.Var, seen map[string]bool) error {
 	_ = fld
 	_ = seen
 	o := tpe.Obj()
@@ -497,7 +368,7 @@ func (r *Builder) buildFromStruct(decl *scanner.EntityDecl, tpe *types.Struct, r
 		// support swagger:file for response
 		// An API operation can return a file, such as an image or PDF. In this case,
 		// define the response schema with type: file and specify the appropriate MIME types in the produces section.
-		if afld.Doc != nil && fileParam(afld.Doc) {
+		if afld.Doc != nil && matcher.FileParam(afld.Doc) {
 			resp.Schema = &oaispec.Schema{}
 			resp.Schema.Typed("file", "")
 		} else {
@@ -511,49 +382,53 @@ func (r *Builder) buildFromStruct(decl *scanner.EntityDecl, tpe *types.Struct, r
 			ps.Typed("string", strfmtName)
 		}
 
-		sp := new(parsers.SectionedParser)
+		// TODO: NewResponseParser
+		sp := parsers.NewSectionedParser()
 		sp.setDescription = func(lines []string) { ps.Description = joinDropLast(lines) }
-		sp.taggers = []tagParser{
-			newSingleLineTagParser("maximum", &setMaximum{headerValidations{&ps}, rxf(rxMaximumFmt, "")}),
-			newSingleLineTagParser("minimum", &setMinimum{headerValidations{&ps}, rxf(rxMinimumFmt, "")}),
-			newSingleLineTagParser("multipleOf", &setMultipleOf{headerValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
-			newSingleLineTagParser("minLength", &setMinLength{headerValidations{&ps}, rxf(rxMinLengthFmt, "")}),
-			newSingleLineTagParser("maxLength", &setMaxLength{headerValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
-			newSingleLineTagParser("pattern", &setPattern{headerValidations{&ps}, rxf(rxPatternFmt, "")}),
-			newSingleLineTagParser("collectionFormat", &setCollectionFormat{headerValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
-			newSingleLineTagParser("minItems", &setMinItems{headerValidations{&ps}, rxf(rxMinItemsFmt, "")}),
-			newSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
-			newSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
-			newSingleLineTagParser("enum", &setEnum{headerValidations{&ps}, rxf(rxEnumFmt, "")}),
-			newSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxDefaultFmt, "")}),
-			newSingleLineTagParser("example", &setExample{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxExampleFmt, "")}),
+
+		sp.taggers = []parsers.TagParser{
+			parsers.NewSingleLineTagParser("maximum", &setMaximum{headerValidations{&ps}, rxf(rxMaximumFmt, "")}),
+			parsers.NewSingleLineTagParser("minimum", &setMinimum{headerValidations{&ps}, rxf(rxMinimumFmt, "")}),
+			parsers.NewSingleLineTagParser("multipleOf", &setMultipleOf{headerValidations{&ps}, rxf(rxMultipleOfFmt, "")}),
+			parsers.NewSingleLineTagParser("minLength", &setMinLength{headerValidations{&ps}, rxf(rxMinLengthFmt, "")}),
+			parsers.NewSingleLineTagParser("maxLength", &setMaxLength{headerValidations{&ps}, rxf(rxMaxLengthFmt, "")}),
+			parsers.NewSingleLineTagParser("pattern", &setPattern{headerValidations{&ps}, rxf(rxPatternFmt, "")}),
+			parsers.NewSingleLineTagParser("collectionFormat", &setCollectionFormat{headerValidations{&ps}, rxf(rxCollectionFormatFmt, "")}),
+			parsers.NewSingleLineTagParser("minItems", &setMinItems{headerValidations{&ps}, rxf(rxMinItemsFmt, "")}),
+			parsers.NewSingleLineTagParser("maxItems", &setMaxItems{headerValidations{&ps}, rxf(rxMaxItemsFmt, "")}),
+			parsers.NewSingleLineTagParser("unique", &setUnique{headerValidations{&ps}, rxf(rxUniqueFmt, "")}),
+			parsers.NewSingleLineTagParser("enum", &setEnum{headerValidations{&ps}, rxf(rxEnumFmt, "")}),
+			parsers.NewSingleLineTagParser("default", &setDefault{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxDefaultFmt, "")}),
+			parsers.NewSingleLineTagParser("example", &setExample{&ps.SimpleSchema, headerValidations{&ps}, rxf(rxExampleFmt, "")}),
 		}
-		itemsTaggers := func(items *oaispec.Items, level int) []tagParser {
+
+		itemsTaggers := func(items *oaispec.Items, level int) []parsers.TagParser {
 			// the expression is 1-index based not 0-index
 			itemsPrefix := fmt.Sprintf(rxItemsPrefixFmt, level+1)
 
-			return []tagParser{
-				newSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
-				newSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
+			return []parsers.TagParser{
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMaximum", level), &setMaximum{itemsValidations{items}, rxf(rxMaximumFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMinimum", level), &setMinimum{itemsValidations{items}, rxf(rxMinimumFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMultipleOf", level), &setMultipleOf{itemsValidations{items}, rxf(rxMultipleOfFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMinLength", level), &setMinLength{itemsValidations{items}, rxf(rxMinLengthFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMaxLength", level), &setMaxLength{itemsValidations{items}, rxf(rxMaxLengthFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dPattern", level), &setPattern{itemsValidations{items}, rxf(rxPatternFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dCollectionFormat", level), &setCollectionFormat{itemsValidations{items}, rxf(rxCollectionFormatFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMinItems", level), &setMinItems{itemsValidations{items}, rxf(rxMinItemsFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dMaxItems", level), &setMaxItems{itemsValidations{items}, rxf(rxMaxItemsFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dUnique", level), &setUnique{itemsValidations{items}, rxf(rxUniqueFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dEnum", level), &setEnum{itemsValidations{items}, rxf(rxEnumFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dDefault", level), &setDefault{&items.SimpleSchema, itemsValidations{items}, rxf(rxDefaultFmt, itemsPrefix)}),
+				parsers.NewSingleLineTagParser(fmt.Sprintf("items%dExample", level), &setExample{&items.SimpleSchema, itemsValidations{items}, rxf(rxExampleFmt, itemsPrefix)}),
 			}
 		}
 
-		var parseArrayTypes func(expr ast.Expr, items *oaispec.Items, level int) ([]tagParser, error)
-		parseArrayTypes = func(expr ast.Expr, items *oaispec.Items, level int) ([]tagParser, error) {
+		var parseArrayTypes func(expr ast.Expr, items *oaispec.Items, level int) ([]parsers.TagParser, error)
+		parseArrayTypes = func(expr ast.Expr, items *oaispec.Items, level int) ([]parsers.TagParser, error) {
 			if items == nil {
-				return []tagParser{}, nil
+				return []parsers.TagParser{}, nil
 			}
+
 			switch iftpe := expr.(type) {
 			case *ast.ArrayType:
 				eleTaggers := itemsTaggers(items, level)
@@ -564,7 +439,7 @@ func (r *Builder) buildFromStruct(decl *scanner.EntityDecl, tpe *types.Struct, r
 				}
 				return otherTaggers, nil
 			case *ast.Ident:
-				taggers := []tagParser{}
+				taggers := []parsers.TagParser{}
 				if iftpe.Obj == nil {
 					taggers = itemsTaggers(items, level)
 				}
@@ -617,11 +492,12 @@ func (r *Builder) buildFromStruct(decl *scanner.EntityDecl, tpe *types.Struct, r
 			delete(resp.Headers, k)
 		}
 	}
+
 	return nil
 }
 
-func (r *Builder) makeRef(decl *scanner.EntityDecl, prop swaggerTypable) error {
-	nm, _ := decl.Names()
+func (r *Builder) makeRef(decl *scanner.EntityDecl, prop ifaces.SwaggerTypable) error {
+	nm, _ := decl.ModelNames()
 	ref, err := oaispec.NewRef("#/definitions/" + nm)
 	if err != nil {
 		return err

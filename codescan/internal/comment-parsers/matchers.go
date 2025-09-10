@@ -3,6 +3,7 @@ package parsers
 import (
 	"fmt"
 	"go/ast"
+	"iter"
 	"regexp"
 	"slices"
 	"strings"
@@ -78,6 +79,16 @@ func (m *Matcher) EnumName(comments *ast.CommentGroup) (string, bool) {
 
 func (m *Matcher) Annotation(line string) (string, bool) {
 	return submatchInLine(rxSwaggerAnnotation)(line)
+}
+
+func (m *Matcher) CheckExtensionsSeq(extensionKeys iter.Seq[string]) bool {
+	for k := range extensionKeys {
+		if !rxAllowedExtensions.MatchString(k) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func submatchesInComments(rx *regexp.Regexp) func(*ast.CommentGroup) ([]string, bool) {

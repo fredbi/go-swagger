@@ -58,10 +58,23 @@ func New(opts *Options) *ScanContext {
 		cfg.BuildFlags = []string{"-tags", opts.BuildTags}
 	}
 
+	match := parsers.NewMatcher()
+	idx := newTypeIndex(
+		withExcludeDeps(opts.ExcludeDeps),
+		withIncludeTags(sliceToSet(opts.IncludeTags)),
+		withExcludeTags(sliceToSet(opts.ExcludeTags)),
+		withIncludePkgs(opts.Include),
+		withExcludePkgs(opts.Exclude),
+		withXNullableForPointers(opts.SetXNullableForPointers),
+		withRefAliases(opts.RefAliases),
+		withMatcher(match),
+	)
+
 	return &ScanContext{
 		Options: opts,
 		cfg:     cfg,
-		match:   parsers.NewMatcher(),
+		app:     idx,
+		match:   match,
 	}
 }
 
@@ -72,23 +85,11 @@ func (c *ScanContext) Scan() error {
 		return err
 	}
 
-	idx := newTypeIndex(
-		withExcludeDeps(c.Options.ExcludeDeps),
-		withIncludeTags(sliceToSet(c.Options.IncludeTags)),
-		withExcludeTags(sliceToSet(c.Options.ExcludeTags)),
-		withIncludePkgs(c.Options.Include),
-		withExcludePkgs(c.Options.Exclude),
-		withXNullableForPointers(c.Options.SetXNullableForPointers),
-		withRefAliases(c.Options.RefAliases),
-		withMatcher(c.match),
-	)
-
-	if err = idx.Build(pkgs); err != nil {
+	if err = c.app.Build(pkgs); err != nil {
 		return err
 	}
 
 	c.pkgs = pkgs
-	c.app = idx
 
 	return nil
 }
@@ -314,7 +315,6 @@ func newTypeIndex(opts ...typeIndexOption) *typeIndex {
 		AllPackages: make(map[string]*packages.Package),
 		Models:      make(map[*ast.Ident]*EntityDecl),
 		ExtraModels: make(map[*ast.Ident]*EntityDecl),
-		match:       parsers.NewMatcher(),
 	}
 
 	for _, apply := range opts {
@@ -333,6 +333,7 @@ func (a *typeIndex) Build(pkgs []*packages.Package) error {
 		if _, known := a.AllPackages[pkg.PkgPath]; known {
 			continue
 		}
+
 		a.AllPackages[pkg.PkgPath] = pkg
 		if err := a.processPackage(pkg); err != nil {
 			return err
@@ -528,7 +529,7 @@ func (a *typeIndex) detectNodes(file *ast.File) (node, error) {
 				return invalidNode, fmt.Errorf("classifier: unknown swagger annotation %q", annotation)
 			}
 
-			if node&(modelNode|parametersNode|responseNode) > 0 {
+			if node&(modelNode|parametersNode|responseNode) != 0 {
 				if seenStruct != "" && seenStruct != annotation {
 					return 0, fmt.Errorf("classifier: already annotated as %s, can't also be %q - %s", seenStruct, annotation, cline.Text)
 				}

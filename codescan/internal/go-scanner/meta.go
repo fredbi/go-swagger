@@ -17,44 +17,42 @@ package scanner
 import (
 	"encoding/json"
 	"fmt"
-	"go/ast"
 	"net/mail"
 	"regexp"
 	"strings"
 
-	"github.com/go-openapi/spec"
+	oaispec "github.com/go-openapi/spec"
 	parsers "github.com/go-swagger/go-swagger/codescan/internal/comment-parsers"
 )
 
-type MetaSection struct {
-	Comments *ast.CommentGroup
+type MetaContentSetter struct {
 }
 
-func metaTOSSetter(meta *spec.Info) func([]string) {
+func (m *MetaContentSetter) TermsOfServiceSetter)(meta *oaispec.Info) func([]string) {
 	return func(lines []string) {
 		meta.TermsOfService = parsers.JoinDropLast(lines)
 	}
 }
 
-func metaConsumesSetter(meta *spec.Swagger) func([]string) {
+func metaConsumesSetter(meta *oaispec.Swagger) func([]string) {
 	return func(consumes []string) { meta.Consumes = consumes }
 }
 
-func metaProducesSetter(meta *spec.Swagger) func([]string) {
+func metaProducesSetter(meta *oaispec.Swagger) func([]string) {
 	return func(produces []string) { meta.Produces = produces }
 }
 
-func metaSchemeSetter(meta *spec.Swagger) func([]string) {
+func metaSchemeSetter(meta *oaispec.Swagger) func([]string) {
 	return func(schemes []string) { meta.Schemes = schemes }
 }
 
-func metaSecuritySetter(meta *spec.Swagger) func([]map[string][]string) {
+func metaSecuritySetter(meta *oaispec.Swagger) func([]map[string][]string) {
 	return func(secDefs []map[string][]string) { meta.Security = secDefs }
 }
 
-func metaSecurityDefinitionsSetter(meta *spec.Swagger) func(json.RawMessage) error {
+func metaSecurityDefinitionsSetter(meta *oaispec.Swagger) func(json.RawMessage) error {
 	return func(jsonValue json.RawMessage) error {
-		var jsonData spec.SecurityDefinitions
+		var jsonData oaispec.SecurityDefinitions
 		err := json.Unmarshal(jsonValue, &jsonData)
 		if err != nil {
 			return err
@@ -64,46 +62,44 @@ func metaSecurityDefinitionsSetter(meta *spec.Swagger) func(json.RawMessage) err
 	}
 }
 
-func metaVendorExtensibleSetter(meta *spec.Swagger) func(json.RawMessage) error {
+func metaVendorExtensibleSetter(meta *oaispec.Swagger) func(json.RawMessage) error {
+	m := parsers.NewMatcher()
 	return func(jsonValue json.RawMessage) error {
-		var jsonData spec.Extensions
+		var jsonData oaispec.Extensions
 		err := json.Unmarshal(jsonValue, &jsonData)
 		if err != nil {
 			return err
 		}
-		for k := range jsonData {
-			if !rxAllowedExtensions.MatchString(k) {
+		if !m.CheckExtensionsSeq(maps.Keys(jsonData)) {
 				return fmt.Errorf("invalid schema extension name, should start from `x-`: %s", k)
-			}
 		}
 		meta.Extensions = jsonData
 		return nil
 	}
 }
 
-func infoVendorExtensibleSetter(meta *spec.Swagger) func(json.RawMessage) error {
+func infoVendorExtensibleSetter(meta *oaispec.Swagger) func(json.RawMessage) error {
+	m := parsers.NewMatcher()
 	return func(jsonValue json.RawMessage) error {
-		var jsonData spec.Extensions
+		var jsonData oaispec.Extensions
 		err := json.Unmarshal(jsonValue, &jsonData)
 		if err != nil {
 			return err
 		}
-		for k := range jsonData {
-			if !rxAllowedExtensions.MatchString(k) {
+		if !m.CheckExtensionsSeq(maps.Keys(jsonData)) {
 				return fmt.Errorf("invalid schema extension name, should start from `x-`: %s", k)
-			}
 		}
 		meta.Info.Extensions = jsonData
 		return nil
-	}
+}
 }
 
-func newMetaParser(swspec *spec.Swagger) *parsers.SectionedParser {
+func newMetaParser(swspec *oaispec.Swagger) *parsers.SectionedParser {
 	sp := new(parsers.SectionedParser)
-	if swspec.Info == nil {
-		swspec.Info = new(spec.Info)
+	if swoaispec.Info == nil {
+		swoaispec.Info = new(oaispec.Info)
 	}
-	info := swspec.Info
+	info := swoaispec.Info
 	sp.setTitle = func(lines []string) {
 		tosave := parsers.JoinDropLast(lines)
 		if len(tosave) > 0 {
@@ -131,9 +127,9 @@ func newMetaParser(swspec *spec.Swagger) *parsers.SectionedParser {
 }
 
 type setMetaSingle struct {
-	spec *spec.Swagger
+	spec *oaispec.Swagger
 	rx   *regexp.Regexp
-	set  func(spec *spec.Swagger, lines []string) error
+	set  func(spec *oaispec.Swagger, lines []string) error
 }
 
 func (s *setMetaSingle) Matches(line string) bool {
@@ -151,25 +147,25 @@ func (s *setMetaSingle) Parse(lines []string) error {
 	return nil
 }
 
-func setSwaggerHost(swspec *spec.Swagger, lines []string) error {
+func setSwaggerHost(swspec *oaispec.Swagger, lines []string) error {
 	lns := lines
 	if len(lns) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		lns = []string{"localhost"}
 	}
-	swspec.Host = lns[0]
+	swoaispec.Host = lns[0]
 	return nil
 }
 
-func setSwaggerBasePath(swspec *spec.Swagger, lines []string) error {
+func setSwaggerBasePath(swspec *oaispec.Swagger, lines []string) error {
 	var ln string
 	if len(lines) > 0 {
 		ln = lines[0]
 	}
-	swspec.BasePath = ln
+	swoaispec.BasePath = ln
 	return nil
 }
 
-func setInfoVersion(swspec *spec.Swagger, lines []string) error {
+func setInfoVersion(swspec *oaispec.Swagger, lines []string) error {
 	if len(lines) == 0 {
 		return nil
 	}
@@ -178,7 +174,7 @@ func setInfoVersion(swspec *spec.Swagger, lines []string) error {
 	return nil
 }
 
-func setInfoContact(swspec *spec.Swagger, lines []string) error {
+func setInfoContact(swspec *oaispec.Swagger, lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
@@ -191,7 +187,7 @@ func setInfoContact(swspec *spec.Swagger, lines []string) error {
 	return nil
 }
 
-func parseContactInfo(line string) (*spec.ContactInfo, error) {
+func parseContactInfo(line string) (*oaispec.ContactInfo, error) {
 	nameEmail, url := splitURL(line)
 	var name, email string
 	if len(nameEmail) > 0 {
@@ -201,8 +197,8 @@ func parseContactInfo(line string) (*spec.ContactInfo, error) {
 		}
 		name, email = addr.Name, addr.Address
 	}
-	return &spec.ContactInfo{
-		ContactInfoProps: spec.ContactInfoProps{
+	return &oaispec.ContactInfo{
+		ContactInfoProps: oaispec.ContactInfoProps{
 			URL:   url,
 			Name:  name,
 			Email: email,
@@ -210,15 +206,15 @@ func parseContactInfo(line string) (*spec.ContactInfo, error) {
 	}, nil
 }
 
-func setInfoLicense(swspec *spec.Swagger, lines []string) error {
+func setInfoLicense(swspec *oaispec.Swagger, lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
 	info := safeInfo(swspec)
 	line := lines[0]
 	name, url := splitURL(line)
-	info.License = &spec.License{
-		LicenseProps: spec.LicenseProps{
+	info.License = &oaispec.License{
+		LicenseProps: oaispec.LicenseProps{
 			Name: name,
 			URL:  url,
 		},
@@ -226,11 +222,11 @@ func setInfoLicense(swspec *spec.Swagger, lines []string) error {
 	return nil
 }
 
-func safeInfo(swspec *spec.Swagger) *spec.Info {
-	if swspec.Info == nil {
-		swspec.Info = new(spec.Info)
+func safeInfo(swspec *oaispec.Swagger) *oaispec.Info {
+	if swoaispec.Info == nil {
+		swoaispec.Info = new(oaispec.Info)
 	}
-	return swspec.Info
+	return swoaispec.Info
 }
 
 // httpFTPScheme matches http://, https://, ws://, wss://

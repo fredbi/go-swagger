@@ -605,80 +605,84 @@ func (su *setRequiredSchema) Parse(lines []string) error {
 	return nil
 }
 
-func newMultilineDropEmptyParser(rx *regexp.Regexp, set func([]string)) *multiLineDropEmptyParser {
-	return &multiLineDropEmptyParser{
+type MultiLineDropEmptyParser struct {
+	set func([]string)
+	rx  *regexp.Regexp
+}
+
+func NewMultilineDropEmptyParser(rx *regexp.Regexp, set func([]string)) *MultiLineDropEmptyParser {
+	return &MultiLineDropEmptyParser{
 		rx:  rx,
 		set: set,
 	}
 }
 
-type multiLineDropEmptyParser struct {
-	set func([]string)
-	rx  *regexp.Regexp
-}
-
-func (m *multiLineDropEmptyParser) Matches(line string) bool {
+func (m *MultiLineDropEmptyParser) Matches(line string) bool {
 	return m.rx.MatchString(line)
 }
 
-func (m *multiLineDropEmptyParser) Parse(lines []string) error {
+func (m *MultiLineDropEmptyParser) Parse(lines []string) error {
 	m.set(removeEmptyLines(lines))
 	return nil
 }
 
-func newSetSchemes(set func([]string)) *setSchemes {
-	return &setSchemes{
-		set: set,
-		rx:  rxSchemes,
-	}
-}
-
-type setSchemes struct {
+type SetSchemes struct {
 	set func([]string)
 	rx  *regexp.Regexp
 }
 
-func (ss *setSchemes) Matches(line string) bool {
+func NewSetSchemesParser(setter func([]string)) *SetSchemes {
+	return &SetSchemes{
+		set: setter,
+		rx:  rxSchemes,
+	}
+}
+
+func (ss *SetSchemes) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
-func (ss *setSchemes) Parse(lines []string) error {
+func (ss *SetSchemes) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
-	matches := ss.rx.FindStringSubmatch(lines[0])
-	if len(matches) > 1 && len(matches[1]) > 0 {
-		sch := strings.Split(matches[1], ", ")
 
-		schemes := []string{}
-		for _, s := range sch {
-			ts := strings.TrimSpace(s)
-			if ts != "" {
-				schemes = append(schemes, ts)
-			}
-		}
-		ss.set(schemes)
+	matches := ss.rx.FindStringSubmatch(lines[0])
+	if len(matches) <= 1 || len(matches[1]) == 0 {
+		continue
 	}
+
+	sch := strings.Split(matches[1], ", ")
+
+	schemes := []string{}
+	for _, s := range sch {
+		ts := strings.TrimSpace(s)
+		if ts != "" {
+			schemes = append(schemes, ts)
+		}
+	}
+	ss.set(schemes)
+
 	return nil
 }
 
-func newSetSecurity(rx *regexp.Regexp, setter func([]map[string][]string)) *setSecurity {
-	return &setSecurity{
+func NewSetSecurityParser(rx *regexp.Regexp, setter func([]map[string][]string)) *SetSecurity {
+	return &SetSecurity{
 		set: setter,
 		rx:  rx,
 	}
 }
 
-type setSecurity struct {
+type SetSecurity struct {
 	set func([]map[string][]string)
 	rx  *regexp.Regexp
 }
 
-func (ss *setSecurity) Matches(line string) bool {
+func (ss *SetSecurity) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
-func (ss *setSecurity) Parse(lines []string) error {
+func (ss *SetSecurity) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
@@ -689,27 +693,28 @@ func (ss *setSecurity) Parse(lines []string) error {
 		scopes := []string{}
 		var key string
 
-		if len(kv) > 1 {
-			scs := strings.Split(kv[1], ",")
-			for _, scope := range scs {
-				tr := strings.TrimSpace(scope)
-				if tr != "" {
-					tr = strings.SplitAfter(tr, " ")[0]
-					scopes = append(scopes, strings.TrimSpace(tr))
-				}
-			}
-
-			key = strings.TrimSpace(kv[0])
-
-			result = append(result, map[string][]string{key: scopes})
+		if len(kv) <= 1 {
+			continue
 		}
+
+		scs := strings.Split(kv[1], ",")
+		for _, scope := range scs {
+			tr := strings.TrimSpace(scope)
+			if tr != "" {
+				tr = strings.SplitAfter(tr, " ")[0]
+				scopes = append(scopes, strings.TrimSpace(tr))
+			}
+		}
+
+		key = strings.TrimSpace(kv[0])
+		result = append(result, map[string][]string{key: scopes})
 	}
 	ss.set(result)
 	return nil
 }
 
-func newSetResponses(definitions map[string]spec.Schema, responses map[string]spec.Response, setter func(*spec.Response, map[int]spec.Response)) *setOpResponses {
-	return &setOpResponses{
+func NewSetResponsesParser(definitions map[string]spec.Schema, responses map[string]spec.Response, setter func(*spec.Response, map[int]spec.Response)) *SetOpResponses {
+	return &SetOpResponses{
 		set:         setter,
 		rx:          rxResponses,
 		definitions: definitions,
@@ -717,14 +722,14 @@ func newSetResponses(definitions map[string]spec.Schema, responses map[string]sp
 	}
 }
 
-type setOpResponses struct {
+type SetOpResponses struct {
 	set         func(*spec.Response, map[int]spec.Response)
 	rx          *regexp.Regexp
 	definitions map[string]spec.Schema
 	responses   map[string]spec.Response
 }
 
-func (ss *setOpResponses) Matches(line string) bool {
+func (ss *SetOpResponses) Matches(line string) bool {
 	return ss.rx.MatchString(line)
 }
 
@@ -808,7 +813,7 @@ func parseTags(line string) (modelOrResponse string, arrays int, isDefinitionRef
 	return
 }
 
-func (ss *setOpResponses) Parse(lines []string) error {
+func (ss *SetOpResponses) Parse(lines []string) error {
 	if len(lines) == 0 || (len(lines) == 1 && len(lines[0]) == 0) {
 		return nil
 	}
@@ -820,76 +825,20 @@ func (ss *setOpResponses) Parse(lines []string) error {
 		kv := strings.SplitN(line, ":", 2)
 		var key, value string
 
-		if len(kv) > 1 {
-			key = strings.TrimSpace(kv[0])
-			if key == "" {
-				// this must be some weird empty line
-				continue
-			}
-			value = strings.TrimSpace(kv[1])
-			if value == "" {
-				var resp spec.Response
-				if strings.EqualFold("default", key) {
-					if def == nil {
-						def = &resp
-					}
-				} else {
-					if sc, err := strconv.Atoi(key); err == nil {
-						if scr == nil {
-							scr = make(map[int]spec.Response)
-						}
-						scr[sc] = resp
-					}
-				}
-				continue
-			}
-			refTarget, arrays, isDefinitionRef, description, err := parseTags(value)
-			if err != nil {
-				return err
-			}
-			// A possible exception for having a definition
-			if _, ok := ss.responses[refTarget]; !ok {
-				if _, ok := ss.definitions[refTarget]; ok {
-					isDefinitionRef = true
-				}
-			}
+		if len(kv) <= 1 {
+			continue
+		}
 
-			var ref spec.Ref
-			if isDefinitionRef {
-				if description == "" {
-					description = refTarget
-				}
-				ref, err = spec.NewRef("#/definitions/" + refTarget)
-			} else {
-				ref, err = spec.NewRef("#/responses/" + refTarget)
-			}
-			if err != nil {
-				return err
-			}
+		key = strings.TrimSpace(kv[0])
+		if key == "" {
+			// this must be some weird empty line
+			continue
+		}
 
-			// description should used on anyway.
-			resp := spec.Response{ResponseProps: spec.ResponseProps{Description: description}}
+		value = strings.TrimSpace(kv[1])
 
-			if isDefinitionRef {
-				resp.Schema = new(spec.Schema)
-				resp.Description = description
-				if arrays == 0 {
-					resp.Schema.Ref = ref
-				} else {
-					cs := resp.Schema
-					for i := 0; i < arrays; i++ {
-						cs.Typed("array", "")
-						cs.Items = new(spec.SchemaOrArray)
-						cs.Items.Schema = new(spec.Schema)
-						cs = cs.Items.Schema
-					}
-					cs.Ref = ref
-				}
-				// ref. could be empty while use description tag
-			} else if len(refTarget) > 0 {
-				resp.Ref = ref
-			}
-
+		if value == "" {
+			var resp spec.Response
 			if strings.EqualFold("default", key) {
 				if def == nil {
 					def = &resp
@@ -901,6 +850,68 @@ func (ss *setOpResponses) Parse(lines []string) error {
 					}
 					scr[sc] = resp
 				}
+			}
+			continue
+		}
+
+		refTarget, arrays, isDefinitionRef, description, err := parseTags(value)
+		if err != nil {
+			return err
+		}
+
+		// A possible exception for having a definition
+		if _, ok := ss.responses[refTarget]; !ok {
+			if _, ok := ss.definitions[refTarget]; ok {
+				isDefinitionRef = true
+			}
+		}
+
+		var ref spec.Ref
+		if isDefinitionRef {
+			if description == "" {
+				description = refTarget
+			}
+			ref, err = spec.NewRef("#/definitions/" + refTarget)
+		} else {
+			ref, err = spec.NewRef("#/responses/" + refTarget)
+		}
+		if err != nil {
+			return err
+		}
+
+		// description should used on anyway.
+		resp := spec.Response{ResponseProps: spec.ResponseProps{Description: description}}
+
+		if isDefinitionRef {
+			resp.Schema = new(spec.Schema)
+			resp.Description = description
+			if arrays == 0 {
+				resp.Schema.Ref = ref
+			} else {
+				cs := resp.Schema
+				for i := 0; i < arrays; i++ {
+					cs.Typed("array", "")
+					cs.Items = new(spec.SchemaOrArray)
+					cs.Items.Schema = new(spec.Schema)
+					cs = cs.Items.Schema
+				}
+				cs.Ref = ref
+			}
+			// ref. could be empty while use description tag
+		} else if len(refTarget) > 0 {
+			resp.Ref = ref
+		}
+
+		if strings.EqualFold("default", key) {
+			if def == nil {
+				def = &resp
+			}
+		} else {
+			if sc, err := strconv.Atoi(key); err == nil {
+				if scr == nil {
+					scr = make(map[int]spec.Response)
+				}
+				scr[sc] = resp
 			}
 		}
 	}

@@ -22,6 +22,10 @@ type SectionedParser struct {
 	ignored        bool
 }
 
+func NewSectionedParser() *SectionedParser {
+	return &SectionedParser{}
+}
+
 func (st *SectionedParser) Title() []string {
 	st.collectTitleDescription()
 

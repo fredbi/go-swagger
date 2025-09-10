@@ -1,5 +1,6 @@
 package codescan
 
+/*
 import (
 	"fmt"
 	"go/types"
@@ -32,3 +33,4 @@ func mustHaveRightHandSide(a *types.Alias) {
 
 	panic(fmt.Errorf("type alias %q expected to declare a right-hand-side: %w", a.Obj().Name(), ErrInternal))
 }
+*/

@@ -5,13 +5,14 @@ import (
 	"slices"
 
 	oaispec "github.com/go-openapi/spec"
+
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/operation"
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/parameter"
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/response"
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/route"
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/schema"
 	"github.com/go-swagger/go-swagger/codescan/internal/go-scanner"
 	"github.com/go-swagger/go-swagger/codescan/internal/meta"
-	"github.com/go-swagger/go-swagger/codescan/internal/operation"
-	"github.com/go-swagger/go-swagger/codescan/internal/parameter"
-	"github.com/go-swagger/go-swagger/codescan/internal/response"
-	"github.com/go-swagger/go-swagger/codescan/internal/route"
-	"github.com/go-swagger/go-swagger/codescan/internal/schema"
 )
 
 // Builder builds swagger specifications from code.
@@ -160,7 +161,7 @@ func (s *Builder) buildDiscovered() error {
 	for keepGoing {
 		queue := make([]*scanner.EntityDecl, 0, len(s.discovered))
 		for _, d := range s.discovered {
-			nm, _ := d.Names()
+			nm, _ := d.ModelNames()
 			if _, ok := s.definitions[nm]; !ok {
 				queue = append(queue, d)
 			}
@@ -197,7 +198,7 @@ func (s *Builder) buildRoutes() error {
 
 func (s *Builder) buildOperations() error {
 	for path := range s.ctx.Operations() {
-		ob := operation.New(s.ctx, path, s.operations)
+		ob := operation.New(s.ctx, path, s.operations) // TODO: WithOperation(s.operation)
 		if err := ob.Build(s.input.Paths); err != nil {
 			return err
 		}

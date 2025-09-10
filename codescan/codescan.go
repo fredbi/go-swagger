@@ -3,12 +3,13 @@ package codescan
 import (
 	oaispec "github.com/go-openapi/spec"
 
+	"github.com/go-swagger/go-swagger/codescan/internal/builders/spec"
 	"github.com/go-swagger/go-swagger/codescan/internal/go-scanner"
-	"github.com/go-swagger/go-swagger/codescan/internal/spec"
 )
 
 // Run the scanner to produce a swagger spec from go source code with the provided options.
 func Run(opts ...Option) (*oaispec.Swagger, error) {
+	// o := optionsWithDefaults(opts)
 	var o options
 	for _, apply := range opts {
 		apply(&o)
@@ -19,7 +20,9 @@ func Run(opts ...Option) (*oaispec.Swagger, error) {
 		return nil, err
 	}
 
-	sb := spec.New(goScanner, spec.WithScanModels(o.ScanModels))
+	sb := spec.New(goScanner,
+		spec.WithScanModels(o.scanModels),
+	)
 
 	return sb.Build()
 }

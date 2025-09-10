@@ -19,101 +19,18 @@ import (
 
 	"github.com/go-openapi/spec"
 	parsers "github.com/go-swagger/go-swagger/codescan/internal/comment-parsers"
+	"github.com/go-swagger/go-swagger/codescan/internal/debug"
 	"github.com/go-swagger/go-swagger/codescan/internal/go-scanner"
+	"github.com/go-swagger/go-swagger/codescan/internal/ifaces"
 )
 
+// TODO: replace this with option
 func addExtension(ve *spec.VendorExtensible, key string, value interface{}) {
 	if os.Getenv("SWAGGER_GENERATE_EXTENSION") == "false" {
 		return
 	}
 
 	ve.AddExtension(key, value)
-}
-
-type SchemaTypable struct {
-	schema *spec.Schema
-	level  int
-}
-
-func (st SchemaTypable) In() string { return "body" }
-
-func (st SchemaTypable) Typed(tpe, format string) {
-	st.schema.Typed(tpe, format)
-}
-
-func (st SchemaTypable) SetRef(ref spec.Ref) {
-	st.schema.Ref = ref
-}
-
-func (st SchemaTypable) Schema() *spec.Schema {
-	return st.schema
-}
-
-func (st SchemaTypable) Items() swaggerTypable {
-	if st.schema.Items == nil {
-		st.schema.Items = new(spec.SchemaOrArray)
-	}
-	if st.schema.Items.Schema == nil {
-		st.schema.Items.Schema = new(spec.Schema)
-	}
-
-	st.schema.Typed("array", "")
-	return SchemaTypable{st.schema.Items.Schema, st.level + 1}
-}
-
-func (st SchemaTypable) AdditionalProperties() swaggerTypable {
-	if st.schema.AdditionalProperties == nil {
-		st.schema.AdditionalProperties = new(spec.SchemaOrBool)
-	}
-	if st.schema.AdditionalProperties.Schema == nil {
-		st.schema.AdditionalProperties.Schema = new(spec.Schema)
-	}
-
-	st.schema.Typed("object", "")
-	return SchemaTypable{st.schema.AdditionalProperties.Schema, st.level + 1}
-}
-
-func (st SchemaTypable) Level() int { return st.level }
-
-func (st SchemaTypable) AddExtension(key string, value interface{}) {
-	addExtension(&st.schema.VendorExtensible, key, value)
-}
-
-func (st SchemaTypable) WithEnum(values ...interface{}) {
-	st.schema.WithEnum(values...)
-}
-
-func (st SchemaTypable) WithEnumDescription(desc string) {
-	if desc == "" {
-		return
-	}
-	st.AddExtension(extEnumDesc, desc)
-}
-
-type schemaValidations struct {
-	current *spec.Schema
-}
-
-func (sv schemaValidations) SetMaximum(val float64, exclusive bool) {
-	sv.current.Maximum = &val
-	sv.current.ExclusiveMaximum = exclusive
-}
-
-func (sv schemaValidations) SetMinimum(val float64, exclusive bool) {
-	sv.current.Minimum = &val
-	sv.current.ExclusiveMinimum = exclusive
-}
-func (sv schemaValidations) SetMultipleOf(val float64)  { sv.current.MultipleOf = &val }
-func (sv schemaValidations) SetMinItems(val int64)      { sv.current.MinItems = &val }
-func (sv schemaValidations) SetMaxItems(val int64)      { sv.current.MaxItems = &val }
-func (sv schemaValidations) SetMinLength(val int64)     { sv.current.MinLength = &val }
-func (sv schemaValidations) SetMaxLength(val int64)     { sv.current.MaxLength = &val }
-func (sv schemaValidations) SetPattern(val string)      { sv.current.Pattern = val }
-func (sv schemaValidations) SetUnique(val bool)         { sv.current.UniqueItems = val }
-func (sv schemaValidations) SetDefault(val interface{}) { sv.current.Default = val }
-func (sv schemaValidations) SetExample(val interface{}) { sv.current.Example = val }
-func (sv schemaValidations) SetEnum(val string) {
-	sv.current.Enum = parseEnum(val, &spec.SimpleSchema{Format: sv.current.Format, Type: sv.current.Type[0]})
 }
 
 type Builder struct {
@@ -135,6 +52,18 @@ func New(ctx *scanner.ScanContext, decl *scanner.EntityDecl) *Builder {
 
 func (s *Builder) Discovered() iter.Seq[*scanner.EntityDecl] {
 	return slices.Values(s.postDecls)
+}
+
+func (s *Builder) Build(definitions map[string]spec.Schema) error {
+	s.inferNames()
+
+	schema := definitions[s.Name]
+	err := s.buildFromDecl(s.decl, &schema)
+	if err != nil {
+		return err
+	}
+	definitions[s.Name] = schema
+	return nil
 }
 
 func (s *Builder) inferNames() (goName string, name string) {
@@ -167,18 +96,6 @@ DECLS:
 		}
 	}
 	return
-}
-
-func (s *Builder) Build(definitions map[string]spec.Schema) error {
-	s.inferNames()
-
-	schema := definitions[s.Name]
-	err := s.buildFromDecl(s.decl, &schema)
-	if err != nil {
-		return err
-	}
-	definitions[s.Name] = schema
-	return nil
 }
 
 func (s *Builder) buildFromDecl(_ *scanner.EntityDecl, schema *spec.Schema) error {
@@ -214,26 +131,26 @@ func (s *Builder) buildFromDecl(_ *scanner.EntityDecl, schema *spec.Schema) erro
 	switch tpe := s.decl.ObjType().(type) {
 	// TODO(fredbi): we may safely remove all the cases here that are not Named or Alias
 	case *types.Basic:
-		debugLog("basic: %v", tpe.Name())
+		debug.Log("basic: %v", tpe.Name())
 		return nil
 	case *types.Struct:
 		return s.buildFromStruct(s.decl, tpe, schema, make(map[string]string))
 	case *types.Interface:
 		return s.buildFromInterface(s.decl, tpe, schema, make(map[string]string))
 	case *types.Array:
-		debugLog("array: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
+		debug.Log("array: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
 		return nil
 	case *types.Slice:
-		debugLog("slice: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
+		debug.Log("slice: %v -> %v", s.decl.Ident.Name, tpe.Elem().String())
 		return nil
 	case *types.Map:
-		debugLog("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
+		debug.Log("map: %v -> [%v]%v", s.decl.Ident.Name, tpe.Key().String(), tpe.Elem().String())
 		return nil
 	case *types.Named:
-		debugLog("named: %v", tpe)
+		debug.Log("named: %v", tpe)
 		return s.buildDeclNamed(tpe, schema)
 	case *types.Alias:
-		debugLog("alias: %v -> %v", tpe, tpe.Rhs())
+		debug.Log("alias: %v -> %v", tpe, tpe.Rhs())
 		tgt := SchemaTypable{schema, 0}
 
 		return s.buildDeclAlias(tpe, tgt)
@@ -262,7 +179,7 @@ func (s *Builder) buildDeclNamed(tpe *types.Named, schema *spec.Schema) error {
 
 	mustNotBeABuiltinType(o)
 
-	debugLog("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
+	debug.Log("got the named type object: %s.%s | isAlias: %t | exported: %t", o.Pkg().Path(), o.Name(), o.IsAlias(), o.Exported())
 	if isStdTime(o) {
 		schema.Typed("string", "date-time")
 		return nil
@@ -295,7 +212,7 @@ func (s *Builder) buildFromTextMarshal(tpe types.Type, tgt swaggerTypable) error
 		return swaggerSchemaForType(tio.Name(), tgt)
 	}
 
-	debugLog("named refined type %s.%s", tio.Pkg().Path(), tio.Name())
+	debug.Log("named refined type %s.%s", tio.Pkg().Path(), tio.Name())
 	pkg, found := s.ctx.PkgForType(tpe)
 
 	if strings.ToLower(tio.Name()) == "uuid" {
@@ -305,7 +222,7 @@ func (s *Builder) buildFromTextMarshal(tpe types.Type, tgt swaggerTypable) error
 
 	if !found {
 		// this must be a builtin
-		debugLog("skipping because package is nil: %v", tpe)
+		debug.Log("skipping because package is nil: %v", tpe)
 		return nil
 	}
 
@@ -338,7 +255,7 @@ func (s *Builder) buildFromTextMarshal(tpe types.Type, tgt swaggerTypable) error
 func (s *Builder) buildFromType(tpe types.Type, tgt swaggerTypable) error {
 	// check if the type implements encoding.TextMarshaler interface
 	// if so, the type is rendered as a string.
-	debugLog("schema buildFromType %v (%T)", tpe, tpe)
+	debug.Log("schema buildFromType %v (%T)", tpe, tpe)
 
 	if isTextMarshaler(tpe) {
 		return s.buildFromTextMarshal(tpe, tgt)
@@ -370,7 +287,7 @@ func (s *Builder) buildFromType(tpe types.Type, tgt swaggerTypable) error {
 		return s.buildNamedType(titpe, tgt)
 	case *types.Alias:
 		// a named alias, e.g. type X = {RHS type}.
-		debugLog("alias(schema.buildFromType): got alias %v to %v", titpe, titpe.Rhs())
+		debug.Log("alias(schema.buildFromType): got alias %v to %v", titpe, titpe.Rhs())
 		return s.buildAlias(titpe, tgt)
 	case *types.TypeParam:
 		log.Printf("WARNING: generic type parameters are not supported yet %[1]v (%[1]T). Skipped", titpe)
@@ -418,13 +335,13 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 	}
 
 	pkg, found := s.ctx.PkgForType(titpe)
-	debugLog("named refined type %s.%s", pkg, tio.Name())
+	debug.Log("named refined type %s.%s", pkg, tio.Name())
 	if !found {
 		// this must be a builtin
 		//
 		// This could happen for example when using unsupported types such as complex64, complex128, uintptr,
 		// or type constraints such as comparable.
-		debugLog("skipping because package is nil (builtin type): %v", tio)
+		debug.Log("skipping because package is nil (builtin type): %v", tio)
 
 		return nil
 	}
@@ -441,7 +358,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 	}
 
 	if s.decl.Spec.Assign.IsValid() {
-		debugLog("found assignment: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found assignment: %s.%s", tio.Pkg().Path(), tio.Name())
 		return s.buildFromType(titpe.Underlying(), tgt)
 	}
 
@@ -452,11 +369,11 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 	// invariant: the Underlying cannot be an alias or named type
 	switch utitpe := titpe.Underlying().(type) {
 	case *types.Struct:
-		debugLog("found struct: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found struct: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name())
 		if !ok {
-			debugLog("could not find model in index: %s.%s", tio.Pkg().Path(), tio.Name())
+			debug.Log("could not find model in index: %s.%s", tio.Pkg().Path(), tio.Name())
 			return nil
 		}
 
@@ -478,7 +395,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 
 		return s.makeRef(decl, tgt)
 	case *types.Interface:
-		debugLog("found interface: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found interface: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		decl, found := s.ctx.FindModel(tio.Pkg().Path(), tio.Name())
 		if !found {
@@ -492,7 +409,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 			return nil
 		}
 
-		debugLog("found primitive type: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found primitive type: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		if sfnm, isf := strfmtName(cmt); isf {
 			tgt.Typed("string", sfnm)
@@ -513,7 +430,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 		}
 
 		if defaultName, ok := defaultName(cmt); ok {
-			debugLog("default name: %s", defaultName)
+			debug.Log("default name: %s", defaultName)
 			return nil
 		}
 
@@ -536,7 +453,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 
 		return swaggerSchemaForType(utitpe.String(), tgt)
 	case *types.Array:
-		debugLog("found array type: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found array type: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		if sfnm, isf := strfmtName(cmt); isf {
 			if sfnm == "byte" {
@@ -556,7 +473,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 		}
 		return s.buildFromType(utitpe.Elem(), tgt.Items())
 	case *types.Slice:
-		debugLog("found slice type: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found slice type: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		if sfnm, isf := strfmtName(cmt); isf {
 			if sfnm == "byte" {
@@ -571,7 +488,7 @@ func (s *Builder) buildNamedType(titpe *types.Named, tgt swaggerTypable) error {
 		}
 		return s.buildFromType(utitpe.Elem(), tgt.Items())
 	case *types.Map:
-		debugLog("found map type: %s.%s", tio.Pkg().Path(), tio.Name())
+		debug.Log("found map type: %s.%s", tio.Pkg().Path(), tio.Name())
 
 		if decl, ok := s.ctx.FindModel(tio.Pkg().Path(), tio.Name()); ok {
 			return s.makeRef(decl, tgt)
@@ -696,20 +613,20 @@ func (s *Builder) buildAnonymousInterface(it *types.Interface, tgt swaggerTypabl
 
 		var afld *ast.Field
 		ans, _ := astutil.PathEnclosingInterval(decl.File, fld.Pos(), fld.Pos())
-		// debugLog("got %d nodes (exact: %t)", len(ans), isExact)
+		// debug.Log("got %d nodes (exact: %t)", len(ans), isExact)
 		for _, an := range ans {
 			at, valid := an.(*ast.Field)
 			if !valid {
 				continue
 			}
 
-			debugLog("maybe interface field %s: %s(%T)", fld.Name(), fld.Type().String(), fld.Type())
+			debug.Log("maybe interface field %s: %s(%T)", fld.Name(), fld.Type().String(), fld.Type())
 			afld = at
 			break
 		}
 
 		if afld == nil {
-			debugLog("can't find source associated with %s for %s", fld.String(), it.String())
+			debug.Log("can't find source associated with %s for %s", fld.String(), it.String())
 			continue
 		}
 
@@ -832,7 +749,7 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 	//   2. the embedded interface is an alias
 	for i := range it.NumEmbeddeds() {
 		fld := it.EmbeddedType(i)
-		debugLog("inspecting embedded type in interface: %v", fld)
+		debug.Log("inspecting embedded type in interface: %v", fld)
 		var (
 			fieldHasAllOf bool
 			err           error
@@ -844,7 +761,7 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 
 		switch ftpe := fld.(type) {
 		case *types.Named:
-			debugLog("embedded named type (buildInterface): %v", ftpe)
+			debug.Log("embedded named type (buildInterface): %v", ftpe)
 			o := ftpe.Obj()
 			if isAny(o) || isStdError(o) {
 				// ignore bultin interfaces
@@ -855,7 +772,7 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 				return err
 			}
 		case *types.Interface:
-			debugLog("embedded anonymous interface type (buildInterface): %v", ftpe) // e.g. type X interface{ interface{Error() string}}
+			debug.Log("embedded anonymous interface type (buildInterface): %v", ftpe) // e.g. type X interface{ interface{Error() string}}
 			var aliasedSchema spec.Schema
 			ps := SchemaTypable{schema: &aliasedSchema}
 			if err = s.buildAnonymousInterface(ftpe, ps, decl); err != nil {
@@ -867,7 +784,7 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 				fieldHasAllOf = true
 			}
 		case *types.Alias:
-			debugLog("embedded alias (buildInterface): %v -> %v", ftpe, ftpe.Rhs())
+			debug.Log("embedded alias (buildInterface): %v -> %v", ftpe, ftpe.Rhs())
 			var aliasedSchema spec.Schema
 			ps := SchemaTypable{schema: &aliasedSchema}
 			if err = s.buildAlias(ftpe, ps); err != nil {
@@ -893,7 +810,7 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 			)
 		}
 
-		debugLog("got embedded interface: %v {%T}, fieldHasAllOf: %t", fld, fld, fieldHasAllOf)
+		debug.Log("got embedded interface: %v {%T}, fieldHasAllOf: %t", fld, fld, fieldHasAllOf)
 		hasAllOf = hasAllOf || fieldHasAllOf
 	}
 
@@ -925,20 +842,20 @@ func (s *Builder) buildFromInterface(decl *scanner.EntityDecl, it *types.Interfa
 
 		var afld *ast.Field
 		ans, _ := astutil.PathEnclosingInterval(decl.File, fld.Pos(), fld.Pos())
-		// debugLog("got %d nodes (exact: %t)", len(ans), isExact)
+		// debug.Log("got %d nodes (exact: %t)", len(ans), isExact)
 		for _, an := range ans {
 			at, valid := an.(*ast.Field)
 			if !valid {
 				continue
 			}
 
-			debugLog("maybe interface field %s: %s(%T)", fld.Name(), fld.Type().String(), fld.Type())
+			debug.Log("maybe interface field %s: %s(%T)", fld.Name(), fld.Type().String(), fld.Type())
 			afld = at
 			break
 		}
 
 		if afld == nil {
-			debugLog("can't find source associated with %s for %s", fld.String(), it.String())
+			debug.Log("can't find source associated with %s for %s", fld.String(), it.String())
 			continue
 		}
 
@@ -1018,13 +935,13 @@ func (s *Builder) buildNamedInterface(ftpe *types.Named, flist []*ast.Field, dec
 		}
 
 		// decl.
-		debugLog("maybe interface field %s: %s(%T)", o.Name(), o.Type().String(), o.Type())
+		debug.Log("maybe interface field %s: %s(%T)", o.Name(), o.Type().String(), o.Type())
 		afld = an
 		break
 	}
 
 	if afld == nil {
-		debugLog("can't find source associated with %s", ftpe.String())
+		debug.Log("can't find source associated with %s", ftpe.String())
 		return hasAllOf, nil
 	}
 
@@ -1093,31 +1010,31 @@ func (s *Builder) buildFromStruct(decl *scanner.EntityDecl, st *types.Struct, sc
 		fld := st.Field(i)
 		if !fld.Anonymous() {
 			// e.g. struct {  _ struct{} }
-			debugLog("skipping field %q for allOf scan because not anonymous", fld.Name())
+			debug.Log("skipping field %q for allOf scan because not anonymous", fld.Name())
 			continue
 		}
 		tg := st.Tag(i)
 
-		debugLog(
+		debug.Log(
 			"maybe allof field(%t) %s: %s (%T) [%q](anon: %t, embedded: %t)",
 			fld.IsField(), fld.Name(), fld.Type().String(), fld.Type(), tg, fld.Anonymous(), fld.Embedded(),
 		)
 		var afld *ast.Field
 		ans, _ := astutil.PathEnclosingInterval(decl.File, fld.Pos(), fld.Pos())
-		// debugLog("got %d nodes (exact: %t)", len(ans), isExact)
+		// debug.Log("got %d nodes (exact: %t)", len(ans), isExact)
 		for _, an := range ans {
 			at, valid := an.(*ast.Field)
 			if !valid {
 				continue
 			}
 
-			debugLog("maybe allof field %s: %s(%T) [%q]", fld.Name(), fld.Type().String(), fld.Type(), tg)
+			debug.Log("maybe allof field %s: %s(%T) [%q]", fld.Name(), fld.Type().String(), fld.Type(), tg)
 			afld = at
 			break
 		}
 
 		if afld == nil {
-			debugLog("can't find source associated with %s for %s", fld.String(), st.String())
+			debug.Log("can't find source associated with %s for %s", fld.String(), st.String())
 			continue
 		}
 
@@ -1147,7 +1064,7 @@ func (s *Builder) buildFromStruct(decl *scanner.EntityDecl, st *types.Struct, sc
 		}
 
 		if isAliased {
-			debugLog("alias member in struct: %v", fld)
+			debug.Log("alias member in struct: %v", fld)
 		}
 
 		// if this created an allOf property then we have to rejig the schema var
@@ -1205,7 +1122,7 @@ func (s *Builder) buildFromStruct(decl *scanner.EntityDecl, st *types.Struct, sc
 		}
 
 		if !fld.Exported() {
-			debugLog("skipping field %s because it's not exported", fld.Name())
+			debug.Log("skipping field %s because it's not exported", fld.Name())
 			continue
 		}
 
@@ -1217,13 +1134,13 @@ func (s *Builder) buildFromStruct(decl *scanner.EntityDecl, st *types.Struct, sc
 				continue
 			}
 
-			debugLog("field %s: %s(%T) [%q] ==> %s", fld.Name(), fld.Type().String(), fld.Type(), tg, at.Doc.Text())
+			debug.Log("field %s: %s(%T) [%q] ==> %s", fld.Name(), fld.Type().String(), fld.Type(), tg, at.Doc.Text())
 			afld = at
 			break
 		}
 
 		if afld == nil {
-			debugLog("can't find source associated with %s", fld.String())
+			debug.Log("can't find source associated with %s", fld.String())
 			continue
 		}
 
@@ -1299,7 +1216,7 @@ func (s *Builder) buildFromStruct(decl *scanner.EntityDecl, st *types.Struct, sc
 }
 
 func (s *Builder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
-	debugLog("allOf %s", tpe.Underlying())
+	debug.Log("allOf %s", tpe.Underlying())
 
 	switch ftpe := tpe.(type) {
 	case *types.Pointer:
@@ -1307,7 +1224,7 @@ func (s *Builder) buildAllOf(tpe types.Type, schema *spec.Schema) error {
 	case *types.Named:
 		return s.buildNamedAllOf(ftpe, schema)
 	case *types.Alias:
-		debugLog("allOf member is alias %v => %v", ftpe, ftpe.Rhs())
+		debug.Log("allOf member is alias %v => %v", ftpe, ftpe.Rhs())
 		tgt := SchemaTypable{schema: schema}
 		return s.buildAlias(ftpe, tgt)
 	case *types.TypeParam:
@@ -1385,7 +1302,7 @@ func (s *Builder) buildNamedAllOf(ftpe *types.Named, schema *spec.Schema) error 
 }
 
 func (s *Builder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen map[string]string) error {
-	debugLog("embedded %v", tpe.Underlying())
+	debug.Log("embedded %v", tpe.Underlying())
 
 	switch ftpe := tpe.(type) {
 	case *types.Pointer:
@@ -1393,7 +1310,7 @@ func (s *Builder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen map[st
 	case *types.Named:
 		return s.buildNamedEmbedded(ftpe, schema, seen)
 	case *types.Alias:
-		debugLog("embedded alias %v => %v", ftpe, ftpe.Rhs())
+		debug.Log("embedded alias %v => %v", ftpe, ftpe.Rhs())
 		tgt := SchemaTypable{schema, 0}
 		return s.buildAlias(ftpe, tgt)
 	case *types.Union: // e.g. type X interface{ ~uint16 | ~float32 }
@@ -1415,7 +1332,7 @@ func (s *Builder) buildEmbedded(tpe types.Type, schema *spec.Schema, seen map[st
 }
 
 func (s *Builder) buildNamedEmbedded(ftpe *types.Named, schema *spec.Schema, seen map[string]string) error {
-	debugLog("embedded named type: %T", ftpe.Underlying())
+	debug.Log("embedded named type: %T", ftpe.Underlying())
 	if unsupportedBuiltin(ftpe) {
 		log.Printf("WARNING: skipped unsupported builtin type: %v", ftpe)
 
@@ -1706,7 +1623,7 @@ func isAny(o *types.TypeName) bool {
 	return o.Pkg() == nil && o.Name() == "any"
 }
 
-func isAliasParam(prop swaggerTypable) bool {
+func isAliasParam(prop ifaces.SwaggerTypable) bool {
 	param, ok := prop.(paramTypable)
 	if !ok {
 		return false
