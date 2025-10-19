@@ -25,6 +25,7 @@ func TestCmd_Expand_NoError(t *testing.T) {
 		Output:  flags.Filename(output),
 	}
 	testProduceOutput(t, v, specDoc, output)
+	t.Fail()
 }
 
 func TestCmd_Expand_NoOutputFile(t *testing.T) {
