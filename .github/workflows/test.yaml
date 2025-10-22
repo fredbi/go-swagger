@@ -40,6 +40,8 @@ jobs:
       with:
         # check if anything changed in go source, templates or the way we test those
         files: |
+          **/go.mod
+          **/go.sum
           **/*.go
           **/*.gotmpl
           .golangci.yml

@@ -1,0 +1,132 @@
+name: build-docker
+
+# TODO:
+# - [x] lint Dockerfiles (hadolint)
+# - [] run vuln scan (trivy)
+
+on:
+  workflow_call:
+    inputs:
+      push:
+        description: |
+          Whether the calling workflow wants to login and push to image registries
+          (implies secrets are accessible).
+        type: boolean
+        required: false
+        default: false
+      tagged:
+        description: |
+          Whether the calling workflow wants to use git tags for tagging images
+        required: false
+        default: false
+      latest:
+        description: |
+          Whether the calling workflow wants to tag the image as "latest"
+        required: false
+        default: false
+    secrets:
+      CR_PAT:
+        description: token to push to ghcr.io registry
+        required: false
+      QUAY_USERNAME:
+        description: user to push to quay.io registry
+        required: false
+      QUAY_PASS:
+        description: user to push to quay.io registry
+        required: false
+
+permissions:
+  contents: read
+
+env:
+  SUPPORTED_PLATFORMS: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
+
+jobs:
+  build-docker:
+    name: Docker latest master (dev)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Lint Dockerfiles
+        uses: bergstroem/hadolint-gh-action@2b00b87f8a56783930b6a4749837d7c45c567ff2
+        with:
+          dockerfile: 'Dockerfile*'
+          # TODO: enable annotate for PR-initiated workflow
+
+      - name: Meta usage
+        id: meta-usage
+        run: |
+          # determine the docker tags that will be used
+          #
+          # Example for tagged releases: v0, v0.33, v0.331
+          # Example for dev images: master, edge
+          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+
+          if [[ "${{ inputs.tagged }}" == "true" ]] ; then
+            cat<<EOF
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+            EOF >> "$GITHUB_OUTPUT"
+            echo "build_tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            cat<<EOF
+          type=ref,event=branch
+          type=edge
+            EOF >> "$GITHUB_OUTPUT"
+            echo "build_tag=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
+        with:
+          images: |
+            quay.io/goswagger/swagger
+            ghcr.io/go-swagger/go-swagger
+          flavor: |
+            latest: ${{ inputs.latest }}
+          tags: ${{ steps.meta-usage.outputs.tags }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392  # v 3.6.0
+        with:
+          platforms: ${{ env.SUPPORTED_PLATFORMS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435  # v3.11.1
+
+      - name: Login to Quay Registry
+        if: ${{ inputs.push && secrets.QUAY_USERNAME && secrets.QUAY_PASS }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASS }}
+
+      - name: Login to GitHub Container Registry
+        if: ${{ inputs.push && secrets.CR_PAT }}
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef  # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Build and push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          file: Dockerfile
+          no-cache: true
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ steps.meta-usage.outputs.build_tag }}
+          platforms: ${{ env.SUPPORTED_PLATFORMS }}
+          push: ${{ inputs.push }}
+          tags: ${{ steps.meta.outputs.tags }}
+          sbom: true
+          #labels: ${{ steps.meta.outputs.labels }}
+          #annotations
