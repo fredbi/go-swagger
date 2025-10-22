@@ -10,6 +10,7 @@ on:
       - master
 
 permissions:
+  contents: read
   pull-requests: read
 
 jobs:
@@ -26,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       proceed: ${{ steps.changed-source-files.outputs.any_changed }}
+      proceed_with_tests: ${{ steps.changed-files-yaml.outputs.should_run_tests_any_changed }}
+      proceed_with_codegen: ${{ steps.changed-files-yaml.outputs.should_run_codegen_any_changed }}
+      proceed_with_docker: ${{ steps.changed-files-yaml.outputs.should_build_docker_any_changed }}
       all_changed_files: ${{ steps.changed-source-files.outputs.all_changed_files }}
     steps:
     - name: Originating repo checkout (e.g. public fork)
@@ -39,14 +43,25 @@ jobs:
       id: changed-source-files
       with:
         # check if anything changed in go source, templates or the way we test those
-        files: |
-          **/*.go
-          **/*.gotmpl
-          .golangci.yml
-          .codecov.yml
-          .github/workflows/test*.yaml
-          fixtures/*
-          hack/*
+        files_yaml: |
+          should_run_tests:    # <- captures change that require unit tests to be run
+            - '**/go.mod'
+            - '**/go.sum'
+            - '**/*.go'
+            - '**/*.gotmpl'
+            - '.golangci.yml'
+            - '.codecov.yml'
+            - '.github/workflows/test*.yaml'
+            - 'fixtures/*'
+          should_run_codegen:  # <- capture changes that require codegen tests to be run
+            - 'generator/**'
+            - 'hack/codegen*.go'
+            - 'hack/*.yaml'
+            - 'cmd/**'
+            - '!cmd/swagger/commands/generate/spec*.go'
+          should_build_docker: # <- capture changes that require build docker test to be run
+            - 'Dockerfile'
+            - '.github/workflows/docker*.yaml'
 
     - name: Notify
       run: |
@@ -70,23 +85,49 @@ jobs:
           exit 0
         fi
 
-        spew "1. [x] Detect a change in source or the way we test it"
-        spew "2. [x] Lint go source code, including (generated examples)."
-        spew "3. [x] Run a build (smoke) test (6x matrix)"
-        spew "4. [x] Run unit tests (6x matrix)"
-        spew "5. [x] Run codegen integration tests (2x matrix)"
-        spew "6. [x] Tests completed: so PR may be approved"
-        spew "7. [x] Merge test reports and publish (codecov, github)"
-        spew "8. [x] Merge test coverage reports and publish (codecov)"
+        if [[ "${{ steps.changed-files-yaml.outputs.should_run_tests_any_changed }}" != "true" ]] ; then
+          spew "1. [x] Detect a change in source or the way we test it"
+          spew "2. [x] Lint go source code, including (generated examples)."
+          spew "3. [x] Run a build (smoke) test (6x matrix)"
+          spew "4. [x] Run unit tests (6x matrix)"
+        else
+          spew "1. [x] Detect a change in source or the way we test it"
+          spew "2. [ ] Lint go source code, including (generated examples) (skipped)."
+          spew "3. [ ] Run a build (smoke) test (6x matrix) (skipped)"
+          spew "4. [ ] Run unit tests (6x matrix) (skipped)"
+        if
+
+        if [[ "${{ steps.changed-files-yaml.outputs.should_run_codegen_any_changed }}" != "true" ]] ; then
+          spew "5. [x] Run codegen integration tests (2x matrix)"
+        else
+          spew "5. [ ] Run codegen integration tests (2x matrix) (skipped)"
+        fi
+
+        if [[ "${{ steps.changed-files-yaml.outputs.should_build_docker_any_changed }}" != "true" ]] ; then
+          spew "6. [x] Run build docker test"
+        else
+          spew "6. [ ] Run build docker test (skipped)"
+        fi
+
+        spew "7. [x] Tests completed: so PR may be approved"
+
+        if [[ "${{ steps.changed-files-yaml.outputs.should_run_tests_any_changed }}" != "true" ]] ; then
+          spew "8. [x] Merge test reports and publish (codecov, github)"
+          spew "9. [x] Merge test coverage reports and publish (codecov)"
+        else
+          spew "8. [ ] Merge test reports and publish (codecov, github) (skipped)"
+          spew "9. [ ] Merge test coverage reports and publish (codecov) (skipped)"
+        fi
+
         spew ""
-        spew "Steps (7) and (8) may sometimes fail and are not strictly required by PR check rules"
+        spew "Steps (8) and (9) may sometimes fail and are not strictly required by PR check rules"
 
   lint:
     # description: |
     # Lint go source code.
     name: lint
     needs: [code-changed]
-    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
+    if: ${{ needs.code-changed.outputs.proceed_with_tests == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -119,13 +160,22 @@ jobs:
         echo "::notice::Linting and tests skipped: this PR doesn't change any code"
         echo "${{ steps.changed-source-files.outputs.all_changed_files }}"
 
+  docker-test:
+    name: test docker build
+    needs: [code-changed]
+    if: ${{ needs.code-changed.outputs.proceed_with_docker == 'true' }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: ./.github/workflows/build-docker.yaml
+        # TODO: specific arg to use sha tagging (avoids branch-based tag sanitization)
+
   build-test:
     # description: |
     #   Make sure we build and run elementary operations.
     #   The full test suite warrants support for the 2 latest go minor releases.
     name: build test
     needs: [code-changed, lint]
-    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
+    if: ${{ needs.code-changed.outputs.proceed_with_tests == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -165,7 +215,7 @@ jobs:
     #   Run unit tests on the 2 most recent go releases and 3 popular platforms.
     name: unit test
     needs: [code-changed, lint]
-    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
+    if: ${{ needs.code-changed.outputs.proceed_with_tests == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -220,6 +270,7 @@ jobs:
           # *.coverage.* pattern is automatically detected by codecov
           path: '**/*.coverage.*.out'
           name: 'unit.coverage.${{ matrix.os }}-${{ matrix.go }}'
+          retention-days: 1
 
       - name: Upload test report artifacts
         # upload report even if test fail. BTW, this is when they are valuable.
@@ -228,6 +279,7 @@ jobs:
         with:
           path: '**/unit.report.*.json'
           name: 'unit.report.${{ matrix.os }}-${{ matrix.go }}'
+          retention-days: 1
 
   codegen-test:
     # description: |
@@ -237,7 +289,7 @@ jobs:
     #   The test matrix applies to linux only. OS-specific quirks should
     #   be covered by unit tests.
     needs: [code-changed, lint]
-    if: ${{ needs.code-changed.outputs.proceed == 'true' }}
+    if: ${{ needs.code-changed.outputs.proceed_with_codegen == 'true' }}
     strategy:
       matrix:
         go: ["oldstable", "stable"]
@@ -295,53 +347,75 @@ jobs:
         with:
           path: '**/codegen.coverage.*.out'
           name: 'codegen.coverage.${{ matrix.os }}-${{ matrix.go }}'
+          retention-days: 1
 
   test-complete:
     # description: |
     #   Be explicit about all tests being passed. This allows for setting up only a few status checks on PRs.
     name: tests completed
-    needs: [code-changed, skip-test, build-test, codegen-test, unit-test]
+    needs: [code-changed, skip-test, build-test, codegen-test, unit-test, docker-test]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
-      - name: debug
+      - name: Tests completed
+        if: ${{ needs.code-changed.outputs.proceed != 'true' }}
         run: |
-          echo "needs.code-changed.outputs.proceed=${{ needs.code-changed.outputs.proceed }}"
-          echo "needs.build-test.result=${{ needs.build-test.result }}"
-          echo "needs.codegen-test.result=${{ needs.codegen-test.result }}"
-          echo "needs.unit-test.result=${{ needs.unit-test.result }}"
-          echo "${{ toJSON( needs ) }}"
+          echo "::notice title=Success:All tests skipped (nothing to do)"
 
       - name: Tests completed
         if: >-
           ${{
-              needs.code-changed.outputs.proceed == 'true' &&
+              needs.code-changed.outputs.proceed_with_tests == 'true' &&
               needs.build-test.result == 'success' &&
-              needs.codegen-test.result == 'success' &&
               needs.unit-test.result == 'success'
            }}
         run: |
-          echo "::notice title=Success:All tests completed"
+          echo "::notice title=Success:All unit tests completed"
+
+      - name: Tests completed
+        if: >-
+          ${{
+              needs.code-changed.outputs.proceed_with_codegen == 'true' &&
+              needs.codegen-test.result == 'success'
+           }}
+        run: |
+          echo "::notice title=Success:All codegen tests completed"
+
+      - name: Tests completed
+        if: >-
+          ${{
+              needs.code-changed.outputs.proceed_with_docker == 'true' &&
+              needs.docker-test.result == 'success'
+           }}
+        run: |
+          echo "::notice title=Success:All docker tests completed"
 
       - name: Tests failed
         if: >-
           ${{
               needs.code-changed.outputs.proceed == 'true' &&
               (
-                needs.build-test.result != 'success' ||
-                needs.codegen-test.result != 'success' ||
-                needs.unit-test.result != 'success'
+                (
+                  needs.code-changed.outputs.proceed_with_tests == 'true' &&
+                  (
+                    needs.build-test.result != 'success' ||
+                    needs.unit-test.result != 'success'
+                  )
+                ) ||
+                (
+                  needs.code-changed.outputs.proceed_with_codegen == 'true' &&
+                  needs.codegen-test.result != 'success'
+                ) ||
+                (
+                  needs.code-changed.outputs.proceed_with_docker == 'true' &&
+                  needs.docker-test.result != 'success'
+                )
               )
            }}
         run: |
           echo "::error title=Failure:Tests failed"
 
           exit 1
-
-      - name: Tests completed
-        if: ${{ needs.code-changed.outputs.proceed != 'true' }}
-        run: |
-          echo "::notice title=Success:All tests skipped (nothing to do)"
 
       - name: Ensure status
         run: |
@@ -353,8 +427,8 @@ jobs:
     #   Gather, merge then uploads test coverage files from all test jobs (this includes integration tests,
     #   like codegen-test).
     name: collect test coverage
-    needs: [test-complete]
-    if: ${{ !cancelled() && needs.test-complete.result == 'success' }}
+    needs: [test-complete, code-changed]
+    if: ${{ !cancelled() && needs.test-complete.result == 'success' && needs.code-changed.outputs.proceed_with_tests == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -389,7 +463,7 @@ jobs:
     #   (see <https://github.com/go-swagger/go-swagger/actions>).
     name: collect test reports
     needs: [code-changed, unit-test]
-    if: ${{ needs.code-changed.outputs.proceed == 'true' && !cancelled() }}
+    if: ${{ needs.code-changed.outputs.proceed_with_tests == 'true' && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0

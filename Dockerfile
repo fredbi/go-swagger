@@ -5,7 +5,7 @@ ARG TARGETOS TARGETARCH
 ARG commit_hash="dev"
 ARG tag_name="dev"
 
-ADD . /work
+COPY . /work
 WORKDIR /work
 
 RUN apk --no-cache add ca-certificates shared-mime-info mailcap git build-base binutils-gold
