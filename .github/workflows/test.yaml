@@ -35,6 +35,7 @@ jobs:
     - name: Originating repo checkout (e.g. public fork)
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
+        # TODO: ref doesn't work on push master
         ref: ${{ github.event.pull_request.head.ref }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
 
@@ -44,24 +45,28 @@ jobs:
       with:
         # check if anything changed in go source, templates or the way we test those
         files_yaml: |
-          should_run_tests:    # <- captures change that require unit tests to be run
-            - '**/go.mod'
-            - '**/go.sum'
-            - '**/*.go'
-            - '**/*.gotmpl'
+          should_run_tests:
+            - '**/go.(mod,sum)'
+            - '**.(go,gotmpl)'
             - '.golangci.yml'
             - '.codecov.yml'
             - '.github/workflows/test*.yaml'
-            - 'fixtures/*'
-          should_run_codegen:  # <- capture changes that require codegen tests to be run
+            - 'fixtures/**'
+            - '!**/*.md'
+          should_run_codegen:
+            - '**/go.(mod,sum)'
+            - 'cmd/**.go'
             - 'generator/**'
             - 'hack/codegen*.go'
             - 'hack/*.yaml'
-            - 'cmd/**'
+            - 'fixtures/**.(yaml,yml,json)'
+            - '!fixtures/goparsing/**'
             - '!cmd/swagger/commands/generate/spec*.go'
-          should_build_docker: # <- capture changes that require build docker test to be run
+            - '!**.md'
+          should_build_docker:
             - 'Dockerfile'
-            - '.github/workflows/docker*.yaml'
+            - '.hadolint.yml'
+            - '.github/workflows/*docker*.yaml'
 
     - name: Notify
       run: |
@@ -167,7 +172,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: ./.github/workflows/build-docker.yaml
-        # TODO: specific arg to use sha tagging (avoids branch-based tag sanitization)
+        with:
+          tag_sha: true
 
   build-test:
     # description: |
