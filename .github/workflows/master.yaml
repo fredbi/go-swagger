@@ -1,5 +1,8 @@
 name: docker-dev
 
+permissions:
+  contents: read
+
 on:
   workflow_run:
     workflows:
@@ -14,9 +17,6 @@ on:
       - 'hack/hugo/*'
       - .github/workflows/update-doc.yaml
       - '**/*.md'
-
-permissions:
-  contents: read
 
 jobs:
   on-success:
@@ -37,6 +37,7 @@ jobs:
 
   docker-dev:
     permissions:
+      contents: read
       security-events: write
     name: Docker latest master (dev)
     needs: [on-success]

@@ -1,5 +1,8 @@
 name: Release
 
+permissions:
+  contents: read
+
 # TODO: sign release artifacts
 
 on:
@@ -16,9 +19,6 @@ on:
       - 'docs/*'
       - 'hack/hugo/*'
       - .github/workflows/update-doc.yaml
-
-permissions:
-  contents: read
 
 jobs:
   on-success:

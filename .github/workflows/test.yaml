@@ -1,5 +1,9 @@
 name: Test
 
+permissions:
+  contents: read
+  pull-requests: read
+
 # description: |
 #   Test suite that runs on every commit (on pull requests, on merges to master).
 
@@ -8,10 +12,6 @@ on:
   push:
     branches:
       - master
-
-permissions:
-  contents: read
-  pull-requests: read
 
 jobs:
   code-changed:
@@ -68,6 +68,7 @@ jobs:
             - '!cmd/swagger/commands/generate/spec*.go'
             - '!**.md'
           # Changes in the way we build and check docker images.
+          # This assumes the repo builds normally and therefore only checks the dockerfile arrangements.
           should_build_docker:
             - 'Dockerfile'
             - '.hadolint.yml'
