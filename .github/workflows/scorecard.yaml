@@ -39,6 +39,8 @@ jobs:
           results_format: sarif
           publish_results: true
 
+      # TODO(fredbi): we may supplement this analysis with trivy and/or snyk
+
       # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
       # format to the repository Actions tab.
       - name: "Upload artifact"

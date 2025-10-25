@@ -36,6 +36,8 @@ jobs:
           echo "The triggering workflow failed. Stopping here"
 
   docker-dev:
+    permissions:
+      security-events: write
     name: Docker latest master (dev)
     needs: [on-success]
     uses: ./.github/workflows/build-docker.yaml
