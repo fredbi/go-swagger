@@ -67,7 +67,7 @@ jobs:
       - name: Meta usage
         id: meta-usage
         run: |
-          # determine the docker tags that will be used.
+          # Determine the docker tagging rules that will be used by docker/metadata-action.
           #
           # Example for tagged releases: v0, v0.33, v0.331
           # Example for dev images: master, edge
@@ -103,7 +103,7 @@ jobs:
             quay.io/goswagger/swagger
             ghcr.io/go-swagger/go-swagger
           flavor: |
-            latest: '${{ inputs.latest }}'
+            latest: "${{ inputs.latest }}"
           tags: ${{ steps.meta-usage.outputs.tags }}
 
       - name: Set up QEMU
