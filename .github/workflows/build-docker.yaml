@@ -48,6 +48,7 @@ permissions:
 
 env:
   SUPPORTED_PLATFORMS: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
+  DOCKER_CACHE: '../.docker-cache'
 
 jobs:
   build-docker:
@@ -94,6 +95,7 @@ jobs:
           echo "EOF" >> "$GITHUB_OUTPUT"
 
           echo "build_tag=${BUILD_TAG}" >> "$GITHUB_OUTPUT"
+          mkdir -p "${DOCKER_CACHE}"
 
       - name: Docker meta
         id: meta
@@ -142,20 +144,20 @@ jobs:
           context: .
           file: Dockerfile
           no-cache: true
+          cache-to: type=local,dest=${{ env.DOCKER_CACHE }}
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
-          platforms: 'linux/amd64'
           load: true
           push: false
           tags: go-swagger/go-swagger:${{ github.sha }}
 
       - name: Scan image for vulnerabilities
-        # TODO: upload report?
+        # TODO(fredbi): sec compliance - upload report to GHA
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           scan-type: image
-          image_ref: go-swagger/go-swagger:${{ github.sha }}
+          image-ref: go-swagger/go-swagger:${{ github.sha }}
           severity: CRITICAL
           exit-code: 1
 
@@ -168,7 +170,7 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          no-cache: true
+          cache-from: type=local,src=${{ env.DOCKER_CACHE }}
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
@@ -178,6 +180,4 @@ jobs:
           sbom: true
           #labels: ${{ steps.meta.outputs.labels }}
           #annotations
-          # cache-from/cache-to: gha
           # provenance
-          # outputs: type=docker,dest=${{ runner.temp }}/myimage.tar
