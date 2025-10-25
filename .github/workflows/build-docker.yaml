@@ -102,8 +102,8 @@ jobs:
           images: |
             quay.io/goswagger/swagger
             ghcr.io/go-swagger/go-swagger
-          flavor:
-            latest: '${{ inputs.latest }}'
+          flavor: |
+            latest=${{ inputs.latest }}
           tags: ${{ steps.meta-usage.outputs.tags }}
 
       - name: Set up QEMU

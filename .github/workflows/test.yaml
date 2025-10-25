@@ -247,7 +247,7 @@ jobs:
           cache: true
 
       - name: Install Tools
-        # TODO: pin version
+        # TODO: pin version -> fork + update dedicated github action
         run: |
           go install gotest.tools/gotestsum@latest
 
@@ -500,6 +500,8 @@ jobs:
         # At this moment, we keep a json format to dispatch test reports to codecov as well as to CTRF reports.
         #
         # TODO(fredbi): sec compliance - pin go-junit-report
+        # TODO(fredbi): investigate - use mikepenz/action-junit-report@v5, that packages most of the following scripts
+        # in a single action. Alternative: for that action.
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
           go-junit-report -version
