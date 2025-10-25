@@ -334,15 +334,14 @@ jobs:
           mkdir /tmp/cov
 
       - name: Build binary with test coverage instrumentation
-        # TODO: should explicit / simplify this hack
-        run: >
-          ./hack/build-docker.sh --github-action
-          -cover
-          -covermode=atomic
-          -coverpkg=$(go list)/...
+        run: |
+          go install -a \
+             --ldflags "-s -w" \
+             -cover -covermode=atomic -coverpkg=$(go list)/... \
+             ./cmd/swagger
 
       - name: Run codegen tests
-        # TODO: this test harness should output a json test report
+        # TODO(fredbi): tests: nice to have - this test harness should output a json test report
         run: >
           /usr/bin/time
           go test -v -timeout 30m
@@ -500,7 +499,7 @@ jobs:
         # As a contemplated alternative, we could use gotestsum above to produce the JUnit XML directly.
         # At this moment, we keep a json format to dispatch test reports to codecov as well as to CTRF reports.
         #
-        # TODO: pin go-junit-report
+        # TODO(fredbi): sec compliance - pin go-junit-report
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
           go-junit-report -version
