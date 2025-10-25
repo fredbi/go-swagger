@@ -46,6 +46,7 @@ jobs:
       push: true
       tagged: true
       latest: true
+      record_retention: 90
     secrets:
       CR_PAT: ${{ secrets.CR_PAT }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}

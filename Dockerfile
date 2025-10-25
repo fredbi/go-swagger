@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS cross
+FROM --platform=$BUILDPLATFORM golang@sha256:aee43c3ccbf24fdffb7295693b6e33b21e01baec1b2a55acc351fde345e9ec34 AS cross
 
 ARG TARGETOS TARGETARCH
 
@@ -15,7 +15,7 @@ RUN mkdir -p bin &&\
   LDFLAGS="$LDFLAGS -X github.com/go-swagger/go-swagger/cmd/swagger/commands.Version=${tag_name}" &&\
   CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags osusergo,netgo -o bin/swagger -ldflags "$LDFLAGS" -a ./cmd/swagger
 
-FROM --platform=$TARGETPLATFORM alpine
+FROM --platform=$TARGETPLATFORM alpine@sha256:4b7ce07002c69e8f3d704a9c5d6fd3053be500b7f1c69fc0d80990c2ad8dd412
 
 LABEL maintainer="Ivan Porto Carrero <ivan@flanders.co.nz> (@casualjim)"
 

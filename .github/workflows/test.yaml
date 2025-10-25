@@ -182,6 +182,7 @@ jobs:
       - uses: ./.github/workflows/build-docker.yaml
         with:
           tag_sha: true
+          pr: true
 
   build-test:
     # description: |
