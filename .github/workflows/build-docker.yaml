@@ -102,7 +102,7 @@ jobs:
           images: |
             quay.io/goswagger/swagger
             ghcr.io/go-swagger/go-swagger
-          flavor: |
+          flavor:
             latest: '${{ inputs.latest }}'
           tags: ${{ steps.meta-usage.outputs.tags }}
 
