@@ -42,8 +42,7 @@ on:
       QUAY_PASS:
         description: user to push to quay.io registry
         required: false
-      GITHUB_TOKEN:
-        required: false
+      # GITHUB_TOKEN is implied
 
 permissions:
   contents: read
