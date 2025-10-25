@@ -121,6 +121,7 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASS }}
+        continue-on-error: true # TODO: for testing only
 
       - name: Login to GitHub Container Registry
         if: ${{ inputs.push }}
@@ -129,6 +130,34 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
+        continue-on-error: true # TODO: for testing only
+
+      - name: Build to scan
+        id: scan-build
+        env:
+          DOCKER_BUILD_SUMMARY: false
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
+        with:
+          context: .
+          file: Dockerfile
+          no-cache: true
+          build-args: |
+            commit_hash=${{ github.sha }}
+            tag_name=${{ steps.meta-usage.outputs.build_tag }}
+          platforms: 'linux/amd64'
+          load: true
+          push: false
+          tags: go-swagger/go-swagger:${{ github.sha }}
+
+      - name: Scan image for vulnerabilities
+        # TODO: upload report?
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
+        with:
+          scan-type: image
+          image_ref: go-swagger/go-swagger:${{ github.sha }}
+          severity: CRITICAL
+          exit-code: 1
 
       - name: Build and push
         env:
