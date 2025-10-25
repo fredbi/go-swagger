@@ -81,7 +81,8 @@ jobs:
             echo "type=ref,event=tag" >> "$GITHUB_OUTPUT"
             echo "type=semver,pattern={{version}}" >> "$GITHUB_OUTPUT"
             echo "type=semver,pattern={{major}}.{{minor}}" >> "$GITHUB_OUTPUT"
-            echo "type=semver,pattern={{major}}" >> "$GITHUB_OUTPUT"
+            # disabled if major zero
+            echo "type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}" >> "$GITHUB_OUTPUT"
             BUILD_TAG="${{ github.ref_name }}"
           else
             # tagging rules for git branch
@@ -133,7 +134,6 @@ jobs:
           load: true
           push: false
           tags: go-swagger/go-swagger:${{ github.sha }}
-          sbom: true
 
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
@@ -188,6 +188,7 @@ jobs:
           DOCKER_BUILD_SUMMARY: true
           DOCKER_BUILD_RECORD_UPLOAD: true
           DOCKER_BUILD_RECORD_RETENTION_DAYS: 1
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
         with:
           context: .
@@ -198,8 +199,7 @@ jobs:
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
           platforms: ${{ env.SUPPORTED_PLATFORMS }}
           push: '${{ inputs.push }}'
-          tags: ${{ steps.meta.outputs.tags }}
           sbom: true
-          # labels: ${{ steps.meta.outputs.labels }}
-          # annotations
-          # provenance
+          tags: ${{ steps.meta.outputs.tags }}
+          provenance: mode=max
+          annnotations: ${{ steps.meta.outputs.annotations }}
