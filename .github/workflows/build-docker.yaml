@@ -152,7 +152,7 @@ jobs:
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
-          outputs: type=tar,dest=${{ env.DOCKER_DEST}/swagger-image.tar
+          outputs: type=tar,dest=${{ env.DOCKER_DEST}}/swagger-image.tar
           push: false
           tags: go-swagger/go-swagger:sha-${{ github.sha }}  # this is not pushed
           sbom: true
