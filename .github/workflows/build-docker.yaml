@@ -1,9 +1,5 @@
 name: build-docker
 
-# TODO:
-# - [x] lint Dockerfiles (hadolint)
-# - [] run vuln scan (trivy)
-
 on:
   workflow_call:
     inputs:
@@ -49,9 +45,11 @@ permissions:
 
 env:
   SUPPORTED_PLATFORMS: 'linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x'
-  DOCKER_CACHE: '../.docker-cache'
+  DOCKER_CACHE: '../.docker-cache' # <- out of docker build context
 
 jobs:
+  permissions:
+    actions: read
   build-docker:
     name: Docker latest master (dev)
     runs-on: ubuntu-latest
@@ -86,6 +84,7 @@ jobs:
             BUILD_TAG="${{ github.ref_name }}"
           else
             # tagging rules for git branch
+            # TODO: add latest with prefix, e.g. master-latest
             echo "type=ref,event=branch" >> "$GITHUB_OUTPUT"
             echo "type=edge" >> "$GITHUB_OUTPUT"
           fi
@@ -101,6 +100,8 @@ jobs:
 
       - name: Docker meta
         id: meta
+        env:
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f  # v5.8.0
         with:
           images: |
@@ -131,7 +132,7 @@ jobs:
           build-args: |
             commit_hash=${{ github.sha }}
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
-          load: true
+          load: true # TODO: should add sbom on tar format, not docker format
           push: false
           tags: go-swagger/go-swagger:${{ github.sha }}
 
@@ -142,7 +143,7 @@ jobs:
           image-ref: go-swagger/go-swagger:${{ github.sha }}
           format: sarif
           hide-progress: true
-          output: trivy-image-report.sarif
+          output: /tmp/trivy-image-report.sarif
           exit-code: 0
 
       - name: Upload trivy result to GHAS
@@ -150,8 +151,9 @@ jobs:
         uses: github/codeql-action/upload-sarif@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          sarif_file: trivy-image-report.sarif
+          sarif_file: /tmp/trivy-image-report.sarif
           category: trivy
+        continue-on-error: true
 
       - name: Produce trivy human-readable report
         # halts on critical vulnerabilities
@@ -188,7 +190,6 @@ jobs:
           DOCKER_BUILD_SUMMARY: true
           DOCKER_BUILD_RECORD_UPLOAD: true
           DOCKER_BUILD_RECORD_RETENTION_DAYS: 1
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83  # v6.18.0
         with:
           context: .
@@ -199,7 +200,8 @@ jobs:
             tag_name=${{ steps.meta-usage.outputs.build_tag }}
           platforms: ${{ env.SUPPORTED_PLATFORMS }}
           push: '${{ inputs.push }}'
-          sbom: true
           tags: ${{ steps.meta.outputs.tags }}
+          sbom: true
           provenance: mode=max
           annnotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
