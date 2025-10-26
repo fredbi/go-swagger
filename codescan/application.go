@@ -79,7 +79,10 @@ func Run(opts *Options) (*spec.Swagger, error) {
 		return nil, err
 	}
 	sb := newSpecBuilder(opts.InputSpec, sc, opts.ScanModels)
-	return sb.Build()
+	// return sb.Build()
+	log.Printf("%T", sb)
+
+	return &spec.Swagger{}, nil
 }
 
 func newScanCtx(opts *Options) (*scanCtx, error) {
