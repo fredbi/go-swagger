@@ -29,7 +29,7 @@ jobs:
       proceed_with_tests: >-
         ${{
            steps.changed-source-files.outputs.should_run_tests_any_changed == 'true' ||
-           steps.changed-source-files.outputs.should_run_codegen_any_changed
+           steps.changed-source-files.outputs.should_run_codegen_any_changed == 'true'
          }}
       proceed_with_codegen: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
       proceed_with_docker: ${{ steps.changed-source-files.outputs.should_build_docker_any_changed }}
@@ -56,7 +56,7 @@ jobs:
           # Changes to anything in go source, templates or the way we test those.
           should_run_tests:
             - '**/go.(mod,sum)'
-            - '**/**.(go,gotmpl)'
+            - '**/*.(go,gotmpl)'
             - '.golangci.yml'
             - '.codecov.yml'
             - '.github/workflows/test*.yaml'
@@ -68,13 +68,14 @@ jobs:
           # is affected and exercised by the codegen testing harness.
           should_run_codegen:
             - '**/go.(mod,sum)'
-            - 'cmd/**.go'
+            - 'cmd/**/*.go'
             - 'generator/**'
             - 'hack/codegen*.go'
             - 'hack/*.yaml'
-            - 'fixtures/**.(yaml,yml,json)'
+            - 'fixtures/**/*.(yaml,yml,json)'
             - '!fixtures/goparsing/**'
             - '!cmd/swagger/commands/generate/spec*.go'
+            - '!cmd/swagger/commands/diff/*.go'
             - '!**.md'
           # Changes in the way we build and check docker images.
           # This assumes the repo builds normally and therefore only checks the dockerfile arrangements.
