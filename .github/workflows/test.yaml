@@ -26,7 +26,11 @@ jobs:
     name: Check code changes
     runs-on: ubuntu-latest
     outputs:
-      proceed_with_tests: ${{ steps.changed-source-files.outputs.should_run_tests_any_changed }}
+      proceed_with_tests: >-
+        ${{
+           steps.changed-source-files.outputs.should_run_tests_any_changed == 'true' ||
+           steps.changed-source-files.outputs.should_run_codegen_any_changed
+         }}
       proceed_with_codegen: ${{ steps.changed-source-files.outputs.should_run_codegen_any_changed }}
       proceed_with_docker: ${{ steps.changed-source-files.outputs.should_build_docker_any_changed }}
       proceed: >-
@@ -52,7 +56,7 @@ jobs:
           # Changes to anything in go source, templates or the way we test those.
           should_run_tests:
             - '**/go.(mod,sum)'
-            - '**.(go,gotmpl)'
+            - '**/**.(go,gotmpl)'
             - '.golangci.yml'
             - '.codecov.yml'
             - '.github/workflows/test*.yaml'
