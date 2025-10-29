@@ -55,13 +55,13 @@ jobs:
         files_yaml: |
           # Changes to anything in go source, templates or the way we test those.
           should_run_tests:
-            - '**/go.(mod,sum)'
-            - '**/*.(go,gotmpl)'
-            - '.golangci.yml'
-            - '.codecov.yml'
-            - '.github/workflows/test*.yaml'
+            - '**/go.{mod,sum}'
+            - '**/*.{go,gotmpl}'
             - 'fixtures/**'
             - '!**/*.md'
+            - '.github/workflows/test*.yaml'
+            - '.golangci.yml'
+            - '.codecov.yml'
           # Changes to anything that affects codegen.
           #
           # Approximation: some cmd/** commands do not affect codegen, but CLI
@@ -69,17 +69,21 @@ jobs:
           should_run_codegen:
             - '**/go.(mod,sum)'
             - 'cmd/**/*.go'
-            - 'generator/**'
-            - 'hack/codegen*.go'
-            - 'hack/*.yaml'
-            - 'fixtures/**/*.(yaml,yml,json)'
-            - '!fixtures/goparsing/**'
             - '!cmd/swagger/commands/generate/spec*.go'
             - '!cmd/swagger/commands/diff/*.go'
-            - '!**.md'
+            - 'generator/**'
+            # codegen test program and configuration
+            - 'hack/codegen*.go'
+            - 'hack/*.yaml'
+            # codegen test data
+            - 'fixtures/**/*.(yaml,yml,json)'
+            # codescan test data
+            - '!fixtures/goparsing/**'
+            - '!**/*.md'
           # Changes in the way we build and check docker images.
           # This assumes the repo builds normally and therefore only checks the dockerfile arrangements.
           should_build_docker:
+            - '**/go.(mod,sum)'
             - 'Dockerfile'
             - '.hadolint.yml'
             - '.github/workflows/*docker*.yaml'
