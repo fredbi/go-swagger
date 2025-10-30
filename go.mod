@@ -25,7 +25,6 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/kr/pretty v0.3.1
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
@@ -90,4 +89,7 @@ require (
 	golang.org/x/sync v0.18.0 // indirect
 )
 
-require github.com/go-openapi/testify/enable/yaml/v2 v2.3.0 // indirect
+require (
+	github.com/go-openapi/testify/enable/yaml/v2 v2.3.0 // indirect
+	github.com/rogpeppe/go-internal v1.13.1 // indirect
+)
