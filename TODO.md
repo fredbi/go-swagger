@@ -54,3 +54,50 @@ openssf:
 
 test:
 * json output for integration tests
+
+Release
+* supported ports
+* upx on platforms that support it
+* binaries (tgz | zip)
+* raw binaries
+* linux distr:
+  * deb
+  * rpm
+
+* sboms experiments (w/ syft)
+  * syft:
+     * rpm sbom missing a lot of stuff
+     * deb sbom missing a lot of stuff
+     * source sbom: lot of redundant stuff
+     * binary package: closest to something acceptable, but sbom needs rework
+  * trivy
+
+* signing experiments
+
+* workflow
+
+1. generate notes
+2. generate doc site
+3. build docker
+4. goreleaser action
+5. upload packages to cloudsmith
+4. make release
+
+Tests goreleaser
+
+* [x] build
+   * [x] baked version
+* [x] upx
+* [x] archive
+      * [x] source
+      * [x] single binary
+      * [x] binary tgz
+* [x] checksums
+* [ ] changelog
+   [ ] github
+* [ ] package
+  * test install
+* [ ] github release
+* [ ] ~sboms~
+* [ ] sign
+

@@ -15,10 +15,10 @@ on:
       - 'v*'
     branches:
       - 'prepare-release/*'
-    paths-ignore:
-      - 'docs/*'
-      - 'hack/hugo/*'
-      - .github/workflows/update-doc.yaml
+
+env:
+  EXTRA_ASSETS_DIR: ${{ github.workspace }}/../assets
+  CLOUDSMITH_REPO: go-swagger/go-swagger
 
 jobs:
   on-success:
@@ -38,9 +38,22 @@ jobs:
           echo "The triggering workflow failed. Stopping here"
           exit 1
 
+  update-doc:
+    name: Build documentation site
+    permissions:
+      pages: write
+      id-token: write
+    needs: [on-success]
+    uses: ./.github/workflows/update-doc.yaml
+    with:
+      secrets: inherits
+
   docker-release:
     name: Docker with release tag
     needs: [on-success]
+    permissions:
+      contents: read
+      security-events: write
     uses: ./.github/workflows/build-docker.yaml
     with:
       push: true
@@ -53,91 +66,86 @@ jobs:
       QUAY_PASS: ${{ secrets.QUAY_PASS }}
 
   publish_release:
-    # TODO: replace by goreleaser
     name: Publish release
-    needs: [on-success]
+    needs: [on-success, docker-release, update-doc]
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+      -
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      -
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: "stable"
           check-latest: true
           cache: true
-
-      - name: Install Tools
+      -
+        name: Install Tools
         run: |
-          go install github.com/github-release/github-release@latest
-          go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
-
-      - name: Build release
+          echo "none"
+          # install syft?
+          # install cosign
+          # install release notes builder
+      -
+        name: Install UPX
+        uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
+        with:
+          install-only: true
+      -
+        name: UPX version
+        run: upx --version
+      -
+        name: Download doc site artifact
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          run-id: "${{ github.run_id }}"
+          pattern: 'github-pages'
+          path: ${{ env.EXTRA_ASSETS_DIR }}/docs
+      -
+        name: Build release notes
         run: |
-          set -x
-          rm -rf dist
-          mkdir -p dist/bin
-          mkdir -p dist/build
-
-          build_binary() {
-            LDFLAGS="-s -w -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Commit=${GITHUB_SHA}"
-            LDFLAGS="$LDFLAGS -X github.com/$GITHUB_REPOSITORY/cmd/swagger/commands.Version=${GITHUB_REF_NAME-dev}"
-            out="swagger_$1_$2"
-            if [[ $1 == "windows" ]]; then
-              out="${out}.exe"
-            fi
-            GOOS=$1 GOARCH=$2 CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -o "./dist/bin/$out" ./cmd/swagger
-          }
-
-          go mod download
-
-          build_binary linux amd64
-          build_binary linux arm64
-          build_binary linux arm
-          build_binary linux ppc64le
-          build_binary linux s390x
-          build_binary darwin amd64
-          build_binary darwin arm64
-          build_binary windows amd64
-          build_binary windows arm64
-
-          nfpm p -p deb -t dist/build
-          nfpm p -p rpm -t dist/build
-
-          pushd dist/bin || exit 1
-          sha1sum * > sha1sum.txt
-          sha256sum * > sha256sum.txt
-          popd || exit 1
-
-      - name: Push RPM
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: push_rpm
-        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
+          mkdir -p ${{ env.EXTRA_ASSETS_DIR}}/notes
+          # TODO
+          echo "none"
+      -
+        name: Build release
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "rpm"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "fedora"
-          release: "any-version"
-          file: "dist/build/swagger-*.x86_64.rpm"
-
-      - name: Push Deb
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: push
-        uses: cloudsmith-io/action@7af394e0f8add4867bce109385962dafecad1b8d # v0.6.14
-        with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: "push"
-          format: "deb"
-          owner: "go-swagger"
-          repo: "go-swagger"
-          distro: "debian"
-          release: "any-version"
-          file: "dist/build/swagger_*_amd64.deb"
-
-      - name: Publish Binaries
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: fnkr/github-action-ghr@96b1448dc6162f370067e1de51e856e733a76b4f # v1.3
+          version: ${{ .github.ref_name }}
+          args: >-
+            release
+              --clean
+              --release-notes ${{ env.EXTRA_ASSETS_DIR }}/notes/${{ github.ref_name }}.md
+              --fail-fast
+              --debug
         env:
-          GHR_PATH: dist/bin/
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: go-swagger
+          GITHUB_REPOSITORY: go-swagger
+          NOTES_ASSETS_DIR: ${{ env.extra_asserts_dir }}/notes
+          DOC_ASSETS_DIR: ${{ env.extra_asserts_dir }}/docs
+      -
+        name: Install CloudSmith CLI
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: cloudsmith-io/cloudsmith-cli-action@9c315294dcaf0bc33ede92e45ee3b63c32789684 # v1.0.8
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+      -
+        name: Push RPM package to CloudSmith
+        # works for RedHat, CentOS, fedora, Suse...
+        # TODO: add custom tags, e.g. "go-swagger"
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: >
+          cloudsmith push rpm --verbose
+            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+            dist/swagger-*.x86_64*.rpm
+
+      -
+        name: Push Deb package to CloudSmith
+        # works for Debian, Ubuntu...
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: >
+          cloudsmith push deb --verbose
+            ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
+            dist/swagger-*.x86_64*.deb
