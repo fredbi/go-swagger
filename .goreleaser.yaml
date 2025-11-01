@@ -75,7 +75,8 @@ builds:
     mod_timestamp: '{{ .CommitTimestamp }}'
 
 gomod:
-  proxy: true
+  #proxy: true
+  proxy: false
   env:
   - GOPRIVATE=github.com/go-swagger
 
