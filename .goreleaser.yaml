@@ -76,6 +76,8 @@ builds:
 
 gomod:
   proxy: true
+  env:
+  - GOPRIVATE=github.com/go-swagger
 
 upx:
   - enabled: false # TODO
