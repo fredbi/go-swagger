@@ -485,7 +485,6 @@ jobs:
           name: Aggregated coverage
           # All *.coverage.*.out files uploaded should be detected by the codecov action.
           # NOTE: we lose the flags on individual test reports (e.g. by os, by go version, unit vs codegen)
-          flags: '${{ matrix.go_version }}-${{ matrix.os }}'
           fail_ci_if_error: false
           verbose: false
 
@@ -551,6 +550,10 @@ jobs:
           appName="go-swagger"
           buildNumber="${{ github.run_id }}"
           appVersion="${{ github.event.pull_request.head.sha }}"
+          if [[ -z "${appVersion}" ]] ; then
+            # for push events
+            appVersion="${{ github.sha }}"
+          fi
 
           # reconstruct platform information from the file name
           # set -x
