@@ -52,11 +52,13 @@ jobs:
       uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v4.7.0
       id: changed-source-files
       with:
+        # NOTE: this action is using micromatch (js) for globbing. This lib tries to remain
+        # as close as possible to bash 4.3 globs.
         files_yaml: |
           # Changes to anything in go source, templates or the way we test those.
           should_run_tests:
-            - '**/go.(mod,sum)'
-            - '**/*.(go,gotmpl)'
+            - '**/go.{mod,sum}'
+            - '**.{go,gotmpl}'
             - '.golangci.yml'
             - '.codecov.yml'
             - '.github/workflows/test*.yaml'
@@ -65,14 +67,15 @@ jobs:
           # Changes to anything that affects codegen.
           #
           # Approximation: some cmd/** commands do not affect codegen, but CLI
-          # is affected and exercised by the codegen testing harness.
+          # is generally affected and exercised by the codegen testing harness.
+          # We only exclude the "diff" and "generate spec" from the codegen scope.
           should_run_codegen:
             - '**/go.(mod,sum)'
-            - 'cmd/**/*.go'
+            - 'cmd/**.go'
             - 'generator/**'
             - 'hack/codegen*.go'
             - 'hack/*.yaml'
-            - 'fixtures/**/*.(yaml,yml,json)'
+            - 'fixtures/**.{yaml,yml,json}'
             - '!fixtures/goparsing/**'
             - '!cmd/swagger/commands/generate/spec*.go'
             - '!cmd/swagger/commands/diff/*.go'

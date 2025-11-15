@@ -16,7 +16,7 @@ on:
       - 'docs/*'
       - 'hack/hugo/*'
       - .github/workflows/update-doc.yaml
-      - '**/*.md'
+      - '**.md'
 
 jobs:
   on-success:

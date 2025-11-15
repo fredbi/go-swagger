@@ -12,6 +12,11 @@ on:
   branch_protection_rule:
   push:
     branches: [ "master" ]
+    paths-ignore:
+      - 'docs/*'
+      - 'hack/hugo/*'
+      - .github/workflows/update-doc.yaml
+      - '**.md'
   schedule:
     - cron: '14 3 * * *'
 
