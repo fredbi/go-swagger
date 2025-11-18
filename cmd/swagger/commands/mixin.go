@@ -14,8 +14,6 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
-
-	"github.com/go-swagger/go-swagger/generator"
 )
 
 const (
@@ -114,9 +112,11 @@ func (c *MixinSpec) MixinFiles(primaryFile string, mixinFiles []string, _ io.Wri
 
 	mixins := make([]*spec.Swagger, 0, len(mixinFiles))
 	for _, mixinFile := range mixinFiles {
-		if c.KeepSpecOrder {
-			mixinFile = generator.WithAutoXOrder(mixinFile)
-		}
+		/*
+			if c.KeepSpecOrder {
+				mixinFile = generator.WithAutoXOrder(mixinFile)
+			}
+		*/
 		mixin, lerr := loads.Spec(mixinFile)
 		if lerr != nil {
 			return nil, lerr
