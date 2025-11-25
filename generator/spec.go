@@ -100,7 +100,7 @@ func (g *GenOpts) validateAndFlattenSpec() (*loads.Document, error) {
 		// This nasty bug (in spec expander) affects circular references.
 		// So we need to reload the spec from a clone.
 		// Notice that since the spec inside the document has been modified, we should
-		// ensure that Pristine refreshes its row root document.
+		// ensure that Pristine refreshes its raw root document.
 		specDoc = specDoc.Pristine()
 	}
 
