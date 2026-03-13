@@ -81,8 +81,8 @@ jobs:
         name: Write GPG key file for nfpm
         id: gpg-key-file
         run: |
-          GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.gpg)"
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --dearmor > "${GPG_KEY_FILE}"
+          GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.asc)"
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" > "${GPG_KEY_FILE}"
           echo "path=${GPG_KEY_FILE}" >> "${GITHUB_OUTPUT}"
       -
         name: Extract tag message
