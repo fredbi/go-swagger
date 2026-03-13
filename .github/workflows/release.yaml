@@ -15,6 +15,7 @@ jobs:
   update-doc:
     name: Build documentation site
     permissions:
+      content: read
       pages: write
       id-token: write
     uses: ./.github/workflows/update-doc.yaml
