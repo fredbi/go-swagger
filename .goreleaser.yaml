@@ -30,13 +30,7 @@ env: # these env are useful to allow usage from a fork
   - NFPM_PASSPHRASE={{ .Env.GPG_PASSPHRASE }}  # being explicit about this requirement
   # e.g. key.gpg
   - GPG_KEY_FILE={{ .Env.GPG_KEY_FILE }}  # being explicit about this requirement
-  - GPG_FINGERPRINT={{ .Env.GPG_KEY_FILE }}  # being explicit about this requirement
-
-before:
-  hooks:
-    - go mod tidy
-    - |
-      # verify signing key
+  - GPG_FINGERPRINT={{ .Env.GPG_FINGERPRINT }}  # being explicit about this requirement
 
 builds:
   - id: swagger
@@ -138,29 +132,6 @@ archives:
       group: root
       mtime: "{{ .CommitDate }}"
       mode: 0644
-  -
-    id: release-doc-site
-    formats: [tar.gz]
-    meta: true
-    name_template: goswaggerio_{{ .Version }}
-    files:
-      - src: '{{ .Env.EXTRA_ASSETS_DIR/docs/**'
-        info:
-          owner: nobody
-          group: root
-          mtime: "{{ .CommitDate }}"
-          mode: 0644
-  -
-    id: release-notes
-    formats: [binary]
-    meta: true
-    files:
-      - src: '{{ .Env.EXTRA_ASSETS_DIR/notes/{{ .Tag }}.md'
-        info:
-          owner: nobody
-          group: root
-          mtime: "{{ .CommitDate }}"
-          mode: 0644
 
 source:
   enabled: true
@@ -219,11 +190,7 @@ signs:
     - '{{ .Env.GPG_FINGERPRINT }}'
     - '--output'
     - '${signature}'
-    artifacts:
-      - checksum
-      - archive
-      - package
-      - source
+    artifacts: all
     stdin: "{{ .Env.GPG_PASSPHRASE }}"
     output: true
 
@@ -249,13 +216,11 @@ release:
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
 announce:
-  slack:
-    enabled: false
+  discord:
+    enabled: true
     message_template: |
-      Released go-swagger {{.Tag}}
-      - <https://github.com/go-swagger/go-swagger/actions/workflows/release.yaml|CI Workflow>
-      - <https://github.com/go-swagger/go-swagger/releases/tag/{{ .Tag }}|Release notes>
-      - <https://github.com/go-swagger/go-swagger/compare/{{.Env.PREVIOUS_TAG}}...{{.Tag}}|Compare with previous version>
-
-      cc: <@U801Z88MR>
-    channel: '#releases'
+      Released go-swagger {{ .Tag }}
+      - [CI Workflow](https://github.com/go-swagger/go-swagger/actions/workflows/release.yaml)
+      - [Release notes](https://github.com/go-swagger/go-swagger/releases/tag/{{ .Tag }})
+      - [Compare with previous version](https://github.com/go-swagger/go-swagger/compare/{{ .Env.PREVIOUS_TAG }}...{{ .Tag }})
+    author: go-swagger

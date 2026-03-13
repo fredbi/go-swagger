@@ -3,54 +3,25 @@ name: Release
 permissions:
   contents: read
 
-# TODO: sign release artifacts
-
 on:
-  workflow_run:
-    workflows:
-      - test
-    types:
-      - completed
+  push:
     tags:
       - 'v*'
-    branches:
-      - 'prepare-release/*'
 
 env:
-  EXTRA_ASSETS_DIR: ${{ github.workspace }}/../assets
   CLOUDSMITH_REPO: go-swagger/go-swagger
 
 jobs:
-  on-success:
-    name: Ensure triggering workflow was successful
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow was successful"
-
-  on-failure:
-    name: Triggering workflow was unsuccessful
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "The triggering workflow failed. Stopping here"
-          exit 1
-
   update-doc:
     name: Build documentation site
     permissions:
       pages: write
       id-token: write
-    needs: [on-success]
     uses: ./.github/workflows/update-doc.yaml
-    with:
-      secrets: inherits
 
   docker-release:
     name: Docker with release tag
-    needs: [on-success]
+    needs: [update-doc]
     permissions:
       contents: read
       security-events: write
@@ -65,28 +36,26 @@ jobs:
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
       QUAY_PASS: ${{ secrets.QUAY_PASS }}
 
-  publish_release:
+  publish-release:
     name: Publish release
-    needs: [on-success, docker-release, update-doc]
+    needs: [docker-release]
     permissions:
       contents: write
     runs-on: ubuntu-latest
     steps:
       -
+        name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       -
+        name: Setup Go
         uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
           go-version: "stable"
           check-latest: true
           cache: true
-      -
-        name: Install Tools
-        run: |
-          echo "none"
-          # install syft?
-          # install cosign
-          # install release notes builder
       -
         name: Install UPX
         uses: crazy-max/ghaction-upx@db8cc9515a4a7ea1b312cb82fbeae6d716daf777 # v3.2.0
@@ -96,55 +65,77 @@ jobs:
         name: UPX version
         run: upx --version
       -
-        name: Download doc site artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        name: Install git-cliff
+        uses: taiki-e/install-action@735e5933943122c5ac182670e308c3a6fce3e591 # v2.52.4
         with:
-          run-id: "${{ github.run_id }}"
-          pattern: 'github-pages'
-          path: ${{ env.EXTRA_ASSETS_DIR }}/docs
+          tool: git-cliff
       -
-        name: Build release notes
+        name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@e89d40a6bfcfe28ab1ee35691bdf2d3c5d86f2ba # v6.3.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      -
+        name: Write GPG key file for nfpm
+        id: gpg-key-file
         run: |
-          mkdir -p ${{ env.EXTRA_ASSETS_DIR}}/notes
-          # TODO
-          echo "none"
+          GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.gpg)"
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --dearmor > "${GPG_KEY_FILE}"
+          echo "path=${GPG_KEY_FILE}" >> "${GITHUB_OUTPUT}"
+      -
+        name: Extract tag message
+        id: tag-message
+        run: |
+          TAG_MESSAGE="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          {
+            echo 'message<<TAGEOF'
+            echo "${TAG_MESSAGE}"
+            echo 'TAGEOF'
+          } >> "${GITHUB_OUTPUT}"
+      -
+        name: Generate release notes
+        run: |
+          git cliff \
+            --config .cliff.toml \
+            --latest \
+            --with-tag-message "${{ steps.tag-message.outputs.message }}" \
+            --output /tmp/release-notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       -
         name: Build release
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
         with:
-          version: ${{ .github.ref_name }}
+          version: "~> v2"
           args: >-
             release
               --clean
-              --release-notes ${{ env.EXTRA_ASSETS_DIR }}/notes/${{ github.ref_name }}.md
+              --release-notes /tmp/release-notes.md
               --fail-fast
-              --debug
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY_OWNER: go-swagger
-          GITHUB_REPOSITORY: go-swagger
-          NOTES_ASSETS_DIR: ${{ env.extra_asserts_dir }}/notes
-          DOC_ASSETS_DIR: ${{ env.extra_asserts_dir }}/docs
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_KEY_FILE: ${{ steps.gpg-key-file.outputs.path }}
+          GPG_FINGERPRINT: ${{ steps.import-gpg.outputs.fingerprint }}
+          DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
       -
         name: Install CloudSmith CLI
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
         uses: cloudsmith-io/cloudsmith-cli-action@9c315294dcaf0bc33ede92e45ee3b63c32789684 # v1.0.8
         with:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
       -
         name: Push RPM package to CloudSmith
-        # works for RedHat, CentOS, fedora, Suse...
-        # TODO: add custom tags, e.g. "go-swagger"
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
         run: >
           cloudsmith push rpm --verbose
             ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
             dist/swagger-*.x86_64*.rpm
-
       -
         name: Push Deb package to CloudSmith
-        # works for Debian, Ubuntu...
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
         run: >
           cloudsmith push deb --verbose
             ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version

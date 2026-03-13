@@ -66,3 +66,8 @@ hack/deploy.env
 
 dist/
 .circleci/*.sh
+
+.mcp.json
+.claude/
+!.claude/rules
+!.claude/CLAUDE.md
