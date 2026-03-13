@@ -122,20 +122,26 @@ jobs:
           DISCORD_WEBHOOK_TOKEN: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
       -
         name: Install CloudSmith CLI
-        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
         uses: cloudsmith-io/cloudsmith-cli-action@9c315294dcaf0bc33ede92e45ee3b63c32789684 # v1.0.8
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         with:
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
       -
         name: Push RPM package to CloudSmith
-        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         run: >
           cloudsmith push rpm --verbose
             ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version
             dist/swagger-*.x86_64*.rpm
       -
         name: Push Deb package to CloudSmith
-        if: ${{ secrets.CLOUDSMITH_API_KEY != '' }}
+        if: ${{ env.CLOUDSMITH_API_KEY != '' }}
+        env:
+          CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
         run: >
           cloudsmith push deb --verbose
             ${{ env.CLOUDSMITH_REPO }}/any-distro/any-version

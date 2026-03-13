@@ -26,5 +26,3 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/update-doc.yaml
-    with:
-      secrets: inherit
