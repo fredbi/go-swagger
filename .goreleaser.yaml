@@ -221,5 +221,5 @@ announce:
       Released go-swagger {{ .Tag }}
       - [CI Workflow](https://github.com/go-swagger/go-swagger/actions/workflows/release.yaml)
       - [Release notes](https://github.com/go-swagger/go-swagger/releases/tag/{{ .Tag }})
-      - [Compare with previous version](https://github.com/go-swagger/go-swagger/compare/{{ .Env.PREVIOUS_TAG }}...{{ .Tag }})
+      - [Compare with previous version](https://github.com/go-swagger/go-swagger/compare/{{ .PreviousTag }}...{{ .Tag }})
     author: go-swagger
