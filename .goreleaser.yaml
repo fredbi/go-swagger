@@ -27,7 +27,7 @@ env: # these env are useful to allow usage from a fork
   - GIT_REPO={{ if index .Env "GITHUB_REPOSITORY" }}{{ .Env.GITHUB_REPOSITORY }}{{ else }}go-swagger{{ end }}
   - MODULE_NAME=github.com/go-swagger/go-swagger
   - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}  # being explicit about this requirement, fails if not defined
-  - NFPM_PASSPHRASE={{ .Env.GPG_PASSPHRASE }}  # being explicit about this requirement
+  #- NFPM_PASSPHRASE={{ .Env.GPG_PASSPHRASE }}  # being explicit about this requirement
   # e.g. key.gpg
   - GPG_KEY_FILE={{ .Env.GPG_KEY_FILE }}  # being explicit about this requirement
   - GPG_FINGERPRINT={{ .Env.GPG_FINGERPRINT }}  # being explicit about this requirement

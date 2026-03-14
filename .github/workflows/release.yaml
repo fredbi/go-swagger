@@ -88,6 +88,7 @@ jobs:
         run: |
           GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.asc)"
           PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
+          echo "GPG_PASSPHRASE length: ${#GPG_PASSPHRASE}"
 
           # Export only the RSA signing subkey (32475DCD662E8EED).
           # nfpm uses Go's openpgp which cannot decrypt DSA keys,
@@ -130,6 +131,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          NFPM_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_FILE: ${{ steps.gpg-key-file.outputs.path }}
           GPG_FINGERPRINT: ${{ steps.import-gpg.outputs.fingerprint }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
