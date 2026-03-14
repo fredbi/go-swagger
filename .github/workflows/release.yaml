@@ -86,22 +86,17 @@ jobs:
         name: Write GPG key file for nfpm
         id: gpg-key-file
         run: |
-          #    FINGERPRINT="${{ steps.import-gpg.outputs.fingerprint }}"
-          #    PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
-
-          #    # Re-encrypt the secret key material with GPG's current defaults,
-          #    # so Go's openpgp library can parse it (modern GPG key protection
-          #    # formats like AEAD are not supported by older Go openpgp libraries).
-          #    gpg --batch --pinentry-mode loopback \
-          #      --passphrase "${PASSPHRASE}" \
-          #      --passwd "${FINGERPRINT}" <<< "${PASSPHRASE}"
-
           GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.asc)"
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" > "${GPG_KEY_FILE}"
-          #    gpg --batch --pinentry-mode loopback \
-          #      --passphrase "${PASSPHRASE}" \
-          #      --armor --export-secret-keys "${FINGERPRINT}" \
-          #      > "${GPG_KEY_FILE}"
+          PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
+
+          # Export only the RSA signing subkey (32475DCD662E8EED).
+          # nfpm uses Go's openpgp which cannot decrypt DSA keys,
+          # so we must export only the RSA subkey.
+          # The '!' suffix forces export of that specific subkey only.
+          gpg --batch --pinentry-mode loopback \
+              --passphrase "${PASSPHRASE}" \
+              --armor --export-secret-subkeys "32475DCD662E8EED!" \
+          > "${GPG_KEY_FILE}"
           echo "path=${GPG_KEY_FILE}" >> "${GITHUB_OUTPUT}"
       -
         name: Extract tag message
@@ -121,6 +116,9 @@ jobs:
             --latest \
             --with-tag-message "${{ steps.tag-message.outputs.message }}" \
             --output /tmp/release-notes.md
+
+          # log the release notes for inspection & debug
+          cat /tmp/release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       -
@@ -132,7 +130,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          NFPM_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
           GPG_KEY_FILE: ${{ steps.gpg-key-file.outputs.path }}
           GPG_FINGERPRINT: ${{ steps.import-gpg.outputs.fingerprint }}
           DISCORD_WEBHOOK_ID: ${{ secrets.DISCORD_WEBHOOK_ID }}
