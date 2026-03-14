@@ -77,6 +77,11 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          fingerprint: E9627BC5E152A7EA657ADB7732475DCD662E8EED
+      -
+        name: Verify installed GPG keys
+        run: |
+           gpg --list-keys --with-subkey-fingerprints --keyid-format long || true
       -
         name: Write GPG key file for nfpm
         id: gpg-key-file
