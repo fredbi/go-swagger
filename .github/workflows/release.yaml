@@ -88,7 +88,7 @@ jobs:
         run: |
           GPG_KEY_FILE="$(mktemp -t gpg-key-XXXXXX.asc)"
           PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
-          echo "GPG_PASSPHRASE length: ${#GPG_PASSPHRASE}"
+          echo "GPG_PASSPHRASE length: ${#PASSPHRASE}"
 
           # Export only the RSA signing subkey (32475DCD662E8EED).
           # nfpm uses Go's openpgp which cannot decrypt DSA keys,
@@ -99,6 +99,9 @@ jobs:
               --armor --export-secret-subkeys "32475DCD662E8EED!" \
           > "${GPG_KEY_FILE}"
           echo "path=${GPG_KEY_FILE}" >> "${GITHUB_OUTPUT}"
+
+          gpg --list-packets "${GPG_KEY_FILE}" 2>&1 || true
+          wc -l "${GPG_KEY_FILE}"
       -
         name: Extract tag message
         id: tag-message
