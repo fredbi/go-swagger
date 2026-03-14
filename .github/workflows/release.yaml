@@ -12,34 +12,34 @@ env:
   CLOUDSMITH_REPO: go-swagger/go-swagger
 
 jobs:
-  #update-doc:
-  #  name: Build documentation site
-  #  permissions:
-  #    contents: read
-  #    pages: write
-  #    id-token: write
-  #  uses: ./.github/workflows/update-doc.yaml
+  update-doc:
+    name: Build documentation site
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/update-doc.yaml
 
-  #docker-release:
-  #  name: Docker with release tag
-  #  needs: [update-doc]
-  #  permissions:
-  #    contents: read
-  #    security-events: write
-  #  uses: ./.github/workflows/build-docker.yaml
-  #  with:
-  #    push: true
-  #    tagged: true
-  #    latest: true
-  #    record_retention: 90
-  #  secrets:
-  #    CR_PAT: ${{ secrets.CR_PAT }}
-  #    QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-  #    QUAY_PASS: ${{ secrets.QUAY_PASS }}
+  docker-release:
+    name: Docker with release tag
+    needs: [update-doc]
+    permissions:
+      contents: read
+      security-events: write
+    uses: ./.github/workflows/build-docker.yaml
+    with:
+      push: true
+      tagged: true
+      latest: true
+      record_retention: 90
+    secrets:
+      CR_PAT: ${{ secrets.CR_PAT }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASS: ${{ secrets.QUAY_PASS }}
 
   publish-release:
     name: Publish release
-    #needs: [docker-release]
+    needs: [docker-release]
     permissions:
       contents: write
     runs-on: ubuntu-latest
