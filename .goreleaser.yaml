@@ -24,7 +24,7 @@ project_name: go-swagger
 
 env: # these env are useful to allow usage from a fork
   - GIT_OWNER={{ if index .Env "GITHUB_REPOSITORY_OWNER" }}{{ .Env.GITHUB_REPOSITORY_OWNER }}{{ else }}go-swagger{{ end }}
-  - GIT_REPO={{ if index .Env "GITHUB_REPOSITORY" }}{{ .Env.GITHUB_REPOSITORY }}{{ else }}go-swagger{{ end }}
+  - GIT_REPO=go-swagger
   - MODULE_NAME=github.com/go-swagger/go-swagger
   - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}  # being explicit about this requirement, fails if not defined
   - NFPM_PASSPHRASE={{ .Env.GPG_PASSPHRASE }}  # being explicit about this requirement
