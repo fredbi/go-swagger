@@ -1,0 +1,4 @@
+- [user_maintainer.md](user_maintainer.md) — Fred is go-swagger maintainer, preparing v2 release
+- [project_v2_triage.md](project_v2_triage.md) — Ongoing triage of 576 open issues, separating v1-fixable from v2-scope
+- [feedback_architecture_walls.md](feedback_architecture_walls.md) — Don't try to fix deep issues (nullable, polymorphism, etc.) in v1 — they need architectural rethinking in v2
+- [project_v2_design_philosophy.md](project_v2_design_philosophy.md) — v2 core trade-off: 100% OAI compliance over stdlib idioms. Root cause of most long-standing issues.
