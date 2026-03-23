@@ -150,7 +150,7 @@ func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
 	opts.ReturnErrors = s.ReturnErrors
 	opts.WithCustomFormatter = s.WithCustomFormatter
 
-	swag.AddInitialisms(s.AdditionalInitialisms...)
+	swag.AddInitialisms(s.AdditionalInitialisms...) //nolint:staticcheck // tracked for migration to mangling.WithAdditionalInitialisms
 }
 
 func setCopyright(copyrightFile string) (string, error) {
