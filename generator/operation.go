@@ -261,11 +261,11 @@ func paramMappings(params map[string]spec.Parameter) (map[string]map[string]stri
 				panic(fmt.Errorf("internal error: invalid paramMapping: got %T", val))
 			}
 
-			idMapping[p.In][p.Name] = swag.ToGoName(id)
+			idMapping[p.In][p.Name] = pascalize(id)
 			// rewrite the previously found one
-			idMapping[previous.in][p.Name] = swag.ToGoName(previous.id)
+			idMapping[previous.in][p.Name] = pascalize(previous.id)
 		} else {
-			idMapping[p.In][p.Name] = swag.ToGoName(p.Name)
+			idMapping[p.In][p.Name] = pascalize(p.Name)
 		}
 		seenIDs[strings.ToLower(idMapping[p.In][p.Name])] = struct{ id, in string }{id: id, in: p.In}
 	}
@@ -723,7 +723,7 @@ func (b *codeGenOpBuilder) MakeParameter(receiver string, resolver *typeResolver
 	// assume minimal flattening has been carried on, so there is not $ref in response (but some may remain in response schema)
 
 	var child *GenItems
-	id := swag.ToGoName(param.Name)
+	id := pascalize(param.Name)
 	if goName, ok := param.Extensions["x-go-name"]; ok {
 		id, ok = goName.(string)
 		if !ok {
