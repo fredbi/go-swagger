@@ -1,0 +1,41 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: ordering security requirements
+  description: verify that generated code keeps a stable order of security requirements
+paths:
+  /config/{instance}:
+    put:
+      produces:
+      - "application/json"
+      consumes:
+      - "application/x-yaml"
+      tags:
+      - "Connect"
+      operationId: "config_put"
+      parameters:
+      - name: "instance"
+        in: "path"
+        description: "instance name"
+        required: true
+        type: "string"
+        x-exportParamName: "Instance"
+      - in: "body"
+        name: "config"
+        description: "The Configuration"
+        required: true
+        schema:
+          type: "string"
+          format: "binary"
+        x-exportParamName: "Config"
+      - name: "Content-Type"
+        in: "header"
+        description: "configuration MIME type"
+        required: false
+        type: "string"
+        x-exportParamName: "ContentType"
+      responses:
+        204:
+          description: "The configuration updated successfully"
+        400:
+          description: "Malformed YAML"
