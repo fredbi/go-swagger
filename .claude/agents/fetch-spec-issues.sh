@@ -17,6 +17,7 @@ gh issue list \
   --repo "${REPO}" \
   --state open \
   --limit 9999 \
+  --label "generate spec" \
   --json number,title,labels,createdAt,updatedAt,author,url,body,milestone,isPinned |
   python3 -c "
 import json, sys
