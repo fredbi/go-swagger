@@ -35,6 +35,10 @@ func newSpecAnalyzer(g *GenOpts) *specAnalyzer {
 }
 
 func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
+	// Confine the global loader chain so that validation, flattening and expansion resolve every
+	// transitive $ref under the same Restricted/Rooted restrictions, not just the initial load.
+	g.installSecurityLoaders()
+
 	// Load spec document
 	specDoc, err := loads.Spec(g.Spec, loads.WithLoadingOptions(g.securityOptions()...))
 	if err != nil {
@@ -171,6 +175,42 @@ func (g *specAnalyzer) securityOptions() []loading.Option {
 	}
 
 	return loadingOptions
+}
+
+// installSecurityLoaders confines the package-global spec loader chain according to the
+// Restricted/Rooted options.
+//
+// This is required on top of the per-document loading options: go-openapi/analysis (flatten and
+// expand) and part of go-openapi/validate resolve every transitive $ref through the global
+// spec.PathLoader, not through the document's own loader. Without confining the global chain,
+// the Restricted/Rooted restrictions would only cover the initial root-document read and leave
+// the actual $ref-resolution attack surface unguarded.
+//
+// This mutates go-openapi package-level globals (see loads.SetLoaders) and is not reverted: the
+// codegen CLI installs the loaders once and exits. It is therefore not safe for concurrent code
+// generation within a single process.
+func (g *specAnalyzer) installSecurityLoaders() {
+	opts := g.securityOptions()
+	if len(opts) == 0 {
+		return
+	}
+
+	// wrap a base loader so the security options are always applied, appended after any call-time
+	// options so they take precedence (loading options are last-wins).
+	withSecurity := func(load loads.DocLoader) loads.DocLoader {
+		return func(path string, callOpts ...loading.Option) (json.RawMessage, error) {
+			all := make([]loading.Option, 0, len(callOpts)+len(opts))
+			all = append(all, callOpts...)
+			all = append(all, opts...)
+
+			return load(path, all...)
+		}
+	}
+
+	loads.SetLoaders(
+		loads.NewDocLoaderWithMatch(withSecurity(loading.YAMLDoc), loading.YAMLMatcher),
+		loads.NewDocLoaderWithMatch(withSecurity(loads.JSONDoc), nil), // JSON catch-all fallback
+	)
 }
 
 // findSwaggerSpec fetches a default swagger spec if none is provided.

@@ -142,7 +142,7 @@ type sharedOptionsCommon struct {
 	StrictResponders      bool           `description:"Use strict type for the handler return value"                                       long:"strict-responders"`
 	ReturnErrors          bool           `description:"handlers explicitly return an error as the second value"                            group:"shared"                                            long:"return-errors"           short:"e"`
 	Restricted            bool           `description:"Use restricted http client for remote $ref"                                         group:"shared"                                            long:"restricted"`
-	Rooted                string         `description:"Local $ref\tresolution contained relative to root FS"                               group:"shared"                                            long:"rooted"`
+	Rooted                string         `description:"Local $ref resolution contained relative to root FS"                                group:"shared"                                            long:"rooted"`
 }
 
 func (s sharedOptionsCommon) apply(opts *generator.GenOpts) {
