@@ -36,7 +36,7 @@ func newSpecAnalyzer(g *GenOpts) *specAnalyzer {
 
 func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 	// Load spec document
-	specDoc, err := loads.Spec(g.Spec)
+	specDoc, err := loads.Spec(g.Spec, loads.WithLoadingOptions(g.securityOptions()...))
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 
 		// TODO(fredbi): due to uncontrolled $ref state in spec, we need to reload the spec atm, or flatten won't
 		// work properly (validate expansion alters the $ref cache in go-openapi/spec)
-		specDoc, _ = loads.Spec(g.Spec)
+		specDoc, _ = loads.Spec(g.Spec, loads.WithLoadingOptions(g.securityOptions()...))
 	}
 
 	// Flatten spec
@@ -133,7 +133,7 @@ func (g *specAnalyzer) analyzeSpec() (*loads.Document, *analysis.Spec, error) {
 	// spec preprocessing option
 	if g.PropertiesSpecOrder {
 		g.Spec = WithAutoXOrder(g.Spec)
-		specDoc, err = loads.Spec(g.Spec)
+		specDoc, err = loads.Spec(g.Spec, loads.WithLoadingOptions(g.securityOptions()...))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -156,6 +156,21 @@ func (g *specAnalyzer) printFlattenOpts() {
 		preprocessingOption = "full flattening"
 	}
 	log.Printf("preprocessing spec with option:  %s", preprocessingOption)
+}
+
+// inject secure options for spec loading
+func (g *specAnalyzer) securityOptions() []loading.Option {
+	loadingOptions := make([]loading.Option, 0, 2)
+	if g.Rooted != "" {
+		// local $ref contained within "Rooted"
+		loadingOptions = append(loadingOptions, loading.WithRoot(g.Rooted))
+	}
+	if g.Restricted {
+		// remote $ref pass the default restricted client in swag/loadin
+		loadingOptions = append(loadingOptions, loading.WithHTTPClient(loads.RestrictedHTTPClient()))
+	}
+
+	return loadingOptions
 }
 
 // findSwaggerSpec fetches a default swagger spec if none is provided.
@@ -306,5 +321,6 @@ func applyDefaultSwagger(doc *loads.Document) (*loads.Document, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return loads.Analyzed(jazon, swspec.Swagger)
 }
