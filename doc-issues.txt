@@ -1,0 +1,149 @@
+3140	OPEN	can't find $GOPATH/pkg/mod/github.com/go-openapi/spec@v0.21.0/swagger.go: no such file or directory	question, install & setup, doc	2026-06-28T07:54:40Z
+3121	OPEN	inline text to file example	doc, deserve example	2026-06-28T07:53:31Z
+2970	OPEN	`HTTP_PROXY` is ignored	question, doc, generate client	2026-06-28T07:54:39Z
+2954	OPEN	[question] How to use different model packages in different group when generate client?	question, generator, doc, model	2026-06-28T07:54:39Z
+2948	OPEN	Docs reference unmaintained library	doc	2023-12-01T18:29:15Z
+2923	OPEN	[Question] How to get path parameter during authorization? JWT audience claim in path for multi-tenant app	question, doc, auth	2026-06-28T07:54:39Z
+2889	OPEN	can I access to docs requires authentication?	question, doc, auth, ui	2026-06-28T07:54:38Z
+2884	OPEN	Error: undefined: strfmt	question, install & setup, doc, generate client	2026-06-28T07:54:38Z
+2868	OPEN	how to use $ref in parameters under post field	question, doc, swagger spec	2026-06-28T07:54:37Z
+2865	OPEN	Is there a way to hide an endpoint and definition from the docs?	question, doc	2026-06-28T07:54:37Z
+2861	OPEN	how to get non-200 response content	question, doc	2026-06-28T07:54:37Z
+2851	OPEN	supported mime type x-zip-compressed	question, doc, generate client	2026-06-28T07:54:36Z
+2827	OPEN	Question: Adding Spec Markup to Ignore Validator Errors	question, doc	2026-06-28T07:54:36Z
+2820	OPEN	override validation method	question, validator, doc	2026-06-28T07:54:35Z
+2793	OPEN	jsonschema validator considerd support:validator	question, doc, validate spec	2026-06-28T07:54:35Z
+2790	OPEN	Add support for newer version of json-schema	question, doc, swagger spec	2026-06-28T07:54:35Z
+2781	OPEN	Question: how to add Go "build tags" to generated files?	question, generator, doc	2026-06-28T07:54:34Z
+2780	OPEN	Question: any way to use another server's models/operations?	question, doc, runtime	2026-06-28T07:54:34Z
+2755	OPEN	Using minimum and maximum int64 limits leads to error	question, validator, doc	2026-06-28T07:54:33Z
+2754	OPEN	How examples/server-complete implements swaggerUI?	question, doc, faq	2026-06-28T07:54:33Z
+2752	OPEN	Steps missing to serve static files	question, doc, runtime, ui	2026-06-28T07:54:32Z
+2728	OPEN	is it possible to add table at the last of document to explain error code?	question, doc, ui	2026-06-28T07:54:32Z
+2726	OPEN	Set 2 custom headers through transport (roundTripper) and get the response	question, doc, generate client	2026-06-28T07:54:32Z
+2721	OPEN	[Question] Automatic conversion into uuid.UUID?	question, doc, model	2026-06-28T07:54:31Z
+2712	OPEN	Including handler and routes without specifying in yaml/ json Spec	question, doc, runtime	2026-06-28T07:54:31Z
+2702	OPEN	How to describe bearer token in go-swagger:operation?	question, doc, auth	2026-06-28T07:54:30Z
+2674	OPEN	change integer/int64 to string in generate client	question, doc, generate client	2026-06-28T07:54:30Z
+2668	OPEN	Add Favicon	enhancement, question, doc, ui	2026-06-28T07:56:43Z
+2656	OPEN	cannot swagger server from a container	question, doc, serve	2026-06-28T07:56:42Z
+2643	OPEN	Is it possible to use $ref with x-go-type	question, doc, model	2026-06-28T07:56:42Z
+2636	OPEN	How to remove go-swagger?	question, install & setup, doc	2026-06-28T07:56:42Z
+2619	OPEN	Extra validation of swagger.json	question, doc, validate spec	2026-06-28T07:56:41Z
+2607	OPEN	Support "Accept-Encoding: gzip" header in generated client	question, generator, doc	2026-06-28T07:56:41Z
+2583	OPEN	How to change the default timeout in generated client	question, doc, generate client	2026-06-28T07:56:40Z
+2568	OPEN	How do I create heterogeneous array representation like this using go swagger ?	question, doc, model	2026-06-28T07:56:40Z
+2567	OPEN	Max Bytes validation	question, validator, doc	2026-06-28T07:56:40Z
+2524	OPEN	What is the usage of contextValidate?	question, doc, model	2026-06-28T07:56:39Z
+2521	OPEN	How to use generated client with authorization bearer token?	question, doc, auth, generate client	2026-06-28T07:56:39Z
+2518	OPEN	unset optional date-time parameters are serialized to past dates	question, doc, model, nullable	2026-06-28T07:56:38Z
+2465	OPEN	x-go-custom-tag not working when reusing a definition with $ref	question, doc, swagger spec, tags	2026-06-28T07:56:38Z
+2456	OPEN	json: cannot unmarshal string into Go struct field SwaggerProps.definitions of type bool	invalid, question, doc, swagger spec	2026-06-28T07:56:37Z
+2410	OPEN	Fail on additionalProperties?	question, doc, additionalProperties	2026-06-28T07:56:37Z
+2408	OPEN	How to group server handle methods into single interface?	question, generator, doc	2026-06-28T07:56:37Z
+2406	OPEN	How to use Context from middleware	question, doc, runtime	2026-06-28T07:56:36Z
+2397	OPEN	Deploying go-swagger on Google App Engine	question, install & setup, doc	2026-06-28T07:56:36Z
+2380	OPEN	Auto-generated API configuration file causes inappropriate "501: Not Implemented" responses	question, generator, doc	2026-06-28T07:56:35Z
+2378	OPEN	my post api should accept a model which has some readonly fields	question, doc, model	2026-06-28T07:56:35Z
+2374	OPEN	Unable to set response headers	question, doc	2026-06-28T07:56:34Z
+2344	OPEN	3XX responses not getting response objects.	question, doc	2026-06-28T07:56:34Z
+2324	OPEN	Setting DEBUG changes behavior of connection reuse	question, doc, runtime	2026-06-28T07:56:34Z
+2321	OPEN	What is the intended use of RegisterFormat?	question, doc	2026-06-28T07:56:33Z
+2320	OPEN	Configuring TLS with go-swagger client	question, doc, generate client	2026-06-28T07:56:33Z
+2318	OPEN	Ability to disable generation of "go:generate" comment in generated code	question, generator, doc	2026-06-28T07:57:30Z
+2308	OPEN	How do I convince dep to get go-swagger/generator/templates, which contains no Go files?	question, generator, doc	2026-06-28T07:57:29Z
+2295	OPEN	File upload help	question, doc, unanswered	2026-06-28T07:57:29Z
+2290	OPEN	"csv producer has not yet been implemented" on error	question, doc, media types	2026-06-28T07:57:28Z
+2275	OPEN	Error route panics with a string parameter.	question, doc, media types	2026-06-28T07:57:28Z
+2272	OPEN	JSON unmarshal error from generated client code	question, doc	2026-06-28T07:57:28Z
+2268	OPEN	"Namespaces" for definitions	question, doc, model	2026-06-28T07:57:27Z
+2267	OPEN	Code generation : server can't find any consumer when specified a wildcard	question, doc, media types	2026-06-28T07:57:27Z
+2262	OPEN	Add file to the response	question, doc, deserve example	2026-06-28T07:53:30Z
+2259	OPEN	How can I implement CORS middleware without modifying the generated restapi/configure_*.go file?	question, generator, doc	2026-06-28T07:57:26Z
+2255	OPEN	How to insert gorm.Model in generated structs from swagger.yml?	question, doc, model	2026-06-28T07:57:26Z
+2252	OPEN	Generated client error "data type must be io.Writer"	question, doc	2026-06-28T07:57:26Z
+2250	OPEN	error on getting a private repo	question, install & setup, doc	2026-06-28T07:57:25Z
+2243	OPEN	Performing basic auth from client with go-swagger 0.22	question, doc, auth, generate client	2026-06-28T07:57:25Z
+2203	OPEN	Type of bearerAuth is missing in go-swagger SecurityDefinitions	question, doc, auth	2026-06-28T07:57:25Z
+2188	OPEN	How can I resolve the Go Type for an operation that defines an object type?	question, generator, doc	2026-06-28T07:57:24Z
+2185	OPEN	what kind of writer should I use when I download file which content-type is text/plain	question, doc	2026-06-28T07:57:24Z
+2180	OPEN	Is there anyone working on the oneOf feature of the openapi 3.0 spec?	question, doc	2026-06-28T07:57:23Z
+2175	OPEN	Example of generated client oAuth refresh token usage	question, doc, auth, generate client, deserve example	2026-06-28T07:53:30Z
+2154	OPEN	swagger unable to generate client for specification	question, doc, swagger spec	2026-06-28T07:57:23Z
+2135	OPEN	Json object being consumed by textConsumer: ([]*modles.Plan) is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface	question, doc, media types	2026-06-28T07:57:22Z
+2132	OPEN	swagger serve keep active connection to document	question, doc, serve	2026-06-28T07:57:22Z
+2121	OPEN	Is it possible to generate model with `time.Time` type instead of `go-openapi/strfmt.Date`	question, doc, model	2026-06-28T07:57:22Z
+2102	OPEN	Handle request preprocessing and parameters validation failure per service	question, doc	2026-06-28T07:57:21Z
+2098	OPEN	How to pass JSON object in swagger editor?	question, doc	2026-06-28T07:57:21Z
+2097	OPEN	How to parse swagger file for api test	question, doc	2026-06-28T07:57:20Z
+2044	OPEN	Validate with external files	question, doc, swagger spec, faq	2026-06-28T07:57:20Z
+2043	OPEN	Is Authentication document outdated?	question, doc, auth	2026-06-28T07:58:06Z
+2026	OPEN	How to implement filters?	question, doc, swagger spec, faq	2026-06-28T07:58:06Z
+2015	OPEN	How to set runtime.Transport? Roundtripper	question, doc, runtime, faq	2026-06-28T07:58:05Z
+2009	OPEN	Run code before and after request?	question, doc, faq	2026-06-28T07:58:05Z
+1987	OPEN	strfmt include missing from responses file when using URI format	question, generator, doc, faq	2026-06-28T07:58:04Z
+1973	OPEN	how to run swagger in windows : getting err:- bash: swagger: command not found	question, install & setup, doc	2026-06-28T07:58:04Z
+1972	OPEN	Inject (dynamic) header to each request	question, doc, generate client	2026-06-28T07:58:04Z
+1941	OPEN	How to get rid of number suffix while using `allOf`?	question, doc	2026-06-28T07:58:03Z
+1938	OPEN	Why is models.gotmpl protected? I want to add some methods	duplicate, question, generator, doc	2026-06-28T07:58:03Z
+1936	OPEN	how to build specific version?	question, install & setup, doc	2026-06-28T07:58:02Z
+1930	OPEN	Question on handler set-up	question, generator, doc	2026-06-28T07:58:02Z
+1929	OPEN	&{} (*models.ErrorResponse) is not supported by the TextConsumer, can be resolved by supporting TextUnmarshaler interface	question, doc	2026-06-28T07:58:01Z
+1927	OPEN	Client receives EOF after 60 seconds	question, doc	2026-06-28T07:58:01Z
+1923	OPEN	webbrowser: tried to open "http://localhost:39971/docs", no screen found	question, install & setup, doc, serve	2026-06-28T07:58:01Z
+1919	OPEN	Working of --exclude-spec option for swagger generate server	question, generator, doc	2026-06-28T07:58:00Z
+1915	OPEN	How to add JSON tags for parameters?	question, doc, generate client	2026-06-28T07:58:00Z
+1910	OPEN	Sending Client Side Certificate via Client generated by go-swagger.	question, doc, generate client	2026-06-28T07:57:59Z
+1894	OPEN	Generated client has quotes for ProducesMediaTypes and ConsumesMediaTypes when it is empty	question, doc, generate client, media types	2026-06-28T07:57:59Z
+1864	OPEN	Is "GUID" a special keyword ?	question, generator, doc	2026-06-28T07:57:58Z
+1862	OPEN	How to customize swagger semantics validate	question, doc, validate spec	2026-06-28T07:57:58Z
+1834	OPEN	Swagger's json patch or merge patch support	question, doc, nullable	2026-06-28T07:57:57Z
+1831	OPEN	How to get flags inside setupMiddlewares() or setupGlobalMiddleware()	question, doc	2026-06-28T07:57:57Z
+1830	OPEN	client: unable to set attributes to their defaults	question, doc, nullable	2026-06-28T07:57:56Z
+1814	OPEN	How to connect database using GORM	question, doc	2026-06-28T07:57:56Z
+1794	OPEN	What are the differences between swaggo and go-swagger?	question, doc	2026-06-28T07:57:56Z
+1782	OPEN	Invalid query parameters generation for server	question, doc, swagger spec	2026-06-28T07:58:47Z
+1762	OPEN	Issue with generated GO client when calling API through a Proxy. The error returned by the Proxy is inaccessible.	question, doc	2026-06-28T07:58:47Z
+1752	OPEN	Example of middleware for logging responses	question, doc, deserve example	2026-06-28T07:53:29Z
+1738	OPEN	validation: request and response	question, doc	2026-06-28T07:58:46Z
+1731	OPEN	Generate go structs with tag `json:"-"`	question, doc, model	2026-06-28T07:58:46Z
+1720	OPEN	Wrong go-bindata version	question, generator, doc	2026-06-28T07:58:45Z
+1707	OPEN	optional parameters aren't pointers but required parameters are	question, doc, nullable	2026-06-28T07:58:45Z
+1702	OPEN	Is it possible to use model from another package?	question, doc, model, deserve example, external types	2026-06-28T07:53:29Z
+1682	OPEN	[Question] Will Parameter Context be set to outgoing http request context?	question, doc	2026-06-28T07:58:44Z
+1680	OPEN	"swagger generate models" is too strict about target location	question, doc, dependency, go modules, goimport	2026-06-28T07:58:44Z
+1678	OPEN	Unclear how to inject dependencies to configureAPI	question, doc	2026-06-28T07:58:43Z
+1674	OPEN	Question: want actions on API key missing	question, doc, auth, deserve example	2026-06-28T07:53:28Z
+1660	OPEN	Quick question re creating simple API proxy	question, doc	2026-06-28T07:58:43Z
+1651	OPEN	Any example to override ServerError function in configure_xxx.go	question, doc, deserve example	2026-06-28T07:53:28Z
+1644	OPEN	How to use the cancel function return by context.WithTimeout in go-swagger	question, doc	2026-06-28T07:58:42Z
+1634	OPEN	How to generate docs?	question, doc, serve	2026-06-28T07:58:42Z
+1628	OPEN	Logo design	question, doc	2026-06-28T07:58:41Z
+1606	OPEN	Private templates	question, generator, doc, contrib templates	2026-06-28T07:58:41Z
+1603	OPEN	yamlpc is used but not imported	question, doc, dependency, goimport	2026-06-28T07:58:40Z
+1594	OPEN	The server generated through yaml looks tightly coupled with denco server. Can I use some other server and still use this tool for routes and validation generation?	question, doc, runtime	2026-06-28T07:58:40Z
+1561	OPEN	Question: nullable elements in slices and maps	question, doc, model, nullable	2026-06-28T07:58:39Z
+1544	OPEN	Generated client use	question, doc, generate client	2026-06-28T07:58:39Z
+1525	OPEN	Required fields being marked nullable	duplicate, question, doc, model, nullable	2026-06-28T07:58:38Z
+1503	OPEN	"serve" command referencing external files results in a JS Console Error	question, doc, serve	2026-06-28T07:58:38Z
+1495	OPEN	Generate additional struct tags (application/edn consumer and producer)	enhancement, question, doc, good first issue	2026-06-28T07:58:37Z
+1477	OPEN	Interactive Swagger API for Golang	question, doc	2026-06-28T07:58:37Z
+1472	OPEN	How to log user?	question, doc, deserve example	2026-06-28T07:53:27Z
+1470	OPEN	Response body of the runtime.ClientReponse from an APIError is empty	question, doc, generate client	2026-06-28T07:58:36Z
+1458	OPEN	parse error: expected string near offset 4 of ''	question, doc	2026-06-28T07:58:36Z
+1433	OPEN	Generated Client is ignoring security definitions in OpenAPI Spec	question, doc, auth, generate client	2026-06-28T07:58:35Z
+1412	OPEN	Good Patterns For Passing State Into Handlers?	question, doc, deserve example	2026-06-28T07:53:27Z
+1389	OPEN	Is it possible to change producer in server depending on client request parameter?	question, doc, media types	2026-06-28T07:59:22Z
+1288	OPEN	Docker run command in README is not working if not in home dir/subdir	docker images, doc	2019-10-20T08:13:00Z
+1244	OPEN	Generated client does not accept content types specified in schema	question, doc, generate client, media types	2026-06-28T07:59:21Z
+1240	OPEN	https scheme does not create appropriate client code	question, doc, generate client	2026-06-28T07:59:21Z
+1211	OPEN	Array with references to definitions requires array of pointers to be returned	question, doc, nullable	2026-06-28T07:59:20Z
+1210	OPEN	goswagger server provides the API list in the debugging or explore mode	question, doc	2026-06-28T07:59:20Z
+1208	OPEN	Authentication in go-swagger, securityDefinitions or securitySchemes	question, doc, auth, swagger spec	2026-06-28T07:59:20Z
+1188	OPEN	string in model for non-required fields are not pointers	question, generator, doc, model, nullable	2026-06-28T07:59:19Z
+1139	OPEN	Help run example with streaming server	question, doc	2018-03-25T07:09:30Z
+1086	OPEN	Generated server: Consume Wildcard	question, doc, media types, deserve example	2026-06-28T07:53:26Z
+1040	OPEN	Is it possible to get the IP address of the requester during key authentication?	question, doc, auth, deserve example	2026-06-28T07:53:26Z
+995	OPEN	examples difficult to understand	doc	2017-12-06T07:18:03Z
+653	OPEN	out of date api client usage example in the documentation	doc	2018-08-08T12:16:27Z
+129	OPEN	Add documentation for the untyped server	enhancement, help wanted, doc	2026-05-27T20:41:23Z

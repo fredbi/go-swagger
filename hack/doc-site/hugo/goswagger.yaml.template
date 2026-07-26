@@ -4,13 +4,13 @@
 params:
   goswagger:
     # Go version requirement (from go.mod)
-    goVersion: '1.25.0'
+    goVersion: '{{ GO_VERSION }}'
 
     # Latest release tag (from git tags)
-    latestRelease: 'v0.36.1'
+    latestRelease: '{{ LATEST_RELEASE }}'
 
     # Version message for the documentation set
-    versionMessage: 'Documentation test for latest master'
+    versionMessage: '{{ VERSION_MESSAGE }}'
 
     # Build timestamp
-    buildTime: '2026-08-03T20:25:32Z'
+    buildTime: '{{ BUILD_TIME }}'

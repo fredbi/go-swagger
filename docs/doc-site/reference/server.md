@@ -1,0 +1,156 @@
+---
+title: Generated server
+description: How to use the generated server
+weight: 20
+---
+
+## Use the generated server
+
+The generated server serves the API but the default implementation returns 501 Not implemented for everything.
+
+This means that all the API boiler plate has been setup and properly stubbed, waiting for you to add the juicy part.
+
+Let's look into how to make it work with something actually useful.
+
+`go-swagger` primarily deals with HTTP and originally only supports the stdlib `net/http` interface.
+
+A typical HTTP request expects a response: a handler is typically defined as a function of some input parameters to a responder.
+
+```go
+type ListTravelsHandler interface {
+	Handle(ListTravelsParams) middleware.Responder
+}
+```
+
+The signature of this handler is one of 2 possible variations. When a handler doesn't use authentication then a handler
+interface consists out of input parameters and a responder.
+
+```go
+type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, interface{}) middleware.Responder
+}
+```
+
+When a handler does use authentication then the second argument to the handler function represents the security
+principal for your application. You can specify the type name for this principal at generation time by specifying the
+`-P` (`--principal`) flag.
+
+### Wiring authentication
+
+```
+swagger generate server -P models.User
+swagger generate client -P models.User
+```
+
+The type name can be specified by package path.
+
+```
+swagger generate server -P github.com/foobar/models.User
+```
+
+See the full list of available options [for server](../generate/server.md) and [for client](../generate/client.md).
+
+When you would execute the generate step with that parameter for the security principal then the
+AddOneAuthenticatedHandler would look a bit like this:
+
+```go
+type AddOneAuthenticatedHandler interface {
+	Handle(AddOneParams, *models.User) middleware.Responder
+}
+```
+
+### Implement handlers
+
+A handler is an interface/contract that defines a statically typed representation of the input and output parameters of
+an operation on your API.
+The tool generates handlers that are stubbed with a NotImplemented response when you first generate the server.
+
+#### The `not implemented` handler
+
+The not implemented handler is actually a not implemented responder, it returns a responder that will always respond
+with status code 501 and a message that lets people know it's not the fault of the client that things don't work.
+
+```go
+middleware.NotImplemented("operation todos.AddOne has not yet been implemented")
+```
+
+#### Your own code
+
+Each HTTP request expects a response of some sort, this response might have no data but it's a response none the less.
+
+Every incoming request is described as a bunch of input parameters which have been validated prior to calling the
+handler. So whenever your code is executed, the input parameters are guaranteed to be valid according to what the
+swagger specification prescribes.
+
+All the input parameters have been validated, and the request has been authenticated should it have triggered
+authentication.
+
+You probably want to return something a bit more useful to the users of your API than a not implemented response.
+
+A possible implementation of the `ListTravelsHandler` interface might look like this:
+
+```go
+type PublicListTravelsOK struct {
+  Body []models.Travel
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsError struct {
+  Body models.Error
+}
+func (m *PublicListTravelsOK) WriteResponse(rw http.ResponseWriter, producer httpkit.Producer){
+  // generated code here
+}
+
+type PublicListTravelsHandler struct {
+  db interface {
+    FetchTravels(*PublicListTravelsParams) ([]models.Travel, error)
+  }
+}
+
+func (m *PublicListTravelsHandler) Handle(params ListTravelsParams) middleware.Responder {
+  travels, err := m.db.FetchTravels(&params)
+  if err != nil {
+    return &PublicListTravelsError{Body: models.Error{Message: err.Error()}}
+  }
+  return &PublicListTravelsOK{Body: travels}
+}
+```
+
+In the example above we have a handler implementation with a hypothetical database fetch interface. When the handle
+method is executed there are 2 possible responses for the provided parameters. There can either be an error in which
+case the PublicListTravelsError will be returned, otherwise the PublicListTravelsOK will be returned.
+
+The code generator has written the remaining code to render that response with the headers etc.
+
+### Advanced usage: streaming multipart forms
+
+A server operation may opt out of the generated `formData` binding and hand the
+multipart request stream directly to its handler. Mark one of the operation's
+file parameters with `x-go-server-streaming: true`:
+
+```yaml
+consumes:
+  - multipart/form-data
+parameters:
+  - name: file
+    in: formData
+    type: file
+    x-go-server-streaming: true
+```
+
+For the generated server, this extension applies to the complete multipart
+form. Generated code does not pre-read the first file and does not bind or
+validate individual `formData` parameters. Instead, the operation params expose
+a `*runtime.MultipartFormStream`. The handler owns sequential traversal with
+`NextFile()`, application-specific validation, and the decision to call
+`Drain()` or `Close()`.
+
+Other parameter locations, such as path, query and header parameters, continue
+to be generated and validated normally. Client generation is unchanged.
+
+The stream records fields and file metadata discovered so far. Parts that occur
+later in the request are not visible until the handler consumes or closes the
+current file and advances the stream.
