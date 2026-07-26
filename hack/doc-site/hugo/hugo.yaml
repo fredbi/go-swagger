@@ -1,160 +1,160 @@
-title: go-swagger
-theme: hugo-book
-
-#markup:
-#  goldmark:
-#    renderHooks:
-#      image:
-#        enableDefault: true
-#      link:
-#        enableDefault: true
-
-enableEmoji: true
-
 baseURL: https://goswagger.io/go-swagger
+title: go-swagger
+theme: hugo-relearn
+languageCode: en-us
 
-module:
-  imports:
-    - path: "go-swagger-assets"
-    - path: "go-swagger-static"
-  mounts:
-    - source: layouts              # <- mounts extra shortcodes
-      target: layouts
-    - source: '../../../docs'      # <- mounts doc source
-      target: 'content'
-      excludeFiles: 'presentations/**'
-    - source: 'themes/go-swagger-assets'  # <- mounts extra assets (e.g. scss)
-      target: 'assets'
-    - source: 'themes/go-swagger-static'  # <- mount images (e.g. logo)
-      target: 'static'
-    - source: '../../../docs/presentations'    # <- mount presentations as raw HTML bundles
-      target: 'static/presentations'
-
-sitemap:
-  changeFreq: ""
-  filename: sitemap.xml
-  priority: -1
-
-enableRobotsTXT: true
+# Enable features
+enableEmoji: true
 enableGitInfo: true
+enableRobotsTXT: true
 
-menu:
-  before:
-    - name: "Find go-swagger on github"
-      url: "https://github.com/go-swagger/go-swagger"
-      weight: 1
-    - name: ""
-      pre: "<hr>"
-      weight: 10
+# Content configuration
+contentDir: content
 
-  after:
-    - name: ""
-      pre: "<hr>"
-      post: '<div style="color:aqua; font-weight:bold">The go-openapi toolkit</div>'
-      url: "https://github.com/go-openapi"
-      weight: 1
-    - name: "go-openapi/analysis"
-      url: "https://github.com/go-openapi/analysis"
-      weight: 10
-    - name: "go-openapi/errors"
-      url: "https://github.com/go-openapi/errors"
-      weight: 20
-    - name: "go-openapi/inflect"
-      url: "https://github.com/go-openapi/inflect"
-      weight: 25
-    - name: "go-openapi/jsonpointer"
-      url: "https://github.com/go-openapi/jsonpointer"
-      weight: 30
-    - name: "go-openapi/jsonpointer"
-      url: "https://github.com/go-openapi/jsonreference"
-      weight: 40
-    - name: "go-openapi/loads"
-      url: "https://github.com/go-openapi/loads"
-      weight: 50
-    - name: "go-openapi/runtime"
-      url: "https://github.com/go-openapi/runtime"
-      weight: 60
-    - name: "go-openapi/spec"
-      url: "https://github.com/go-openapi/spec"
-      weight: 70
-    - name: "go-openapi/strfmt"
-      url: "https://github.com/go-openapi/strfmt"
-      weight: 80
-    - name: "go-openapi/swag"
-      url: "https://github.com/go-openapi/swag"
-      weight: 90
-    - name: "go-openapi/validate"
-      url: "https://github.com/go-openapi/validate"
-      weight: 100
+# Output formats
+outputs:
+  home:
+    - html
+    - rss
+    - print
 
+# Markup configuration
+markup:
+  goldmark:
+    renderer:
+      unsafe: true  # Allow raw HTML in markdown
+    parser:
+      attribute:
+        title: true
+        block: true
+    renderHooks:
+      image:
+        # let the Relearn image render hook handle images (lightbox, zoom, ?classes=)
+        useEmbedded: never
+  highlight:
+    codeFences: true
+    guessSyntax: false
+    lineNos: false
+    lineNumbersInTable: false
+    noClasses: true
+    style: monokai
+    tabWidth: 4
+
+# Taxonomies are disabled for now
+disableKinds:
+  - taxonomy
+  - term
+# Module mounts
+# Following go-swagger pattern: simple mounts for content and assets
+module:
+  mounts:
+    # Custom layouts (override theme if needed)
+    - source: layouts
+      target: layouts
+
+    # Generated documentation content
+    - source: '../../../docs/doc-site'
+      target: content
+      files:
+      - '**/*'
+
+    # Custom SCSS (for theme customization) + logo
+    - source: themes/go-swagger-assets
+      target: assets
+
+    # Custom static files (favicon)
+    - source: themes/go-swagger-static
+      target: static
+
+# Relearn theme parameters
 params:
-  # (Optional, default light) Sets color theme: light, dark or auto.
-  # Theme 'auto' switches between dark and light modes based on browser/os preferences
-  BookTheme: "dark"
+  editURL: 'https://github.com/go-swagger/go-swagger/edit/master/'
+  externalLinkTarget: _blank
 
-  # (Optional, default true) Controls table of contents visibility on right side of pages.
-  # Start and end levels can be controlled with markup.tableOfContents setting.
-  # You can also specify this parameter per page in front matter.
-  BookToC: true
+  # Repository info
+  sourceRepository: 'https://github.com/go-swagger/go-swagger'
 
-  # (Optional, default favicon.png) Set the path to a favicon file.
-  # If the favicon is /static/favicon.png then the path would be favicon.png
-  BookFavicon: "favicon.png"
-  # If the logo is mounted in /static/logo.png then the path would be logo.png
-  BookLogo: "logo.png"
+  # Branding
+  author:
+    name: 'go-openapi maintainers'
+  hideAuthorEmail: true
 
-  # (Optional, default none) Set leaf bundle to render as side menu
-  # When not specified file structure and weights will be used
-  #BookMenuBundle: /menu
+  # Theme customization
+  themeVariant:
+    - zen-dark
+    - relearn-dark
+    - relearn-light
+  showVisitedLinks: true
+  collapsibleMenu: true
+  disableBreadcrumb: false
+  disableNextPrev: false
+  disableLandingPageButton: true
+  titleSeparator: '|'
 
-  # (Optional, default docs) Specify root page to render child pages as menu.
-  # Page is resolved by .GetPage function: https://gohugo.io/functions/getpage/
-  # For backward compatibility you can set '*' to render all sections to menu. Acts same as '/'
-  BookSection: '*'
+  # Features
+  search:
+    disable: false
+    index:
+      disable: false
+    page:
+      disable: false
+    adapter:
+      identifier: lunr
+  disableLanguageSwitchingButton: true
+  disableInlineCopyToClipBoard: false
 
-  # Set source repository location.
-  # Used for 'Last Modified' and 'Edit this page' links.
-  BookRepo: 'https://github.com/go-swagger/go-swagger'
+  # Menu ordering
+  ordersectionsby: 'weight'
+  # Proposal for enhancement: configure versions
+  #versions:
+  #- baseURL: https://go-swagger.github.io/go-swagger/
+  #  identifier: v2.1.0
+  #  isLatest: true
+  #version: 'v2.1.0'
 
-  # (Optional, default 'commit') Specifies commit portion of the link to the page's last modified
-  # commit hash for 'doc' page type.
-  # Requires 'BookRepo' param.
-  # Value used to construct a URL consisting of BookRepo/BookCommitPath/<commit-hash>
-  # Github uses 'commit', Bitbucket uses 'commits'
-  BookCommitPath: commit
+  # Custom params
+  goswagger:
+    goVersion: ''
+    latestRelease: ''
+    versionMessage: ''
+    buildTime: ''
 
-  # Enable "Edit this page" links for 'doc' page type.
-  # Disabled by default. Uncomment to enable. Requires 'BookRepo' param.
-  # Edit path must point to root directory of repo.
-  BookEditPath: edit/master
-  contentDir: docs
+# Menu configuration
+menu:
+  shortcuts:
+    - name: "The go-openapi toolkit on github"
+      identifier: go-openapi
+      url: "https://github.com/go-openapi"
+      weight: 20
 
-  # Configure the date format used on the pages
-  # - In git information
-  # - In blog posts
-  BookDateFormat: "January 2, 2006"
+    - name: "codegen examples"
+      identifier: examples
+      url: "https://goswagger.io/examples"
+      weight: 35
 
-  # (Optional, default true) Enables search function with flexsearch,
-  # Index is built on fly, therefore it might slowdown your website.
-  # Configuration for indexing can be adjusted in i18n folder per language.
-  BookSearch: true
+    - name: "codescan docs & examples"
+      identifier: codescan
+      url: "https://go-openapi.github.io/codescan"
+      weight: 30
 
-  # (Optional, default true) Enables comments template on pages
-  # By default partals/docs/comments.html includes Disqus template
-  # See https://gohugo.io/content-management/comments/#configure-disqus
-  # Can be overwritten by same param in page frontmatter
-  BookComments: true
+    - name: "runtime docs & examples"
+      identifier: runtime
+      url: "https://go-openapi.github.io/runtime"
+      weight: 35
 
-  # /!\ This is an experimental feature, might be removed or changed at any time
-  # (Optional, experimental, default false) Enables portable links and link checks in markdown pages.
-  # Portable links meant to work with text editors and let you write markdown without {{< relref >}} shortcode
-  # Theme will print warning if page referenced in markdown does not exists.
-  BookPortableLinks: false
+    - name: "testify/v2 docs"
+      identifier: testify
+      url: "https://go-openapi.github.io/testify"
+      weight: 40
 
-  # /!\ This is an experimental feature, might be removed or changed at any time
-  # (Optional, experimental, default false) Enables service worker that caches visited pages and resources for offline use.
-  #BookServiceWorker: true
+    - name: "general docs & news"
+      identifier: github
+      url: "https://github.com/go-openapi/doc-site"
+      weight: 45
 
-  # /!\ This is an experimental feature, might be removed or changed at any time
-  # (Optional, experimental, default false) Enables a drop-down menu for translations only if a translation is present.
-  BookTranslatedOnly: false
+# Privacy settings
+privacy:
+  disqus:
+    disable: true
+  googleAnalytics:
+    disable: true

@@ -1,0 +1,131 @@
+```toml
+acceptdefinitionsonly = false
+allowenumci = false
+allowtemplateoverride = false
+apipackage = ''
+cliappname = ''
+clientpackage = ''
+clipackage = ''
+compatibilitymode = ''
+copyright = ''
+defaultconsumes = 'application/json'
+defaultproduces = 'application/json'
+defaultscheme = 'http'
+dumpdata = false
+ensuretarget = false
+excludespec = false
+existingmodels = ''
+flagstrategy = ''
+ignoreoperations = false
+implementationpackage = ''
+includecli = false
+includehandler = false
+includemain = false
+includemodel = false
+includeparameters = false
+includeresponses = false
+includesupport = false
+includeurlbuilder = false
+includevalidator = true
+isclient = false
+mainpackage = ''
+modelpackage = ''
+name = ''
+nodefaultomitempty = false
+principal = 'any'
+principalcustomiface = false
+propertiesspecorder = false
+regenerateconfigureapi = false
+restricted = false
+returnerrors = false
+rooted = ''
+serverpackage = ''
+skiptagpackages = false
+spec = ''
+strictadditionalproperties = false
+strictresponders = false
+target = '.'
+template = ''
+templatedir = ''
+templateplugin = ''
+validatespec = false
+wantsgetters = false
+wantsrootederrorpath = false
+wantsstringer = false
+withcustomformatter = false
+withgorungogenerate = false
+withxml = false
+
+[flattenopts]
+basepath = ''
+continueonerror = false
+expand = false
+keepnames = false
+minimal = true
+removeunused = false
+verbose = true
+
+[languageopts]
+formatonly = false
+reservedwords = ['break', 'default', 'func', 'interface', 'select', 'case', 'defer', 'go', 'map', 'struct', 'chan', 'else', 'goto', 'package', 'switch', 'const', 'fallthrough', 'if', 'range', 'type', 'continue', 'for', 'import', 'return', 'var']
+
+[sections]
+operationgroups = []
+operations = []
+
+[[sections.application]]
+filename = 'main.go'
+name = 'main'
+skipexists = false
+skipformat = false
+source = 'asset:serverMain'
+target = '{{ joinFilePath .Target "cmd" .MainPackage }}'
+
+[[sections.application]]
+filename = 'embedded_spec.go'
+name = 'embedded_spec'
+skipexists = false
+skipformat = false
+source = 'asset:swaggerJsonEmbed'
+target = '{{ joinFilePath .Target (toPackagePath .ServerPackage) }}'
+
+[[sections.application]]
+filename = 'server.go'
+name = 'server'
+skipexists = false
+skipformat = false
+source = 'asset:serverServer'
+target = '{{ joinFilePath .Target (toPackagePath .ServerPackage) }}'
+
+[[sections.application]]
+filename = '{{ snakize (pascalize .Name) }}_api.go'
+name = 'builder'
+skipexists = false
+skipformat = false
+source = 'asset:serverBuilder'
+target = '{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) }}'
+
+[[sections.application]]
+filename = 'doc.go'
+name = 'doc'
+skipexists = false
+skipformat = false
+source = 'asset:serverDoc'
+target = '{{ joinFilePath .Target (toPackagePath .ServerPackage) }}'
+
+[[sections.application]]
+filename = 'configure_{{ (snakize (pascalize .Name)) }}.go'
+name = 'configure'
+skipexists = true
+skipformat = false
+source = 'asset:serverConfigureapi'
+target = '{{ joinFilePath .Target (toPackagePath .ServerPackage) }}'
+
+[[sections.models]]
+filename = '{{ (snakize (pascalize .Name)) }}.go'
+name = 'definition'
+skipexists = false
+skipformat = false
+source = 'asset:model'
+target = '{{ joinFilePath .Target (toPackagePath .ModelPackage) }}'
+```
