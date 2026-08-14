@@ -14,7 +14,9 @@
 
 ---
 
-This project contains a golang implementation of Swagger 2.0 (aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md)).
+This project contains a golang implementation of Swagger 2.0
+(aka [OpenAPI 2.0](https://github.com/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/versions/2.0.md)).
+
 It provide tools to work with swagger specifications.
 
 [Swagger](https://swagger.io/) is a simple yet powerful representation of your RESTful API.<br>
@@ -22,6 +24,8 @@ It provide tools to work with swagger specifications.
 ## Announcements
 
 You may join the discord community by clicking the invite link on the discord badge. [![Discord Channel][discord-badge]][discord-url].
+
+* **2026-08-21** : revamped documentation site - more complete, more readable. Enjoy!
 
 * **2026-08-11** : v0.36.3 lands soon (ETA 08/14)
   * codegen fixes
@@ -45,12 +49,14 @@ You may join the discord community by clicking the invite link on the discord ba
 
 `go-swagger` brings to the go community a complete suite of fully-featured, high-performance, API components to  work with a Swagger API: server, client and data model.
 
-* Generates a server from a swagger specification
-* Generates a client from a swagger specification
-* Generates a CLI (command line tool) from a swagger specification (alpha stage)
+* Generates a _server_ from a swagger specification
+* Generates a _client SDK_ from a swagger specification
+* Generates a _CLI_ (command line tool) from a swagger specification (alpha stage)
+* Generates a swagger specification _from annotated go code_
+
 * Supports most features offered by jsonschema and swagger, including polymorphism
-* Generates a swagger specification from annotated go code
-* Additional tools to work with a swagger spec
+* Additional tools to work with a swagger spec (validate, flatten, diff, ...)
+
 * Great customization features, with vendor extensions and customizable templates
 
 Our focus with code generation is to produce idiomatic, fast go code, which plays nice with golint, go vet etc.
@@ -69,6 +75,7 @@ The go-openapi community actively continues bringing fixes and enhancements to t
 
 There is still much room for improvement: contributors and PR's are welcome.
 You may also get in touch with maintainers on our [![Discord Channel][discord-badge]][discord-url].
+
 ## Installing
 
 ```sh
