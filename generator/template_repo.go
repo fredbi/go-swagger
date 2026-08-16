@@ -44,7 +44,10 @@ func contribTemplates(name string) (fs.FS, error) {
 	return rooted, nil
 }
 
-var errInternal = errors.New("internal error detected in templates")
+var (
+	errInternal      = errors.New("internal error detected in templates")
+	errInvalidPlugin = errors.New("invalid template plugin")
+)
 
 var docFormat = map[string]string{
 	binary: "binary (byte stream)",

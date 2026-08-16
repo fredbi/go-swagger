@@ -14,8 +14,8 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/runtime"
 
-	"github.com/go-swagger/go-swagger/generator/internal/language"
 	templatesrepo "github.com/go-openapi/codegen/templates-repo"
+	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
 // Prepare finalizes a set of generation options so they are ready for use.
