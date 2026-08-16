@@ -4,6 +4,7 @@
 package generator
 
 import (
+	"maps"
 	"text/template"
 
 	"github.com/spf13/viper"
@@ -105,11 +106,24 @@ type GenOpts struct {
 // loadTemplates derives the repository the run works with from the one holding the templates
 // shipped with the generator.
 //
-// The selected contrib set and the custom template directory are further sources, declared in that
-// order, so a template declared by one of them replaces the one before it. The repository is built
-// again rather than altered, so what it holds is decided once and cannot change under a caller.
+// The functions a plugin provides, the selected contrib set and the custom template directory are
+// all declared here, sources in that order, so a template declared by one of them replaces the one
+// before it. The repository is built again rather than altered, so what it holds is decided once
+// and cannot change under a caller.
 func (g *GenOpts) loadTemplates() error {
-	sources := make([]templatesrepo.Option, 0, 2) //nolint:mnd // a contrib set and a directory
+	derived := make([]templatesrepo.Option, 0, 3) //nolint:mnd // a plugin, a contrib set, a directory
+
+	// a plugin contributes functions, and functions are bound when templates are parsed, so the
+	// repository is built again with them rather than altered
+	if g.TemplatePlugin != "" {
+		funcs, err := loadFuncMapPlugin(g.TemplatePlugin)
+		if err != nil {
+			return err
+		}
+
+		maps.Copy(g.funcMap, funcs)
+		derived = append(derived, templatesrepo.WithFuncMap(funcs))
+	}
 
 	if g.Template != "" {
 		contrib, err := contribTemplates(g.Template)
@@ -117,20 +131,20 @@ func (g *GenOpts) loadTemplates() error {
 			return err
 		}
 
-		sources = append(sources, templatesrepo.FromFS(contrib, ""))
+		derived = append(derived, templatesrepo.FromFS(contrib, ""))
 	}
 
 	if g.TemplateDir != "" {
-		sources = append(sources, templatesrepo.FromDir(g.TemplateDir, ""))
+		derived = append(derived, templatesrepo.FromDir(g.TemplateDir, ""))
 	}
 
-	sources = append(sources, g.configuredPaths()...)
+	derived = append(derived, g.configuredPaths()...)
 
-	if len(sources) == 0 {
+	if len(derived) == 0 {
 		return nil
 	}
 
-	templates, err := templatesrepo.Clone(g.templates, sources...)
+	templates, err := templatesrepo.Clone(g.templates, derived...)
 	if err != nil {
 		return err
 	}
