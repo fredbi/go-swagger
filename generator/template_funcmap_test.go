@@ -49,7 +49,7 @@ func TestTemplates_FuncMap_Model(t *testing.T) {
 	opts := opts()
 	modelTpl := testModelTpl()
 
-	require.NoError(t, opts.templates.AddFile("modeltpl", modelTpl))
+	withTemplate(t, opts, "modeltpl", modelTpl)
 
 	templ, err := opts.templates.Get("modeltpl")
 	require.NoError(t, err)

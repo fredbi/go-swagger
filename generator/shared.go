@@ -18,6 +18,7 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
+	"github.com/go-openapi/swag/mangling"
 
 	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
@@ -43,31 +44,25 @@ const (
 	sensibleDefaultMapAlloc = 50
 )
 
-// DefaultSectionOpts for a given opts, this is used when no config file is passed
-// and uses the embedded templates when no local override can be found.
+// DefaultSectionOpts lays out what a run generates, when no configuration says otherwise.
+//
+// Where each section writes is not decided here: a target and a file name are templates like any
+// other, and a configuration replaces one by declaring it.
+//
+// They live under templates/paths, mirroring the tree of the templates they place, so the paths of
+// templates/server/parameter.gotmpl are in templates/paths/server/parameter.gotmpl. The names they
+// declare are those of the template they place, suffixed with Target and FileName.
 func DefaultSectionOpts(gen *GenOpts) {
 	sec := gen.Sections
 	if len(sec.Models) == 0 {
 		opts := []TemplateOpts{
 			{
-				Name:     "definition",
-				Source:   "asset:model",
-				Target:   "{{ joinFilePath .Target (toPackagePath .ModelPackage) }}",
-				FileName: "{{ (snakize (pascalize .Name)) }}.go",
+				Name:   "definition",
+				Source: "asset:model",
 			},
 		}
 		sec.Models = opts
 	}
-
-	const (
-		cliTarget       = "{{ joinFilePath .Target (toPackagePath .CliPackage) }}"
-		serverTarget    = "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}"
-		operationTarget = "{{ if .UseTags }}" +
-			"{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}" +
-			"{{ else }}" +
-			"{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}" +
-			"{{ end }}"
-	)
 
 	if len(sec.PostModels) == 0 && gen.IncludeCLi {
 		// For CLI with default formatter (goimports), we needed to postpone the generation of model-supporting source,
@@ -75,10 +70,8 @@ func DefaultSectionOpts(gen *GenOpts) {
 		// If we completely migrate own custom formatter, we don't need to postpone.
 		opts := []TemplateOpts{
 			{
-				Name:     "clidefinitionhook",
-				Source:   "asset:cliModelcli",
-				Target:   cliTarget,
-				FileName: "{{ (snakize (pascalize .Name)) }}_model.go",
+				Name:   "clidefinitionhook",
+				Source: "asset:cliModelcli",
 			},
 		}
 		sec.PostModels = opts
@@ -88,24 +81,18 @@ func DefaultSectionOpts(gen *GenOpts) {
 		if gen.IsClient {
 			opts := []TemplateOpts{
 				{
-					Name:     "parameters",
-					Source:   "asset:clientParameter",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Package) }}",
-					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
+					Name:   "parameters",
+					Source: "asset:clientParameter",
 				},
 				{
-					Name:     "responses",
-					Source:   "asset:clientResponse",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Package) }}",
-					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
+					Name:   "responses",
+					Source: "asset:clientResponse",
 				},
 			}
 			if gen.IncludeCLi {
 				opts = append(opts, TemplateOpts{
-					Name:     "clioperation",
-					Source:   "asset:cliOperation",
-					Target:   cliTarget,
-					FileName: "{{ (snakize (pascalize .Name)) }}_operation.go",
+					Name:   "clioperation",
+					Source: "asset:cliOperation",
 				})
 			}
 			sec.Operations = opts
@@ -113,34 +100,26 @@ func DefaultSectionOpts(gen *GenOpts) {
 			ops := []TemplateOpts{}
 			if gen.IncludeParameters {
 				ops = append(ops, TemplateOpts{
-					Name:     "parameters",
-					Source:   "asset:serverParameter",
-					Target:   operationTarget,
-					FileName: "{{ (snakize (pascalize .Name)) }}_parameters.go",
+					Name:   "parameters",
+					Source: "asset:serverParameter",
 				})
 			}
 			if gen.IncludeURLBuilder {
 				ops = append(ops, TemplateOpts{
-					Name:     "urlbuilder",
-					Source:   "asset:serverUrlbuilder",
-					Target:   operationTarget,
-					FileName: "{{ (snakize (pascalize .Name)) }}_urlbuilder.go",
+					Name:   "urlbuilder",
+					Source: "asset:serverUrlbuilder",
 				})
 			}
 			if gen.IncludeResponses {
 				ops = append(ops, TemplateOpts{
-					Name:     "responses",
-					Source:   "asset:serverResponses",
-					Target:   operationTarget,
-					FileName: "{{ (snakize (pascalize .Name)) }}_responses.go",
+					Name:   "responses",
+					Source: "asset:serverResponses",
 				})
 			}
 			if gen.IncludeHandler {
 				ops = append(ops, TemplateOpts{
-					Name:     "handler",
-					Source:   "asset:serverOperation",
-					Target:   operationTarget,
-					FileName: "{{ (snakize (pascalize .Name)) }}.go",
+					Name:   "handler",
+					Source: "asset:serverOperation",
 				})
 			}
 			sec.Operations = ops
@@ -151,10 +130,8 @@ func DefaultSectionOpts(gen *GenOpts) {
 		if gen.IsClient {
 			sec.OperationGroups = []TemplateOpts{
 				{
-					Name:     "client",
-					Source:   "asset:clientClient",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Name)}}",
-					FileName: "{{ (snakize (pascalize .Name)) }}_client.go",
+					Name:   "client",
+					Source: "asset:clientClient",
 				},
 			}
 		} else {
@@ -166,84 +143,60 @@ func DefaultSectionOpts(gen *GenOpts) {
 		if gen.IsClient {
 			opts := []TemplateOpts{
 				{
-					Name:     "facade",
-					Source:   "asset:clientFacade",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ClientPackage) }}",
-					FileName: "{{ snakize .Name }}Client.go",
+					Name:   "facade",
+					Source: "asset:clientFacade",
 				},
 			}
 			if gen.IncludeCLi {
 				// include a commandline tool app
 				opts = append(opts, []TemplateOpts{{
-					Name:     "commandline",
-					Source:   "asset:cliCli",
-					Target:   cliTarget,
-					FileName: "cli.go",
+					Name:   "commandline",
+					Source: "asset:cliCli",
 				}, {
-					Name:     "climain",
-					Source:   "asset:cliMain",
-					Target:   "{{ joinFilePath .Target \"cmd\" (toPackagePath .CliAppName) }}",
-					FileName: "main.go",
+					Name:   "climain",
+					Source: "asset:cliMain",
 				}, {
-					Name:     "cliAutoComplete",
-					Source:   "asset:cliCompletion",
-					Target:   cliTarget,
-					FileName: "autocomplete.go",
+					Name:   "cliAutoComplete",
+					Source: "asset:cliCompletion",
 				}, {
-					Name:     "cliAutoDocument",
-					Source:   "asset:cliDocumentation",
-					Target:   cliTarget,
-					FileName: "autodocument.go",
+					Name:   "cliAutoDocument",
+					Source: "asset:cliDocumentation",
 				}}...)
 			}
 			sec.Application = opts
 		} else {
 			opts := []TemplateOpts{
 				{
-					Name:     "main",
-					Source:   "asset:serverMain",
-					Target:   "{{ joinFilePath .Target \"cmd\" .MainPackage }}",
-					FileName: "main.go",
+					Name:   "main",
+					Source: "asset:serverMain",
 				},
 				{
-					Name:     "embedded_spec",
-					Source:   "asset:swaggerJsonEmbed",
-					Target:   serverTarget,
-					FileName: "embedded_spec.go",
+					Name:   "embedded_spec",
+					Source: "asset:swaggerJsonEmbed",
 				},
 				{
-					Name:     "server",
-					Source:   "asset:serverServer",
-					Target:   serverTarget,
-					FileName: "server.go",
+					Name:   "server",
+					Source: "asset:serverServer",
 				},
 				{
-					Name:     "builder",
-					Source:   "asset:serverBuilder",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) }}",
-					FileName: "{{ snakize (pascalize .Name) }}_api.go",
+					Name:   "builder",
+					Source: "asset:serverBuilder",
 				},
 				{
-					Name:     "doc",
-					Source:   "asset:serverDoc",
-					Target:   serverTarget,
-					FileName: "doc.go",
+					Name:   "doc",
+					Source: "asset:serverDoc",
 				},
 			}
 			if gen.ImplementationPackage != "" {
 				// Use auto configure template
 				opts = append(opts, TemplateOpts{
-					Name:     "autoconfigure",
-					Source:   "asset:serverAutoconfigureapi",
-					Target:   "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
-					FileName: "auto_configure_{{ (snakize (pascalize .Name)) }}.go",
+					Name:   "autoconfigure",
+					Source: "asset:serverAutoconfigureapi",
 				})
 			} else {
 				opts = append(opts, TemplateOpts{
 					Name:       "configure",
 					Source:     "asset:serverConfigureapi",
-					Target:     "{{ joinFilePath .Target (toPackagePath .ServerPackage) }}",
-					FileName:   "configure_{{ (snakize (pascalize .Name)) }}.go",
 					SkipExists: !gen.RegenerateConfigureAPI,
 				})
 			}
@@ -286,6 +239,24 @@ type TemplateOpts struct {
 	FileName   string `mapstructure:"file_name"`
 	SkipExists bool   `mapstructure:"skip_exists"`
 	SkipFormat bool   `mapstructure:"skip_format"` // not a feature, but for debugging. generated code before formatting might not work because of unused imports.
+}
+
+// pathTemplates names the templates giving the directory and the file a section entry writes to.
+//
+// They are named after the template the entry renders, which is what tells them apart: two
+// sections may hold an entry of the same name, and no two of them render the same template.
+// The templates declaring them live under templates/paths, mirroring the tree of the templates
+// they place.
+//
+// A source that names a file rather than an asset is mangled the way the repository names it, so
+// that a template directory may hold the paths of a template of its own.
+func (t TemplateOpts) pathTemplates(mangler mangling.NameMangler) (target, fileName string) {
+	base := strings.TrimPrefix(t.Source, "asset:")
+	if base == t.Source {
+		base = mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
+	}
+
+	return base + "Target", base + "FileName"
 }
 
 // SectionOpts allows for specifying options to customize the templates used for generation.

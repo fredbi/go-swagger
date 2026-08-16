@@ -1,0 +1,5 @@
+{{/* serverUrlbuilderTarget is where the urlbuilder section writes what serverUrlbuilder renders. */}}
+{{ define "serverUrlbuilderTarget" }}{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}{{ end }}
+
+{{/* serverUrlbuilderFileName is the name of the file it writes. */}}
+{{ define "serverUrlbuilderFileName" }}{{ (snakize (pascalize .Name)) }}_urlbuilder.go{{ end }}

@@ -1,0 +1,5 @@
+{{/* serverConfigureapiTarget is where the configure section writes what serverConfigureapi renders. */}}
+{{ define "serverConfigureapiTarget" }}{{ joinFilePath .Target (toPackagePath .ServerPackage) }}{{ end }}
+
+{{/* serverConfigureapiFileName is the name of the file it writes. */}}
+{{ define "serverConfigureapiFileName" }}configure_{{ (snakize (pascalize .Name)) }}.go{{ end }}

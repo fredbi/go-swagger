@@ -6,6 +6,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -64,14 +65,18 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 		}
 	}
 
-	pthTpl, err := template.New(t.Name + "-target").Funcs(g.funcMap).Parse(t.Target)
+	// where a section entry writes is a template of the repository like any other: one shipped
+	// with the generator, or the one a configuration declared in its place
+	targetName, fileNameName := t.pathTemplates(g.LanguageOpts.Mangler)
+
+	pthTpl, err := g.pathTemplate(targetName, t.Target)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("no target path for section %q: %w", t.Name, err)
 	}
 
-	fNameTpl, err := template.New(t.Name + "-filename").Funcs(g.funcMap).Parse(t.FileName)
+	fNameTpl, err := g.pathTemplate(fileNameName, t.FileName)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("no file name for section %q: %w", t.Name, err)
 	}
 
 	d := struct {
@@ -109,8 +114,32 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 	return pthBuf.String(), g.fileName(fNameBuf.String()), nil
 }
 
+// executable is what rendering needs of a template, whichever of the two places it comes from:
+// the repository, or a file read from disk on the spot.
+type executable interface {
+	Execute(w io.Writer, data any) error
+}
+
+// pathTemplate returns the template giving a path a section entry writes to.
+//
+// It comes from the repository, which holds the ones shipped with the generator and the ones a
+// configuration declared in their place. A section entry built in code may carry its path inline
+// instead, and it is then compiled here, for that entry alone.
+func (g *renderer) pathTemplate(name, inline string) (executable, error) {
+	tpl, err := g.templates.Get(name)
+	if err == nil {
+		return tpl, nil
+	}
+
+	if inline == "" {
+		return nil, err
+	}
+
+	return template.New(name).Funcs(g.funcMap).Parse(inline)
+}
+
 func (g *renderer) render(t *TemplateOpts, data any) ([]byte, error) {
-	var templ *template.Template
+	var templ executable
 
 	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
 		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))

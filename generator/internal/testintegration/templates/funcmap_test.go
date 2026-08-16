@@ -12,8 +12,8 @@ import (
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
 
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	golangfuncs "github.com/go-swagger/go-swagger/generator/internal/funcmaps/golang"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
 func TestIntegrationTemplates(t *testing.T) {
@@ -131,8 +131,11 @@ func renderTemplateInRepo(fm template.FuncMap, tpl string, data any) func(*testi
 	return func(t *testing.T) (rendered string) {
 		t.Helper()
 
-		repo := templatesrepo.NewRepository(fm)
-		require.NoError(t, repo.AddFile("test", tpl))
+		repo, err := templatesrepo.New(
+			templatesrepo.FromTemplate("test", []byte(tpl)),
+			templatesrepo.WithFuncMap(fm),
+		)
+		require.NoError(t, err)
 
 		templ, err := repo.Get("test")
 		require.NoError(t, err)

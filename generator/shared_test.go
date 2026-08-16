@@ -323,7 +323,7 @@ func TestShared_GarbledTemplate(t *testing.T) {
 	opts := testGenOpts()
 	t.Run("should fail on invalid template", func(t *testing.T) {
 		const garbled = "func x {{;;; garbled"
-		require.Error(t, opts.templates.AddFile("garbled", garbled))
+		require.Error(t, templateError(opts, "garbled", garbled))
 	})
 
 	t.Run("should fail on template execution error", func(t *testing.T) {
@@ -356,7 +356,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 		const execfailure1 = "func x {{ .NotInData }}"
 
 		opts := testGenOpts()
-		require.NoError(t, opts.templates.AddFile("execfailure1", execfailure1))
+		withTemplate(t, opts, "execfailure1", execfailure1)
 
 		tplOpts := TemplateOpts{
 			Name:       "execFailure1",
@@ -376,7 +376,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 		const execfailure2 = "func {{ .MyFaultyMethod }}"
 
 		opts := testGenOpts()
-		require.NoError(t, opts.templates.AddFile("execfailure2", execfailure2))
+		withTemplate(t, opts, "execfailure2", execfailure2)
 		tplOpts := TemplateOpts{
 			Name:       "execFailure2",
 			Source:     "asset:execfailure2",
@@ -402,7 +402,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	t.Run("should add template producing bad formatted go", func(t *testing.T) {
 		opts := testGenOpts()
 		badFormat := "func x {;;; garbled"
-		require.NoError(t, opts.templates.AddFile("badformat", badFormat))
+		withTemplate(t, opts, "badformat", badFormat)
 
 		t.Run("with Not skipping format option", func(t *testing.T) {
 			t.Run("should write file with bad formatting", func(t *testing.T) {
@@ -473,7 +473,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	content := "func x {}"
 
 	opts := testGenOpts()
-	require.NoError(t, opts.templates.AddFile("gendir", content))
+	withTemplate(t, opts, "gendir", content)
 	tplOpts := TemplateOpts{
 		Name:   "gendir",
 		Source: "asset:gendir",

@@ -398,12 +398,14 @@ func TestModelGenerateDefinition(t *testing.T) {
 		)
 	})
 
-	t.Run("should NOT generate definition when overwriting protected templates", func(t *testing.T) {
+	t.Run("should generate definition when a template directory replaces the templates shipped", func(t *testing.T) {
+		// no template is out of bounds: a template the generator ships is a default, and a
+		// directory declared as a further source replaces what it holds
 		opts := mkOpts()
 		opts.TemplateDir = "templates"
-		require.Errorf(t,
+		require.NoErrorf(t,
 			GenerateDefinition([]string{"thingWithNullableDates"}, opts),
-			"expected GenerateDefinition() to croak about protected templates",
+			"expected GenerateDefinition() to run without error",
 		)
 	})
 

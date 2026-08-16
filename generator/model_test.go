@@ -6,11 +6,11 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
-	"text/template"
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/testify/v2/assert"
@@ -19,7 +19,9 @@ import (
 
 type templateTest struct {
 	t        testing.TB
-	template *template.Template
+	template interface {
+		Execute(w io.Writer, data any) error
+	}
 }
 
 func (tt *templateTest) assertRender(data any, expected string) (success bool) {
@@ -65,9 +67,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 
 func TestGenerateModel_DocString(t *testing.T) {
 	opts := opts()
-	assets := defaultAssets()
-	templ := template.Must(template.New("docstring").Funcs(opts.funcMap).Parse(string(assets["docstring.gotmpl"])))
-	tt := templateTest{t, templ}
+	tt := templateTest{t, opts.templates.MustGet("docstring")}
 	const (
 		title = "The title of the property"
 		desc  = "The description of the property"
@@ -93,9 +93,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
 	opts := opts()
-	assets := defaultAssets()
-	templ := template.Must(template.New("propertyValidationDocString").Funcs(opts.funcMap).Parse(string(assets["validation/structfield.gotmpl"])))
-	tt := templateTest{t, templ}
+	tt := templateTest{t, opts.templates.MustGet("propertyValidationDocString")}
 
 	var gmp GenSchema
 	gmp.Required = true
@@ -142,7 +140,7 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 
 func TestGenerateModel_SchemaField(t *testing.T) {
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("model").Lookup("structfield")}
+	tt := templateTest{t, opts.templates.MustGet("structfield")}
 
 	var gmp GenSchema
 	gmp.Name = "some name"
@@ -250,7 +248,7 @@ var schTypeGenDataSimple = []struct {
 
 func TestGenSchemaType(t *testing.T) {
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schemaType")}
+	tt := templateTest{t, opts.templates.MustGet("schemaType")}
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
 	}
@@ -258,7 +256,7 @@ func TestGenSchemaType(t *testing.T) {
 
 func TestGenerateModel_Primitives(t *testing.T) {
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("model").Lookup("schema")}
+	tt := templateTest{t, opts.templates.MustGet("schema")}
 	for _, v := range schTypeGenDataSimple {
 		v.Value.IncludeValidator = true
 		v.Value.IncludeModel = true
@@ -830,7 +828,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 
 func TestGenerateModel_JustRef(t *testing.T) {
 	opts := opts()
-	tpl := opts.templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -853,7 +851,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 
 func TestGenerateModel_WithRef(t *testing.T) {
 	opts := opts()
-	tpl := opts.templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -875,7 +873,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
 	opts := opts()
-	tpl := opts.templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 
@@ -1035,7 +1033,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithItems"]
 	opts := opts()
-	tpl := opts.templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("schema")
 
 	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
 	require.NoError(t, err)

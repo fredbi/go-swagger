@@ -1,0 +1,5 @@
+{{/* swaggerJsonEmbedTarget is where the embedded_spec section writes what swaggerJsonEmbed renders. */}}
+{{ define "swaggerJsonEmbedTarget" }}{{ joinFilePath .Target (toPackagePath .ServerPackage) }}{{ end }}
+
+{{/* swaggerJsonEmbedFileName is the name of the file it writes. */}}
+{{ define "swaggerJsonEmbedFileName" }}embedded_spec.go{{ end }}

@@ -418,7 +418,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 	require.NoError(t, e)
 
 	opts := opts()
-	tpl := opts.templates.MustGet("model").Lookup("schema")
+	tpl := opts.templates.MustGet("schema")
 	definitions := specDoc.Spec().Definitions
 	for name, schema := range definitions {
 		genModel, err := makeGenDefinition(name, "models", schema, specDoc, opts)

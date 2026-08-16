@@ -200,7 +200,7 @@ func TestServer_ErrorParsingTemplate(t *testing.T) {
 	gen, err := testAppGenerator(t, "../testdata/bugs/899/swagger.yml", "trailing slash")
 	require.NoError(t, err)
 
-	require.Error(t, gen.GenOpts.templates.AddFile("badparse", badParse)) // template is not loaded
+	require.Error(t, templateError(gen.GenOpts, "badparse", badParse)) // the template is not loaded
 
 	badParseCall := func() {
 		_ = gen.GenOpts.templates.MustGet("badparse") // MustGet panics
@@ -235,7 +235,7 @@ func TestServer_OperationGroups(t *testing.T) {
 
 	err = gen.Generate()
 	require.Error(t, err)
-	assert.StringContainsT(t, strings.ToLower(err.Error()), "template doesn't exist") // Tolerates case variations on error message
+	assert.StringContainsT(t, strings.ToLower(err.Error()), "is not declared in this repository")
 
 	opGroupTpl := `
 // OperationGroupName={{.Name}}
@@ -243,7 +243,7 @@ func TestServer_OperationGroups(t *testing.T) {
 {{ range .Operations }}
 	// OperationName={{.Name}}
 {{end}}`
-	_ = gen.GenOpts.templates.AddFile("opGroupTest", opGroupTpl)
+	withTemplate(t, gen.GenOpts, "opGroupTest", opGroupTpl)
 	require.NoError(t, gen.Generate())
 
 	genContent, err := os.ReadFile("./search/search_opgroup_test.gol")
