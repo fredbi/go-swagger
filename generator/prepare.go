@@ -15,7 +15,7 @@ import (
 	"github.com/go-openapi/runtime"
 
 	"github.com/go-swagger/go-swagger/generator/internal/language"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 )
 
 // Prepare finalizes a set of generation options so they are ready for use.
@@ -109,13 +109,17 @@ func (g *GenOpts) buildMachinery() {
 	}
 
 	g.funcMap = DefaultFuncMap(g.LanguageOpts)
-	g.templates = templatesrepo.NewRepository(g.funcMap)
-	if err := g.templates.LoadDefaults(defaultAssets()); err != nil {
+
+	templates, err := templatesrepo.New(
+		templatesrepo.FromFS(embeddedTemplates(), ""),
+		templatesrepo.WithFuncMap(g.funcMap),
+	)
+	if err != nil {
 		panic(
-			fmt.Errorf("cannot load default assets: %w", err),
+			fmt.Errorf("cannot load the templates shipped with the generator: %w", err),
 		)
 	}
-	g.templates.SetProtectedTemplates(defaultProtectedTemplates())
+	g.templates = templates
 
 	// set defaults for flattening options
 	if g.FlattenOpts == nil {

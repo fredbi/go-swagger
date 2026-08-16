@@ -1,0 +1,5 @@
+{{/* clientFacadeTarget is where the facade section writes what clientFacade renders. */}}
+{{ define "clientFacadeTarget" }}{{ joinFilePath .Target (toPackagePath .ClientPackage) }}{{ end }}
+
+{{/* clientFacadeFileName is the name of the file it writes. */}}
+{{ define "clientFacadeFileName" }}{{ snakize .Name }}Client.go{{ end }}

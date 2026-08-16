@@ -1,0 +1,5 @@
+{{/* cliCompletionTarget is where the cliAutoComplete section writes what cliCompletion renders. */}}
+{{ define "cliCompletionTarget" }}{{ joinFilePath .Target (toPackagePath .CliPackage) }}{{ end }}
+
+{{/* cliCompletionFileName is the name of the file it writes. */}}
+{{ define "cliCompletionFileName" }}autocomplete.go{{ end }}

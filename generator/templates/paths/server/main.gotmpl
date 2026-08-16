@@ -1,0 +1,5 @@
+{{/* serverMainTarget is where the main section writes what serverMain renders. */}}
+{{ define "serverMainTarget" }}{{ joinFilePath .Target "cmd" .MainPackage }}{{ end }}
+
+{{/* serverMainFileName is the name of the file it writes. */}}
+{{ define "serverMainFileName" }}main.go{{ end }}

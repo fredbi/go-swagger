@@ -1,0 +1,5 @@
+{{/* cliOperationTarget is where the clioperation section writes what cliOperation renders. */}}
+{{ define "cliOperationTarget" }}{{ joinFilePath .Target (toPackagePath .CliPackage) }}{{ end }}
+
+{{/* cliOperationFileName is the name of the file it writes. */}}
+{{ define "cliOperationFileName" }}{{ (snakize (pascalize .Name)) }}_operation.go{{ end }}

@@ -1,0 +1,5 @@
+{{/* cliDocumentationTarget is where the cliAutoDocument section writes what cliDocumentation renders. */}}
+{{ define "cliDocumentationTarget" }}{{ joinFilePath .Target (toPackagePath .CliPackage) }}{{ end }}
+
+{{/* cliDocumentationFileName is the name of the file it writes. */}}
+{{ define "cliDocumentationFileName" }}autodocument.go{{ end }}

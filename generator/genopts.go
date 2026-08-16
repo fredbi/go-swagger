@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-openapi/analysis"
 
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
 )
 
 // GenOpts encapsulates the generator options.
@@ -102,30 +102,80 @@ type GenOpts struct {
 	funcMap   template.FuncMap
 }
 
-// loadTemplates loads the optional template plugin, the selected contrib
-// templates and the custom template directory configured on the options.
+// loadTemplates derives the repository the run works with from the one holding the templates
+// shipped with the generator.
+//
+// The selected contrib set and the custom template directory are further sources, declared in that
+// order, so a template declared by one of them replaces the one before it. The repository is built
+// again rather than altered, so what it holds is decided once and cannot change under a caller.
 func (g *GenOpts) loadTemplates() error {
-	if g.TemplatePlugin != "" {
-		if err := g.templates.LoadPlugin(g.TemplatePlugin); err != nil {
-			return err
-		}
-	}
+	sources := make([]templatesrepo.Option, 0, 2) //nolint:mnd // a contrib set and a directory
 
 	if g.Template != "" {
-		// set contrib templates
-		if err := g.templates.LoadContrib(g.Template, embeddedAssets{}); err != nil {
+		contrib, err := contribTemplates(g.Template)
+		if err != nil {
 			return err
 		}
-	}
 
-	g.templates.SetAllowOverride(g.AllowTemplateOverride)
+		sources = append(sources, templatesrepo.FromFS(contrib, ""))
+	}
 
 	if g.TemplateDir != "" {
-		// set custom templates
-		if err := g.templates.LoadDir(g.TemplateDir); err != nil {
-			return err
+		sources = append(sources, templatesrepo.FromDir(g.TemplateDir, ""))
+	}
+
+	sources = append(sources, g.configuredPaths()...)
+
+	if len(sources) == 0 {
+		return nil
+	}
+
+	templates, err := templatesrepo.Clone(g.templates, sources...)
+	if err != nil {
+		return err
+	}
+
+	g.templates = templates
+
+	return nil
+}
+
+// configuredPaths turns the paths a configuration declares into templates.
+//
+// A section entry may say where it writes, with a target and a file name that are themselves
+// templates. They replace the ones shipped with the generator, and are declared as sources like
+// anything else: a path that does not parse fails the build rather than the run that reaches it.
+func (g *GenOpts) configuredPaths() []templatesrepo.Option {
+	var declared []templatesrepo.Option
+
+	for _, section := range [][]TemplateOpts{
+		g.Sections.Application,
+		g.Sections.Operations,
+		g.Sections.OperationGroups,
+		g.Sections.Models,
+		g.Sections.PostModels,
+	} {
+		for _, entry := range section {
+			target, fileName := entry.pathTemplates(g.LanguageOpts.Mangler)
+
+			if entry.Target != "" {
+				declared = append(declared, definedAs(target, entry.Target))
+			}
+
+			if entry.FileName != "" {
+				declared = append(declared, definedAs(fileName, entry.FileName))
+			}
 		}
 	}
 
-	return nil
+	return declared
+}
+
+// definedAs declares a template under a name of our choosing, whatever the text it holds.
+//
+// The text a configuration gives is a template body, so it is wrapped in a define: that way the
+// name the repository registers is the one the renderer looks up, and never one derived from a
+// path the configuration happens to use.
+func definedAs(name, body string) templatesrepo.Option {
+	return templatesrepo.FromTemplate(name, []byte(`{{ define "`+name+`" }}`+body+`{{ end }}`))
 }

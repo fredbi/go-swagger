@@ -6,6 +6,8 @@ package generator
 import (
 	"bytes"
 	"errors"
+	"io/fs"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/testify/v2/assert"
@@ -14,8 +16,7 @@ import (
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 
-	"github.com/go-swagger/go-swagger/generator/internal/gentest"
-	templatesrepo "github.com/go-swagger/go-swagger/generator/internal/templates-repo"
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 )
 
 func TestTemplates_CustomTemplates(t *testing.T) {
@@ -27,7 +28,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 	assert.EqualT(t, "\n", buf.String())
 
 	buf.Reset()
-	require.NoError(t, opts.templates.AddFile("bindprimitiveparam", customHeader))
+	withTemplate(t, opts, "bindprimitiveparam", customHeader)
 
 	headerTempl, err = opts.templates.Get("bindprimitiveparam")
 	require.NoError(t, err)
@@ -39,7 +40,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, opts.templates.AddFile("differentFileName", customMultiple))
+	withTemplate(t, opts, "differentFileName", customMultiple)
 	headerTempl, err := opts.templates.Get("bindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -49,8 +50,8 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts()
-	require.NoError(t, opts.templates.AddFile("newtemplate", customNewTemplate))
-	require.NoError(t, opts.templates.AddFile("existingUsesNew", customExistingUsesNew))
+	withTemplate(t, opts, "newtemplate", customNewTemplate)
+	withTemplate(t, opts, "existingUsesNew", customExistingUsesNew)
 	headerTempl, err := opts.templates.Get("bindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -66,8 +67,8 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 
 	const copyright = `{{ .Copyright }}`
 
-	repo := templatesrepo.NewRepository(nil)
-	require.NoError(t, repo.AddFile("copyright", copyright))
+	repo, err := templatesrepo.New(templatesrepo.FromTemplate("copyright", []byte(copyright)))
+	require.NoError(t, err)
 	templ, err := repo.Get("copyright")
 	require.NoError(t, err)
 	require.NotNil(t, templ)
@@ -98,8 +99,8 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	const targetImportPath = `{{ .TargetImportPath }}`
 	defer discardOutput()()
 
-	repo := templatesrepo.NewRepository(nil)
-	require.NoError(t, repo.AddFile("targetimportpath", targetImportPath))
+	repo, err := templatesrepo.New(templatesrepo.FromTemplate("targetimportpath", []byte(targetImportPath)))
+	require.NoError(t, err)
 	templ, err := repo.Get("targetimportpath")
 	require.NoError(t, err)
 	require.NotNil(t, templ)
@@ -177,23 +178,39 @@ func getOperationEnvironment(operation string, path string, spec string, opts *G
 	return &g, nil
 }
 
-// AddFile on the global repository (protected vs unprotected).
-func TestTemplates_AddFile(t *testing.T) {
+// Adding a template to the repository of a run.
+//
+// Any template may be replaced: a template the generator ships is a default, never a fixture, and
+// the repository holds no notion of one that may not be overridden.
+func TestTemplates_AddTemplate(t *testing.T) {
 	defer discardOutput()()
 
 	const funcTpl = `{{ pascalize "hello world" }}`
-	opts := opts()
 
-	t.Run("should load as override an unprotected template", func(t *testing.T) {
-		require.NoError(t, opts.templates.AddFile("functpl", funcTpl))
+	t.Run("should add a template of its own", func(t *testing.T) {
+		opts := opts()
+		withTemplate(t, opts, "functpl", funcTpl)
+
 		_, err := opts.templates.Get("functpl")
 		require.NoError(t, err)
 	})
 
-	t.Run("should not load a protected template", func(t *testing.T) {
-		err := opts.templates.AddFile("schemabody", funcTpl)
-		require.Error(t, err)
-		assert.ErrorContains(t, err, "cannot overwrite protected template")
+	t.Run("should replace one the generator ships", func(t *testing.T) {
+		opts := opts()
+		withTemplate(t, opts, "schemabody", funcTpl)
+
+		var buf bytes.Buffer
+		require.NoError(t, opts.templates.MustGet("schemabody").Execute(&buf, nil))
+		assert.EqualT(t, "HelloWorld", buf.String())
+	})
+
+	t.Run("should reach the templates depending on the one replaced", func(t *testing.T) {
+		opts := opts()
+		withTemplate(t, opts, "docstring", `{{ define "docstring" }}// replaced{{ end }}`)
+
+		var buf bytes.Buffer
+		require.NoError(t, opts.templates.MustGet("docstring").Execute(&buf, nil))
+		assert.EqualT(t, "// replaced", buf.String())
 	})
 }
 
@@ -215,32 +232,81 @@ func TestTemplates_LoadContrib(t *testing.T) {
 			wantError: false,
 		},
 	}
-	opts := opts()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := opts.templates.LoadContrib(tt.template, embeddedAssets{})
+			opts := opts()
+			opts.Template = tt.template
+
+			err := opts.loadTemplates()
 			if tt.wantError {
 				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
+
+				return
 			}
+
+			require.NoError(t, err)
+			assert.TrueT(t, opts.templates.Has("clientFacade"), "a contrib set replaces what it ships")
 		})
 	}
 }
 
-// test DumpTemplates() with actual templates.
-func TestTemplates_DumpTemplates(t *testing.T) {
+// Documenting the templates the generator ships.
+func TestTemplates_Dump(t *testing.T) {
 	var buf bytes.Buffer
-	defer gentest.CaptureOutput(&buf)()
 
 	opts := opts()
-	opts.templates.DumpTemplates()
-	assert.NotEmpty(t, buf)
+	require.NoError(t, opts.templates.Dump(&buf))
 
-	// Sample output
-	str := buf.String()
-	assert.StringContainsT(t, str, "## tupleSerializer")
-	assert.StringContainsT(t, str, "Defined in `tupleserializer.gotmpl`")
-	assert.StringContainsT(t, str, "####requires \n - schemaType")
+	document := buf.String()
+	assert.StringContainsT(t, document, "### tupleSerializer")
+	assert.StringContainsT(t, document, "## serializers/tupleserializer.gotmpl")
+	assert.StringContainsT(t, document, "`schemaType`")
+}
+
+// Every template a section renders says where it writes, in a template mirroring its own place in
+// the tree: the paths of templates/server/parameter.gotmpl live in
+// templates/paths/server/parameter.gotmpl, declaring serverParameterTarget and
+// serverParameterFileName.
+func TestTemplates_Paths(t *testing.T) {
+	opts := opts()
+	mangler := opts.LanguageOpts.Mangler
+
+	pathTemplates, err := fs.Glob(embeddedTemplates(), "paths/*.gotmpl")
+	require.NoError(t, err)
+	nested, err := fs.Glob(embeddedTemplates(), "paths/*/*.gotmpl")
+	require.NoError(t, err)
+	pathTemplates = append(pathTemplates, nested...)
+	require.NotEmpty(t, pathTemplates)
+
+	t.Run("should place a template that exists, and declare its two names", func(t *testing.T) {
+		for _, declaring := range pathTemplates {
+			placed := mangler.ToJSONName(
+				strings.TrimSuffix(strings.TrimPrefix(declaring, "paths/"), ".gotmpl"),
+			)
+
+			assert.Truef(t, opts.templates.Has(placed),
+				"%s places %q, which the generator does not ship", declaring, placed)
+			assert.Truef(t, opts.templates.Has(placed+"Target"),
+				"%s does not declare %sTarget", declaring, placed)
+			assert.Truef(t, opts.templates.Has(placed+"FileName"),
+				"%s does not declare %sFileName", declaring, placed)
+		}
+	})
+
+	t.Run("should place every template a default section renders", func(t *testing.T) {
+		DefaultSectionOpts(opts)
+
+		for _, section := range [][]TemplateOpts{
+			opts.Sections.Application, opts.Sections.Operations, opts.Sections.OperationGroups,
+			opts.Sections.Models, opts.Sections.PostModels,
+		} {
+			for _, entry := range section {
+				target, fileName := entry.pathTemplates(mangler)
+
+				assert.Truef(t, opts.templates.Has(target), "section %q has no %s", entry.Name, target)
+				assert.Truef(t, opts.templates.Has(fileName), "section %q has no %s", entry.Name, fileName)
+			}
+		}
+	})
 }

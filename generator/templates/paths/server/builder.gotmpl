@@ -1,0 +1,5 @@
+{{/* serverBuilderTarget is where the builder section writes what serverBuilder renders. */}}
+{{ define "serverBuilderTarget" }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) }}{{ end }}
+
+{{/* serverBuilderFileName is the name of the file it writes. */}}
+{{ define "serverBuilderFileName" }}{{ snakize (pascalize .Name) }}_api.go{{ end }}

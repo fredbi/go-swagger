@@ -1,0 +1,5 @@
+{{/* serverResponsesTarget is where the responses section writes what serverResponses renders. */}}
+{{ define "serverResponsesTarget" }}{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}{{ end }}
+
+{{/* serverResponsesFileName is the name of the file it writes. */}}
+{{ define "serverResponsesFileName" }}{{ (snakize (pascalize .Name)) }}_responses.go{{ end }}
