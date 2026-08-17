@@ -235,7 +235,9 @@ func TestTemplates_LoadContrib(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			opts := opts()
+			// a client run, since the templates this contrib set replaces are rendered by one
+			opts := NewGenOpts(ForClient())
+			require.NoError(t, ensureMachinery(opts))
 			opts.Template = tt.template
 
 			err := opts.loadTemplates()
