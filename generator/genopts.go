@@ -42,7 +42,6 @@ type GenOpts struct {
 	prepared                   bool // guards Prepare
 	PropertiesSpecOrder        bool
 	StrictAdditionalProperties bool
-	AllowTemplateOverride      bool
 	WithGoRunGoGenerate        bool
 	NoDefaultOmitEmpty         bool
 

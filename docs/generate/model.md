@@ -38,7 +38,7 @@ Help Options:
       -C, --config-file=                                                                     configuration file to use for overriding template options
       -r, --copyright-file=                                                                  copyright file used to add copyright header
           --additional-initialism=                                                           consecutive capitals that should be considered intialisms
-          --allow-template-override                                                          allows overriding protected templates
+          --allow-template-override                                                          allows overriding protected templates (deprecated)
           --skip-validation                                                                  skips validation of spec prior to generation
           --dump-data                                                                        when present dumps the json for the template generator
                                                                                              instead of generating files
