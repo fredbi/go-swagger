@@ -149,3 +149,29 @@ func TestTemplateNamesComeFromTheRepository(t *testing.T) {
 		}
 	})
 }
+
+// The two flag-driven application entries are matched on the name the layout documentation writes,
+// and on nothing else.
+func TestApplicationSectionNames(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		kept bool
+	}{
+		{"main", false},
+		{"Main", true},
+		{"mainThing", true},
+		{"domain", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			opts := NewGenOpts(ForServer())
+			opts.IncludeMain = false
+			opts.buildMachinery()
+			opts.Sections.Application = []TemplateOpts{{Name: tc.name, Source: "serverMain"}}
+
+			kept := opts.applicationSections()
+
+			assert.EqualTf(t, tc.kept, len(kept) == 1,
+				"an entry named %q is matched against the documented name alone", tc.name)
+		})
+	}
+}
