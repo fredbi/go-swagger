@@ -262,12 +262,33 @@ func (t TemplateOpts) templateName() string {
 //
 // They are named after the template the entry renders, which is what tells them apart: two
 // sections may hold an entry of the same name, and no two of them render the same template. Those
-// shipped with the generator live under templates/paths, one file each, so that a template
-// directory may replace one of them on its own.
+// shipped with the generator live under filepaths, one file each, so that a template directory may
+// replace one of them on its own.
+//
+// A configuration naming a template of its own is taken at that name instead, so that a path may be
+// written where every other template is rather than inside the configuration.
 func (t TemplateOpts) pathTemplates() (target, fileName string) {
 	base := t.templateName()
 
-	return base + "Target", base + "FileName"
+	return pathTemplateName(t.Target, base+"Target"), pathTemplateName(t.FileName, base+"FileName")
+}
+
+// pathTemplateName is the template a configured path resolves to, or the one derived for it.
+func pathTemplateName(configured, derived string) string {
+	if !namesTemplateFile(configured) {
+		return derived
+	}
+
+	return templatesrepo.TemplateName(configured)
+}
+
+// namesTemplateFile tells whether a configured path names a template rather than holding one.
+//
+// A path a configuration gives is a template body, which is what it has always been: "main.go"
+// writes main.go, and it holds no action at all. Naming a template instead is said by naming the
+// file it lives in, extension and all, which no path written for a file name ever ends with.
+func namesTemplateFile(configured string) bool {
+	return strings.HasSuffix(configured, templatesrepo.DefaultExtension)
 }
 
 // SectionOpts allows for specifying options to customize the templates used for generation.

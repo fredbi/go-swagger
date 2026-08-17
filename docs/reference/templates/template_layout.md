@@ -37,6 +37,37 @@ the current directory, or anywhere else, for a file a `source` might match.
 A source may still be written with the extension of the file it lives in - `my_template.gotmpl` names the template
 `myTemplate` - which is convenient when a configuration is written next to a template directory.
 
+## Where a section writes
+
+`target` and `file_name` are templates too, and a section entry gives each of them in one of two ways.
+
+Written out, they are the template itself, which is what they have always been:
+
+```yaml
+    - name: definition
+      source: model
+      target: "{{ joinFilePath .Target (toPackagePath .ModelPackage) }}"
+      file_name: "{{ (snakize (pascalize .Name)) }}.go"
+```
+
+Written as a file name ending in `.gotmpl`, they name a template instead, resolved like a `source`:
+
+```yaml
+    - name: definition
+      source: model
+      target: "mypaths/model/target.gotmpl"
+      file_name: "mypaths/model/file_name.gotmpl"
+```
+
+That template comes from `--template-dir` like any other, so a path may be written where the rest of your templates
+are rather than inside the configuration. Anything that does not end in `.gotmpl` is the template itself, so a
+constant such as `file_name: "main.go"` keeps meaning the file called main.go.
+
+Saying neither leaves the one shipped with the generator, and the two are independent: giving a `target` of your own
+keeps the shipped `file_name`. The shipped ones are named after the template they place, suffixed with `Target` or
+`FileName`, and a template directory may replace one by mirroring its path: `model/target.gotmpl` replaces
+`modelTarget`.
+
 > Older configurations prefixed a built-in template with `asset:`, as in `source: asset:model`. The prefix no longer
 > means anything and is no longer accepted: write `source: model`.
 
