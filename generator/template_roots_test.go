@@ -4,7 +4,10 @@
 package generator
 
 import (
+	"os"
+	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/go-openapi/testify/v2/assert"
@@ -171,4 +174,98 @@ func TestApplicationSectionNames(t *testing.T) {
 				"an entry named %q is matched against the documented name alone", tc.name)
 		})
 	}
+}
+
+// A path a configuration gives either holds a template or names one.
+func TestConfiguredPathTemplates(t *testing.T) {
+	t.Run("should hold a template when it names no file", func(t *testing.T) {
+		for _, body := range []string{
+			`{{ joinFilePath .Target .ModelPackage }}`, // an action
+			"main.go",          // a constant file name, as the shipped layouts write it
+			"restapi",          // a constant directory
+			"my.go.tmpl.thing", // no supported extension, so still a body
+		} {
+			entry := TemplateOpts{Source: "model", Target: body, FileName: body}
+			target, fileName := entry.pathTemplates()
+
+			assert.EqualTf(t, "modelTarget", target, "%q holds a template", body)
+			assert.EqualTf(t, "modelFileName", fileName, "%q holds a template", body)
+		}
+	})
+
+	t.Run("should name a template when it names a file", func(t *testing.T) {
+		entry := TemplateOpts{
+			Source:   "model",
+			Target:   "mypaths/model/target.gotmpl",
+			FileName: "mypaths/model/file_name.gotmpl",
+		}
+
+		target, fileName := entry.pathTemplates()
+
+		assert.EqualT(t, "mypathsModelTarget", target)
+		assert.EqualT(t, "mypathsModelFileName", fileName)
+	})
+
+	t.Run("should let a template directory place what a section writes", func(t *testing.T) {
+		dir := t.TempDir()
+		require.NoError(t, os.MkdirAll(filepath.Join(dir, "mypaths", "model"), 0o750))
+		require.NoError(t, os.WriteFile(
+			filepath.Join(dir, "mypaths", "model", "target.gotmpl"),
+			[]byte(`{{ joinFilePath .Target "PLACED" }}`), 0o600,
+		))
+
+		g := NewGenOpts(ForServer())
+		g.TemplateDir = dir
+		require.NoError(t, ensureMachinery(g))
+		g.Sections.Models = []TemplateOpts{{
+			Name:   "definition",
+			Source: "model",
+			Target: "mypaths/model/target.gotmpl",
+		}}
+		require.NoError(t, g.buildTemplates(g.scope()...))
+
+		var out strings.Builder
+		require.NoError(t, g.templates.MustGet("mypathsModelTarget").
+			Execute(&out, struct{ Target string }{"T"}))
+		assert.EqualT(t, "T/PLACED", strings.TrimSpace(out.String()))
+
+		// the file name was not configured, so the one shipped with the generator still stands
+		assert.TrueT(t, g.templates.Has("modelFileName"))
+	})
+
+	t.Run("should let a template directory replace a shipped path", func(t *testing.T) {
+		// the paths live outside the tree of the templates they place, so a directory of one's own
+		// may mirror either without one being read as part of the other
+		dir := t.TempDir()
+		require.NoError(t, os.MkdirAll(filepath.Join(dir, "model"), 0o750))
+		require.NoError(t, os.WriteFile(
+			filepath.Join(dir, "model", "target.gotmpl"),
+			[]byte(`{{ joinFilePath .Target "MIRRORED" }}`), 0o600,
+		))
+
+		g := NewGenOpts(ForServer())
+		g.TemplateDir = dir
+		require.NoError(t, ensureMachinery(g))
+		require.NoError(t, g.buildTemplates())
+
+		var out strings.Builder
+		require.NoError(t, g.templates.MustGet("modelTarget").
+			Execute(&out, struct{ Target string }{"T"}))
+		assert.EqualT(t, "T/MIRRORED", strings.TrimSpace(out.String()))
+	})
+
+	t.Run("should report a path naming a template no source declares", func(t *testing.T) {
+		g := NewGenOpts(ForServer())
+		require.NoError(t, ensureMachinery(g))
+		g.Sections.Models = []TemplateOpts{{
+			Name:   "definition",
+			Source: "model",
+			Target: "nowhere/to/be/found.gotmpl",
+		}}
+
+		err := g.buildTemplates(g.scope()...)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "nowhereToBeFound")
+	})
 }

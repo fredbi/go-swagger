@@ -171,11 +171,12 @@ func (g *GenOpts) templateSources() ([]templatesrepo.Option, error) {
 // shippedTemplates declares the templates the generator ships: the ones it renders, and the ones
 // saying where each section writes.
 //
-// A contrib set is read only when a run selects it, and the paths are mounted as a source of their
-// own so that a file names the template it places rather than repeating the name in a define.
+// A contrib set is read only when a run selects it, which the default settings of a repository
+// already arrange. The paths are a source of their own, so that a file names the template it places
+// rather than repeating the name in a define, and so that a template directory may hold paths of
+// its own under whatever directory it likes.
 func shippedTemplates() []templatesrepo.Option {
 	return []templatesrepo.Option{
-		templatesrepo.WithSkipDirectories("contrib", "paths"),
 		templatesrepo.FromFS(embeddedTemplates(), ""),
 		templatesrepo.FromFS(embeddedPaths(), ""),
 	}
@@ -214,6 +215,9 @@ func (g *GenOpts) templateRoots() []string {
 // A section entry may say where it writes, with a target and a file name that are themselves
 // templates. They replace the ones shipped with the generator, and are declared as sources like
 // anything else: a path that does not parse fails the build rather than the run that reaches it.
+//
+// A path naming a template rather than holding one declares nothing here: it is resolved at the
+// name it gives, like the source of the section itself.
 func (g *GenOpts) configuredPaths() []templatesrepo.Option {
 	var declared []templatesrepo.Option
 
@@ -227,11 +231,11 @@ func (g *GenOpts) configuredPaths() []templatesrepo.Option {
 		for _, entry := range section {
 			target, fileName := entry.pathTemplates()
 
-			if entry.Target != "" {
+			if entry.Target != "" && !namesTemplateFile(entry.Target) {
 				declared = append(declared, definedAs(target, entry.Target))
 			}
 
-			if entry.FileName != "" {
+			if entry.FileName != "" && !namesTemplateFile(entry.FileName) {
 				declared = append(declared, definedAs(fileName, entry.FileName))
 			}
 		}
