@@ -304,7 +304,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 	opts := testGenOpts()
 	tplOpts := TemplateOpts{
 		Name:       "NotFound",
-		Source:     "asset:notfound",
+		Source:     "notfound",
 		Target:     ".",
 		FileName:   "test_notfound.go",
 		SkipExists: false,
@@ -329,7 +329,7 @@ func TestShared_GarbledTemplate(t *testing.T) {
 	t.Run("should fail on template execution error", func(t *testing.T) {
 		tplOpts := TemplateOpts{
 			Name:       "Garbled",
-			Source:     "asset:garbled",
+			Source:     "garbled",
 			Target:     ".",
 			FileName:   "test_garbled.go",
 			SkipExists: false,
@@ -360,7 +360,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 
 		tplOpts := TemplateOpts{
 			Name:       "execFailure1",
-			Source:     "asset:execfailure1",
+			Source:     "execfailure1",
 			Target:     ".",
 			FileName:   "test_execfailure1.go",
 			SkipExists: false,
@@ -379,7 +379,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 		withTemplate(t, opts, "execfailure2", execfailure2)
 		tplOpts := TemplateOpts{
 			Name:       "execFailure2",
-			Source:     "asset:execfailure2",
+			Source:     "execfailure2",
 			Target:     ".",
 			FileName:   "test_execfailure2.go",
 			SkipExists: false,
@@ -402,18 +402,18 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	t.Run("should add template producing bad formatted go", func(t *testing.T) {
 		opts := testGenOpts()
 		badFormat := "func x {;;; garbled"
-		withTemplate(t, opts, "badformat", badFormat)
 
 		t.Run("with Not skipping format option", func(t *testing.T) {
 			t.Run("should write file with bad formatting", func(t *testing.T) {
 				tplOpts := TemplateOpts{
 					Name:       "badformat",
-					Source:     "asset:badformat",
+					Source:     "badformat",
 					Target:     tmp,
 					FileName:   "test_badformat.go",
 					SkipExists: false,
 					SkipFormat: false,
 				}
+				withSectionTemplate(t, opts, tplOpts, badFormat)
 
 				mangler := opts.LanguageOpts.Mangler
 				mediaMime := mustGetMediaMime(t)
@@ -438,7 +438,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 		t.Run("with Skipping format option", func(t *testing.T) {
 			tplOpts := TemplateOpts{
 				Name:       "badformat2",
-				Source:     "asset:badformat",
+				Source:     "badformat",
 				Target:     tmp,
 				FileName:   "test_badformat2.go",
 				SkipExists: false,
@@ -446,6 +446,8 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 			}
 
 			t.Run("should write file with bad formatting", func(t *testing.T) {
+				withSectionTemplate(t, opts, tplOpts, badFormat)
+
 				data := appGenerator{
 					Name:    "badtest",
 					Package: "wrongpkg",
@@ -474,9 +476,12 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 
 	opts := testGenOpts()
 	withTemplate(t, opts, "gendir", content)
+	// where a section writes is a template of the repository, declared here as a run would
+	withTemplate(t, opts, "gendirTarget", "TestGenDir")
+	withTemplate(t, opts, "gendirFileName", "test_gendir.gol")
 	tplOpts := TemplateOpts{
 		Name:   "gendir",
-		Source: "asset:gendir",
+		Source: "gendir",
 		Target: "TestGenDir",
 		// Extension ".gol" won't mess with go if cleanup is not performed
 		FileName:   "test_gendir.gol",
@@ -499,8 +504,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Test templates which are not assets (open in file)
-// Low level testing: templates loaded from file.
+// Test a section naming a template the repository does not hold.
 func TestShared_LoadTemplate(t *testing.T) {
 	defer discardOutput()()
 
@@ -514,17 +518,17 @@ func TestShared_LoadTemplate(t *testing.T) {
 		SkipFormat: false,
 	}
 
+	// a source names a template of the repository, and a render never goes looking for one
 	buf, err := newRenderer(opts).render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
-	assert.StringContainsT(t, err.Error(), "open File")
-	assert.StringContainsT(t, err.Error(), "error while opening")
+	assert.StringContainsT(t, err.Error(), "is not declared in this repository")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 
+	// naming a template directory changes nothing here: it is read when the repository is built
 	opts.TemplateDir = filepath.Join(".", "myTemplateDir")
 	buf, err = newRenderer(opts).render(&tplOpts, nil)
 	require.Error(t, err, "Error should be handled here")
-	assert.StringContainsT(t, err.Error(), "open "+filepath.Join("myTemplateDir", "File"))
-	assert.StringContainsT(t, err.Error(), "error while opening")
+	assert.StringContainsT(t, err.Error(), "is not declared in this repository")
 	assert.Nil(t, buf, "Upon error, GenOpts.render() should return nil buffer")
 }
 

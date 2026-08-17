@@ -1,5 +1,0 @@
-{{/* serverServerTarget is where the server section writes what serverServer renders. */}}
-{{ define "serverServerTarget" }}{{ joinFilePath .Target (toPackagePath .ServerPackage) }}{{ end }}
-
-{{/* serverServerFileName is the name of the file it writes. */}}
-{{ define "serverServerFileName" }}server.go{{ end }}

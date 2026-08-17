@@ -1,5 +1,0 @@
-{{/* cliModelcliTarget is where the clidefinitionhook section writes what cliModelcli renders. */}}
-{{ define "cliModelcliTarget" }}{{ joinFilePath .Target (toPackagePath .CliPackage) }}{{ end }}
-
-{{/* cliModelcliFileName is the name of the file it writes. */}}
-{{ define "cliModelcliFileName" }}{{ (snakize (pascalize .Name)) }}_model.go{{ end }}

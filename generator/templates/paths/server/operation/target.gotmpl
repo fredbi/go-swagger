@@ -1,0 +1,2 @@
+{{/* Where the handler section writes what serverOperation renders. */}}
+{{ if .UseTags }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .APIPackage) (toPackagePath .Package) }}{{ else }}{{ joinFilePath .Target (toPackagePath .ServerPackage) (toPackagePath .Package) }}{{ end }}

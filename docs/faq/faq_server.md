@@ -230,46 +230,46 @@ Example config file for generation:
 layout:
   application:
     - name: configure
-      source: asset:serverConfigureapi
+      source: serverConfigureapi
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "{{ .Name }}_client.go"
       skip_exists: true
     - name: main
-      source: asset:serverMain
+      source: serverMain
       target: "{{ joinFilePath .Target \"cmd\" (dasherize (pascalize .Name)) }}-server"
       file_name: "main.go"
     - name: embedded_spec
-      source: asset:swaggerJsonEmbed
+      source: swaggerJsonEmbed
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "embedded_spec.go"
     - name: server
-      source: asset:serverServer
+      source: serverServer
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "server.go"
     - name: builder
-      source: asset:serverBuilder
+      source: serverBuilder
       target: "{{ joinFilePath .Target .ServerPackage .Package }}"
       file_name: "{{ snakize (pascalize .Name) }}_api.go"
     - name: doc
-      source: asset:serverDoc
+      source: serverDoc
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "doc.go"
   models:
    - name: definition
-     source: asset:model
+     source: model
      target: "{{ joinFilePath .Target .ModelPackage }}"
      file_name: "{{ (snakize (pascalize .Name)) }}.go"
   operations:
    - name: parameters
-     source: asset:serverParameter
+     source: serverParameter
      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package }}"
      file_name: "{{ (snakize (pascalize .Name)) }}_parameters.go"
    - name: responses
-     source: asset:serverResponses
+     source: serverResponses
      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package }}"
      file_name: "{{ (snakize (pascalize .Name)) }}_responses.go"
    - name: handler
-     source: asset:serverOperation
+     source: serverOperation
      target: "{{ joinFilePath .Target .ServerPackage .APIPackage .Package }}"
      file_name: "{{ (snakize (pascalize .Name)) }}.go"
 ```

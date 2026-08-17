@@ -13,10 +13,32 @@ There are basically 4 types of items that are being generated:
   * [Operation groups](https://godoc.org/github.com/go-swagger/go-swagger/generator#GenOperationGroup) (tagged groups of operations)
   * [Application](https://godoc.org/github.com/go-swagger/go-swagger/generator#GenApp)
 
-You provide a configuration that describes the type of template, the source for where to find the template. For built-in templates the name should be prefixed with `asset:`.
+You provide a configuration that describes the type of template and the `source`: the name of the template that renders it.
 You also provide the target directory and the file name. Directory and file names are processed as templates too and allow for a number of filters.
 
 We use the viper library to read config values, this means you can provide the configuration file in whichever format you like: json, yaml, hcl or toml.
+
+## Where a template comes from
+
+A `source` names a template, never a file. Every template a run may render is read and compiled before the run starts,
+so nothing is looked for on disk while it goes, and a name that no template declares is reported up front rather than
+by the file that would have needed it.
+
+Templates come from two places:
+
+  * the ones shipped with go-swagger, named after their path in the template tree: `server/parameter.gotmpl` is
+    `serverParameter`, `model.gotmpl` is `model`
+  * the ones you bring with `--template-dir`, named the same way, and replacing a shipped template when they carry the
+    same name
+
+That directory is the only way to bring a template in, and it has to be named explicitly: go-swagger does not search
+the current directory, or anywhere else, for a file a `source` might match.
+
+A source may still be written with the extension of the file it lives in - `my_template.gotmpl` names the template
+`myTemplate` - which is convenient when a configuration is written next to a template directory.
+
+> Older configurations prefixed a built-in template with `asset:`, as in `source: asset:model`. The prefix no longer
+> means anything and is no longer accepted: write `source: model`.
 
 ## Available filters in templates
 
@@ -41,46 +63,46 @@ For the default server generator this config file would have the following conte
 layout:
   application:
     - name: configure
-      source: asset:serverConfigureapi
+      source: serverConfigureapi
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "configure_{{ .Name }}.go"
       skip_exists: true
     - name: main
-      source: asset:serverMain
+      source: serverMain
       target: "{{ joinFilePath .Target \"cmd\" (dasherize (pascalize .Name)) }}-server"
       file_name: "main.go"
     - name: embedded_spec
-      source: asset:swaggerJsonEmbed
+      source: swaggerJsonEmbed
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "embedded_spec.go"
     - name: server
-      source: asset:serverServer
+      source: serverServer
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "server.go"
     - name: builder
-      source: asset:serverBuilder
+      source: serverBuilder
       target: "{{ joinFilePath .Target .ServerPackage .Package }}"
       file_name: "{{ snakize (pascalize .Name) }}_api.go"
     - name: doc
-      source: asset:serverDoc
+      source: serverDoc
       target: "{{ joinFilePath .Target .ServerPackage }}"
       file_name: "doc.go"
   models:
     - name: definition
-      source: asset:model
+      source: model
       target: "{{ joinFilePath .Target .ModelPackage }}"
       file_name: "{{ (snakize (pascalize .Name)) }}.go"
   operations:
     - name: parameters
-      source: asset:serverParameter
+      source: serverParameter
       target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_parameters.go"
     - name: responses
-      source: asset:serverResponses
+      source: serverResponses
       target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_responses.go"
     - name: handler
-      source: asset:serverOperation
+      source: serverOperation
       target: "{{ if gt (len .Tags) 0 }}{{ joinFilePath .Target .ServerPackage .APIPackage .Package  }}{{ else }}{{ joinFilePath .Target .ServerPackage .Package  }}{{ end }}"
       file_name: "{{ (snakize (pascalize .Name)) }}.go"
   operation_groups:
@@ -99,26 +121,26 @@ For the default client generator this config file would have the following conte
 layout:
   application:
     - name: facade
-      source: asset:clientFacade
+      source: clientFacade
       target: "{{ joinFilePath .Target .ClientPackage }}"
       file_name: "{{ .Name }}_client.go"
   models:
     - name: definition
-      source: asset:model
+      source: model
       target: "{{ joinFilePath .Target .ModelPackage }}"
       file_name: "{{ (snakize (pascalize .Name)) }}.go"
   operations:
     - name: parameters
-      source: asset:clientParameter
+      source: clientParameter
       target: "{{ joinFilePath .Target .ClientPackage .Package }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_parameters.go"
     - name: responses
-      source: asset:clientResponse
+      source: clientResponse
       target: "{{ joinFilePath .Target .ClientPackage .Package }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_responses.go"
   operation_groups:
     - name: client
-      source: asset:clientClient
+      source: clientClient
       target: "{{ joinFilePath .Target .ClientPackage .Name }}"
       file_name: "{{ (snakize (pascalize .Name)) }}_client.go"
 ```

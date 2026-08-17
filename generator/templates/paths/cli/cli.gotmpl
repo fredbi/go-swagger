@@ -1,5 +1,0 @@
-{{/* cliCliTarget is where the commandline section writes what cliCli renders. */}}
-{{ define "cliCliTarget" }}{{ joinFilePath .Target (toPackagePath .CliPackage) }}{{ end }}
-
-{{/* cliCliFileName is the name of the file it writes. */}}
-{{ define "cliCliFileName" }}cli.go{{ end }}

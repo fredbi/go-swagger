@@ -223,15 +223,14 @@ func TestServer_OperationGroups(t *testing.T) {
 	gen.GenOpts.Tags = []string{"search", "tasks"}
 	gen.GenOpts.IncludeModel = false
 	gen.GenOpts.IncludeHandler = true
-	gen.GenOpts.Sections.OperationGroups = []TemplateOpts{
-		{
-			Name:       "opGroupTest",
-			Source:     "asset:opGroupTest",
-			Target:     "{{ joinFilePath .Target .Name }}",
-			FileName:   "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
-			SkipFormat: true,
-		},
+	opGroupSection := TemplateOpts{
+		Name:       "opGroupTest",
+		Source:     "opGroupTest",
+		Target:     "{{ joinFilePath .Target .Name }}",
+		FileName:   "{{ (snakize (pascalize .Name)) }}_opgroup_test.gol",
+		SkipFormat: true,
 	}
+	gen.GenOpts.Sections.OperationGroups = []TemplateOpts{opGroupSection}
 
 	err = gen.Generate()
 	require.Error(t, err)
@@ -243,7 +242,7 @@ func TestServer_OperationGroups(t *testing.T) {
 {{ range .Operations }}
 	// OperationName={{.Name}}
 {{end}}`
-	withTemplate(t, gen.GenOpts, "opGroupTest", opGroupTpl)
+	withSectionTemplate(t, gen.GenOpts, opGroupSection, opGroupTpl)
 	require.NoError(t, gen.Generate())
 
 	genContent, err := os.ReadFile("./search/search_opgroup_test.gol")
