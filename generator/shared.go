@@ -248,12 +248,14 @@ type TemplateOpts struct {
 // the repository is built, so there is nothing left to look for when it runs. A configuration may
 // still name a template by the file it was written in, extension and all.
 //
-// The repository is asked for the name rather than told: it names its own assets, and a second
-// implementation of that rule here would be a second answer to give when the two disagree. That
-// leaves the mangler of the language options to what it is for, which is naming go identifiers and
-// the files they land in.
-func (t TemplateOpts) templateName(repository *templatesrepo.Repository) string {
-	return repository.NameOf(t.Source)
+// The repository names it, rather than a rule reproduced here: a second implementation would be a
+// second answer to give when the two disagree. That leaves the mangler of the language options to
+// what it is for, which is naming go identifiers and the files they land in.
+//
+// It answers before a repository stands, which is what building one in a single pass needs: the
+// names a section resolves to are what the repository is scoped to.
+func (t TemplateOpts) templateName() string {
+	return templatesrepo.TemplateName(t.Source)
 }
 
 // pathTemplates names the templates giving the directory and the file a section entry writes to.
@@ -262,8 +264,8 @@ func (t TemplateOpts) templateName(repository *templatesrepo.Repository) string 
 // sections may hold an entry of the same name, and no two of them render the same template. Those
 // shipped with the generator live under templates/paths, one file each, so that a template
 // directory may replace one of them on its own.
-func (t TemplateOpts) pathTemplates(repository *templatesrepo.Repository) (target, fileName string) {
-	base := t.templateName(repository)
+func (t TemplateOpts) pathTemplates() (target, fileName string) {
+	base := t.templateName()
 
 	return base + "Target", base + "FileName"
 }

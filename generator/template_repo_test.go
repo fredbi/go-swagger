@@ -240,7 +240,7 @@ func TestTemplates_LoadContrib(t *testing.T) {
 			require.NoError(t, ensureMachinery(opts))
 			opts.Template = tt.template
 
-			err := opts.loadTemplates()
+			err := opts.buildTemplates(opts.scope()...)
 			if tt.wantError {
 				require.Error(t, err)
 
@@ -316,7 +316,7 @@ func TestTemplates_Paths(t *testing.T) {
 			opts.Sections.Models, opts.Sections.PostModels,
 		} {
 			for _, entry := range section {
-				target, fileName := entry.pathTemplates(opts.templates)
+				target, fileName := entry.pathTemplates()
 
 				assert.Truef(t, opts.templates.Has(target), "section %q has no %s", entry.Name, target)
 				assert.Truef(t, opts.templates.Has(fileName), "section %q has no %s", entry.Name, fileName)

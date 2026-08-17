@@ -14,7 +14,6 @@ import (
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/runtime"
 
-	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
@@ -22,9 +21,9 @@ import (
 //
 // It is the single entry point that turns a freshly populated GenOpts into a
 // fully usable one: it validates the inputs, builds the derived machinery
-// (language options, template func map, templates repository), resolves the
-// render plan (sections), normalizes paths, checks the generation target
-// and loads any user-provided templates.
+// (language options, template func map), resolves the render plan (sections),
+// normalizes paths, checks the generation target and builds the repository of
+// templates the run works with.
 //
 // Because every input is known by the time Prepare runs, the derived state is
 // built exactly once, in a deterministic order — which removes the historical
@@ -58,7 +57,7 @@ func (g *GenOpts) Prepare() error {
 		return err
 	}
 
-	if err := g.loadTemplates(); err != nil {
+	if err := g.buildTemplates(g.scope()...); err != nil {
 		return err
 	}
 
@@ -90,15 +89,14 @@ func (g *GenOpts) validate() error {
 }
 
 // buildMachinery builds the deterministic, infallible derived state from the
-// options: language options (including custom formatter and extra initialisms),
-// the template func map and the templates repository preloaded with the
-// embedded default assets.
+// options: language options (including custom formatter and extra initialisms)
+// and the template func map.
 //
 // It is guarded so the machinery is built exactly once, regardless of how many
 // times it is reached (the second call is a no-op).
 //
-// Failure to load the embedded default assets is a build-time impossibility and
-// is treated as a panic, hence the absence of an error return.
+// The templates are not built here: which of them a run needs is read off the render plan, so the
+// repository is built once that plan stands.
 func (g *GenOpts) buildMachinery() {
 	if g.machineryBuilt {
 		return
@@ -109,19 +107,6 @@ func (g *GenOpts) buildMachinery() {
 	}
 
 	g.funcMap = DefaultFuncMap(g.LanguageOpts)
-
-	templates, err := templatesrepo.New(
-		templatesrepo.WithSkipDirectories("contrib", "paths"),
-		templatesrepo.FromFS(embeddedTemplates(), ""),
-		templatesrepo.FromFS(embeddedPaths(), ""),
-		templatesrepo.WithFuncMap(g.funcMap),
-	)
-	if err != nil {
-		panic(
-			fmt.Errorf("cannot load the templates shipped with the generator: %w", err),
-		)
-	}
-	g.templates = templates
 
 	// set defaults for flattening options
 	if g.FlattenOpts == nil {

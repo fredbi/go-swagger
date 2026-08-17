@@ -67,7 +67,7 @@ func TestTemplatePlugin(t *testing.T) {
 	t.Run("should let a template call a function the plugin adds", func(t *testing.T) {
 		opts := opts()
 		opts.TemplatePlugin = plugin
-		require.NoError(t, opts.loadTemplates())
+		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		withTemplate(t, opts, "pluginuser", `{{ shoutFromPlugin "hello" }}`)
 
@@ -79,7 +79,7 @@ func TestTemplatePlugin(t *testing.T) {
 	t.Run("should let a plugin replace a function the generator provides", func(t *testing.T) {
 		opts := opts()
 		opts.TemplatePlugin = plugin
-		require.NoError(t, opts.loadTemplates())
+		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		withTemplate(t, opts, "pluginoverride", `{{ pascalize "hello world" }}`)
 
@@ -93,7 +93,7 @@ func TestTemplatePlugin(t *testing.T) {
 		// before it was loaded calls them too
 		opts := opts()
 		opts.TemplatePlugin = plugin
-		require.NoError(t, opts.loadTemplates())
+		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		assert.TrueT(t, opts.templates.Has("model"), "the templates shipped are still there")
 	})
@@ -104,7 +104,7 @@ func TestTemplatePluginErrors(t *testing.T) {
 		opts := opts()
 		opts.TemplatePlugin = filepath.Join(t.TempDir(), "nowhere.so")
 
-		require.Error(t, opts.loadTemplates())
+		require.Error(t, opts.buildTemplates(opts.scope()...))
 	})
 
 	t.Run("should report a file that is not a plugin", func(t *testing.T) {

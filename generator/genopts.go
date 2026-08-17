@@ -35,7 +35,7 @@ type GenOpts struct {
 	ValidateSpec               bool
 	FlattenOpts                *analysis.FlattenOpts
 	IsClient                   bool
-	machineryBuilt             bool // guards buildMachinery (language opts, func map, templates repo)
+	machineryBuilt             bool // guards buildMachinery (language opts, func map)
 	sectionsResolved           bool // guards resolveSections (default render plan)
 	specNormalized             bool // guards normalize (spec path resolution)
 	targetEnsured              bool // guards ensureTarget (target directory checks)
@@ -103,52 +103,22 @@ type GenOpts struct {
 	funcMap   template.FuncMap
 }
 
-// loadTemplates derives the repository the run works with from the one holding the templates
-// shipped with the generator.
+// buildTemplates builds the repository of templates the run works with, in one pass.
 //
-// The functions a plugin provides, the selected contrib set and the custom template directory are
-// all declared here, sources in that order, so a template declared by one of them replaces the one
-// before it. The repository is built again rather than altered, so what it holds is decided once
-// and cannot change under a caller.
-func (g *GenOpts) loadTemplates() error {
-	derived := make([]templatesrepo.Option, 0, 3) //nolint:mnd // a plugin, a contrib set, a directory
-
-	// a plugin contributes functions, and functions are bound when templates are parsed, so the
-	// repository is built again with them rather than altered
-	if g.TemplatePlugin != "" {
-		funcs, err := loadFuncMapPlugin(g.TemplatePlugin)
-		if err != nil {
-			return err
-		}
-
-		maps.Copy(g.funcMap, funcs)
-		derived = append(derived, templatesrepo.WithFuncMap(funcs))
+// Every source is declared here and read once: the templates shipped with the generator, those
+// saying where each section writes, the selected contrib set, a template directory of the user's
+// own, and the paths a configuration declares. They are declared in that order, so a template
+// declared by one of them replaces the one before it.
+//
+// It runs once the render plan stands, since the plan is what says which templates the run needs,
+// and it is the only place a repository is built: nothing derives another one afterwards.
+func (g *GenOpts) buildTemplates(extra ...templatesrepo.Option) error {
+	sources, err := g.templateSources()
+	if err != nil {
+		return err
 	}
 
-	if g.Template != "" {
-		contrib, err := contribTemplates(g.Template)
-		if err != nil {
-			return err
-		}
-
-		derived = append(derived, templatesrepo.FromFS(contrib, ""))
-	}
-
-	if g.TemplateDir != "" {
-		derived = append(derived, templatesrepo.FromDir(g.TemplateDir, ""))
-	}
-
-	derived = append(derived, g.configuredPaths()...)
-
-	if roots := g.templateRoots(); len(roots) > 0 {
-		derived = append(derived, templatesrepo.WithRoots(roots...))
-	}
-
-	if len(derived) == 0 {
-		return nil
-	}
-
-	templates, err := templatesrepo.Clone(g.templates, derived...)
+	templates, err := templatesrepo.New(append(sources, extra...)...)
 	if err != nil {
 		return err
 	}
@@ -156,6 +126,60 @@ func (g *GenOpts) loadTemplates() error {
 	g.templates = templates
 
 	return nil
+}
+
+// scope narrows the repository to the templates the run renders, when it lays out any section.
+func (g *GenOpts) scope() []templatesrepo.Option {
+	roots := g.templateRoots()
+	if len(roots) == 0 {
+		return nil
+	}
+
+	return []templatesrepo.Option{templatesrepo.WithRoots(roots...)}
+}
+
+// templateSources declares where the run reads templates from, in the order they override.
+func (g *GenOpts) templateSources() ([]templatesrepo.Option, error) {
+	// a plugin contributes functions, and functions are bound when templates are parsed, so they
+	// are gathered before anything is read
+	if g.TemplatePlugin != "" {
+		funcs, err := loadFuncMapPlugin(g.TemplatePlugin)
+		if err != nil {
+			return nil, err
+		}
+
+		maps.Copy(g.funcMap, funcs)
+	}
+
+	sources := append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))
+
+	if g.Template != "" {
+		contrib, err := contribTemplates(g.Template)
+		if err != nil {
+			return nil, err
+		}
+
+		sources = append(sources, templatesrepo.FromFS(contrib, ""))
+	}
+
+	if g.TemplateDir != "" {
+		sources = append(sources, templatesrepo.FromDir(g.TemplateDir, ""))
+	}
+
+	return append(sources, g.configuredPaths()...), nil
+}
+
+// shippedTemplates declares the templates the generator ships: the ones it renders, and the ones
+// saying where each section writes.
+//
+// A contrib set is read only when a run selects it, and the paths are mounted as a source of their
+// own so that a file names the template it places rather than repeating the name in a define.
+func shippedTemplates() []templatesrepo.Option {
+	return []templatesrepo.Option{
+		templatesrepo.WithSkipDirectories("contrib", "paths"),
+		templatesrepo.FromFS(embeddedTemplates(), ""),
+		templatesrepo.FromFS(embeddedPaths(), ""),
+	}
 }
 
 // templateRoots names the templates the run renders, so that the repository holds those and
@@ -178,8 +202,8 @@ func (g *GenOpts) templateRoots() []string {
 		g.Sections.PostModels,
 	} {
 		for _, entry := range section {
-			target, fileName := entry.pathTemplates(g.templates)
-			roots = append(roots, entry.templateName(g.templates), target, fileName)
+			target, fileName := entry.pathTemplates()
+			roots = append(roots, entry.templateName(), target, fileName)
 		}
 	}
 
@@ -202,7 +226,7 @@ func (g *GenOpts) configuredPaths() []templatesrepo.Option {
 		g.Sections.PostModels,
 	} {
 		for _, entry := range section {
-			target, fileName := entry.pathTemplates(g.templates)
+			target, fileName := entry.pathTemplates()
 
 			if entry.Target != "" {
 				declared = append(declared, definedAs(target, entry.Target))
