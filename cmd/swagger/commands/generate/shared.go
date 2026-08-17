@@ -161,15 +161,19 @@ type outputOptions struct {
 	TemplateDir           flags.Filename `description:"alternative template override directory"                                            group:"shared"                                            long:"template-dir"            short:"T"`
 	ConfigFile            flags.Filename `description:"configuration file to use for overriding template options"                          group:"shared"                                            long:"config-file"             short:"C"`
 	AdditionalInitialisms []string       `description:"consecutive capitals that should be considered intialisms"                          group:"shared"                                            long:"additional-initialism"`
-	AllowTemplateOverride bool           `description:"allows overriding protected templates"                                              group:"shared"                                            long:"allow-template-override"`
+	AllowTemplateOverride bool           `description:"allows overriding protected templates (deprecated)"                                 group:"shared"                                            long:"allow-template-override"`
 	DumpData              bool           `description:"when present dumps the json for the template generator instead of generating files" group:"shared"                                            long:"dump-data"`
 	EnsureTarget          bool           `description:"Create the target directory if it does not already exist"                           group:"shared"                                            long:"ensure-target"`
 }
 
-func (o outputOptions) apply(opts *generator.GenOpts) {
+func (o *outputOptions) apply(opts *generator.GenOpts) {
+	if o.AllowTemplateOverride {
+		log.Printf("warning: deprecated option --allow-template-override is ignored")
+		o.AllowTemplateOverride = false
+	}
+
 	opts.Target = string(o.Target)
 	opts.TemplateDir = string(o.TemplateDir)
-	opts.AllowTemplateOverride = o.AllowTemplateOverride
 	opts.DumpData = o.DumpData
 	opts.WithExtraInitialisms = o.AdditionalInitialisms
 	opts.EnsureTarget = o.EnsureTarget
@@ -202,7 +206,7 @@ type sharedOptions struct {
 	pluginOptions
 }
 
-func (s sharedOptions) apply(opts *generator.GenOpts) {
+func (s *sharedOptions) apply(opts *generator.GenOpts) {
 	s.specOptions.apply(opts)
 	s.outputOptions.apply(opts)
 	s.goCodegenOptions.apply(opts)
@@ -218,7 +222,7 @@ type markdownSharedOptions struct {
 	pluginOptions
 }
 
-func (s markdownSharedOptions) apply(opts *generator.GenOpts) {
+func (s *markdownSharedOptions) apply(opts *generator.GenOpts) {
 	s.specOptions.apply(opts)
 	s.outputOptions.apply(opts)
 	s.pluginOptions.apply(opts)

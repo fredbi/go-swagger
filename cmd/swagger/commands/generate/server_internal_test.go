@@ -19,4 +19,13 @@ func TestDeprecatedFlag(t *testing.T) {
 		s.apply(new(generator.GenOpts))
 		assert.FalseT(t, s.WithContext)
 	})
+
+	t.Run("should ignore a deprecated shared flag", func(t *testing.T) {
+		s := Server{}
+		s.Shared.AllowTemplateOverride = true
+
+		s.apply(new(generator.GenOpts))
+
+		assert.FalseT(t, s.Shared.AllowTemplateOverride)
+	})
 }

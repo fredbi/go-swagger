@@ -58,7 +58,7 @@ Help Options:
       -T, --template-dir=                                                                    alternative template override directory
       -C, --config-file=                                                                     configuration file to use for overriding template options
           --additional-initialism=                                                           consecutive capitals that should be considered intialisms
-          --allow-template-override                                                          allows overriding protected templates
+          --allow-template-override                                                          allows overriding protected templates (deprecated)
           --dump-data                                                                        when present dumps the json for the template generator
                                                                                              instead of generating files
           --ensure-target                                                                    Create the target directory if it does not already exist
