@@ -763,7 +763,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-		IsClient:          true,
+		IsClient:          false,
 	}
 
 	// Testing Server Generation
@@ -825,7 +825,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-		IsClient:          true,
+		IsClient:          false,
 	}
 
 	// Testing Server Generation
@@ -886,7 +886,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-		IsClient:          true,
+		IsClient:          false,
 	}
 
 	// Testing Server Generation
@@ -936,7 +936,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		ServerPackage:     "server",
 		ClientPackage:     "client",
 		Target:            dr,
-		IsClient:          true,
+		IsClient:          false,
 	}
 
 	// Testing Server Generation
