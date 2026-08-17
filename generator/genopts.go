@@ -19,9 +19,9 @@ import (
 
 // GenOpts encapsulates the generator options.
 //
-// TemplatePlugin names an optional Go plugin that injects extra template
-// functions. Go plugins are only supported on non-Windows platforms; on
-// Windows the option is accepted but ignored (see [repo.Repository.LoadPlugin]).
+// TemplatePlugin names an optional Go plugin contributing template functions.
+// Go plugins are a feature of the platform rather than of the generator, and
+// are not available on windows, where naming one is an error.
 type GenOpts struct {
 	IncludeModel               bool
 	IncludeValidator           bool
