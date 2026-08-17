@@ -46,7 +46,7 @@ func TestPrepare_EquivalentToLegacySequence(t *testing.T) {
 	legacy := mk()
 	require.NoError(t, ensureMachinery(legacy))
 	require.NoError(t, validateOpts(legacy))
-	require.NoError(t, legacy.loadTemplates())
+	require.NoError(t, legacy.buildTemplates(legacy.scope()...))
 
 	// new single, idempotent entry point
 	prep := mk()

@@ -17,7 +17,7 @@ func TestTemplateRoots(t *testing.T) {
 		require.NoError(t, ensureMachinery(opts))
 
 		shipped := len(slices.Collect(opts.templates.Names()))
-		require.NoError(t, opts.loadTemplates())
+		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		scoped := slices.Collect(opts.templates.Names())
 		assert.Less(t, len(scoped), shipped, "a client run renders a part of what the generator ships")
@@ -31,7 +31,7 @@ func TestTemplateRoots(t *testing.T) {
 	t.Run("should keep the templates placing what a run writes", func(t *testing.T) {
 		opts := NewGenOpts(ForClient())
 		require.NoError(t, ensureMachinery(opts))
-		require.NoError(t, opts.loadTemplates())
+		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		// the target and the file name of a section entry are templates like any other
 		assert.TrueT(t, opts.templates.Has("clientClientTarget"))
@@ -41,7 +41,7 @@ func TestTemplateRoots(t *testing.T) {
 	t.Run("should scope a server run to other templates than a client one", func(t *testing.T) {
 		server := NewGenOpts(ForServer())
 		require.NoError(t, ensureMachinery(server))
-		require.NoError(t, server.loadTemplates())
+		require.NoError(t, server.buildTemplates(server.scope()...))
 
 		assert.TrueT(t, server.templates.Has("serverBuilder"))
 		assert.FalseT(t, server.templates.Has("clientFacade"), "no client facade is rendered by a server run")
@@ -54,7 +54,7 @@ func TestTemplateRoots(t *testing.T) {
 		server.IncludeMain = false
 		server.ExcludeSpec = true
 		require.NoError(t, ensureMachinery(server))
-		require.NoError(t, server.loadTemplates())
+		require.NoError(t, server.buildTemplates(server.scope()...))
 
 		assert.FalseT(t, server.templates.Has("serverMain"))
 		assert.FalseT(t, server.templates.Has("swaggerJsonEmbed"))
@@ -72,7 +72,7 @@ func TestTemplateRoots(t *testing.T) {
 			FileName: "mine.go",
 		})
 
-		err := opts.loadTemplates()
+		err := opts.buildTemplates(opts.scope()...)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "neverShipped")
 	})
@@ -86,24 +86,21 @@ func TestTemplateRoots(t *testing.T) {
 }
 
 func TestTemplateSourceNames(t *testing.T) {
-	opts := opts()
-	repository := opts.templates
-
 	t.Run("should name a template of the repository", func(t *testing.T) {
 		entry := TemplateOpts{Source: "serverOperation"}
 
-		assert.EqualT(t, "serverOperation", entry.templateName(repository))
+		assert.EqualT(t, "serverOperation", entry.templateName())
 	})
 
 	t.Run("should trim the extension a configuration may carry", func(t *testing.T) {
 		entry := TemplateOpts{Source: "my_template.gotmpl"}
 
-		assert.EqualT(t, "myTemplate", entry.templateName(repository))
+		assert.EqualT(t, "myTemplate", entry.templateName())
 	})
 
 	t.Run("should name the templates placing what a section writes", func(t *testing.T) {
 		entry := TemplateOpts{Source: "serverOperation"}
-		target, fileName := entry.pathTemplates(repository)
+		target, fileName := entry.pathTemplates()
 
 		assert.EqualT(t, "serverOperationTarget", target)
 		assert.EqualT(t, "serverOperationFileName", fileName)
@@ -123,10 +120,10 @@ func TestTemplateNamesComeFromTheRepository(t *testing.T) {
 			opts.Sections.Models, opts.Sections.PostModels,
 		} {
 			for _, entry := range section {
-				name := entry.templateName(opts.templates)
+				name := entry.templateName()
 				assert.Truef(t, opts.templates.Has(name), "section %q renders no %q", entry.Name, name)
 
-				target, fileName := entry.pathTemplates(opts.templates)
+				target, fileName := entry.pathTemplates()
 				assert.Truef(t, opts.templates.Has(target), "section %q has no %s", entry.Name, target)
 				assert.Truef(t, opts.templates.Has(fileName), "section %q has no %s", entry.Name, fileName)
 			}

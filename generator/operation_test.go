@@ -1752,7 +1752,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 
 			opts := fixture.Opts
 			require.NoError(t, ensureMachinery(opts))
-			require.NoError(t, opts.loadTemplates())
+			require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 			appGen, err := newAppGenerator(fixture.Title, nil, nil, opts)
 			require.NoError(t, err)

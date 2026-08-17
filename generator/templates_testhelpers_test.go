@@ -53,9 +53,9 @@ func addedTemplate(opts *GenOpts, name, content string) []templatesrepo.Option {
 func withSectionTemplate(t *testing.T, opts *GenOpts, entry TemplateOpts, content string) {
 	t.Helper()
 
-	withTemplate(t, opts, entry.templateName(opts.templates), content)
+	withTemplate(t, opts, entry.templateName(), content)
 
-	target, fileName := entry.pathTemplates(opts.templates)
+	target, fileName := entry.pathTemplates()
 	withTemplate(t, opts, target, entry.Target)
 	withTemplate(t, opts, fileName, entry.FileName)
 }

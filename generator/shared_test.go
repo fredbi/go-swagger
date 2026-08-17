@@ -19,6 +19,8 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
+
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 )
 
 const (
@@ -40,17 +42,34 @@ func TestMain(m *testing.M) {
 // ensureMachinery builds the derived generation machinery (language options,
 // func map, templates repository and the default render plan) on g, without the
 // spec-dependent finalization performed by Prepare (validation, path
-// normalization, user-template loading).
+// normalization).
 //
 // It is the test-only stand-in for the former GenOpts.EnsureDefaults: the
 // single, intentional backdoor that test helpers use to obtain a
 // machinery-ready options value they can tweak before handing it to a Generate*
 // function (which performs the actual Prepare). Production code never builds the
 // machinery on its own — it goes through NewGenOpts + Prepare.
+//
+// The repository it builds holds the templates the generator ships, and nothing a run may add: no
+// contrib set, no template directory, no scoping. Prepare builds the one a run works with, so an
+// unreadable source is still reported there, and a test may reach a template its own plan leaves
+// out.
 func ensureMachinery(g *GenOpts) error {
 	g.buildMachinery()
 
-	return g.resolveSections()
+	if err := g.resolveSections(); err != nil {
+		return err
+	}
+
+	templates, err := templatesrepo.New(
+		append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))...,
+	)
+	if err != nil {
+		return err
+	}
+	g.templates = templates
+
+	return nil
 }
 
 // validateOpts runs the pure validation and path-normalization phases on g.
