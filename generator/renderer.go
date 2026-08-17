@@ -65,7 +65,7 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 
 	// where a section entry writes is a template of the repository like any other: one shipped
 	// with the generator, or the one a configuration declared in its place
-	targetName, fileNameName := t.pathTemplates(g.LanguageOpts.Mangler)
+	targetName, fileNameName := t.pathTemplates(g.templates)
 
 	pthTpl, err := g.templates.Get(targetName)
 	if err != nil {
@@ -121,7 +121,7 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 // name it does not hold is an error here rather than a search: where a template comes from is
 // settled when the repository is built, and a run never goes looking for one afterwards.
 func (g *renderer) render(t *TemplateOpts, data any) ([]byte, error) {
-	templ, err := g.templates.Get(t.templateName(g.LanguageOpts.Mangler))
+	templ, err := g.templates.Get(t.templateName(g.templates))
 	if err != nil {
 		return nil, fmt.Errorf("no template for section %q: %w", t.Name, err)
 	}

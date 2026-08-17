@@ -316,7 +316,7 @@ func TestTemplates_Paths(t *testing.T) {
 			opts.Sections.Models, opts.Sections.PostModels,
 		} {
 			for _, entry := range section {
-				target, fileName := entry.pathTemplates(mangler)
+				target, fileName := entry.pathTemplates(opts.templates)
 
 				assert.Truef(t, opts.templates.Has(target), "section %q has no %s", entry.Name, target)
 				assert.Truef(t, opts.templates.Has(fileName), "section %q has no %s", entry.Name, fileName)

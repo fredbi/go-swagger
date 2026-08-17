@@ -178,8 +178,8 @@ func (g *GenOpts) templateRoots() []string {
 		g.Sections.PostModels,
 	} {
 		for _, entry := range section {
-			target, fileName := entry.pathTemplates(g.LanguageOpts.Mangler)
-			roots = append(roots, entry.templateName(g.LanguageOpts.Mangler), target, fileName)
+			target, fileName := entry.pathTemplates(g.templates)
+			roots = append(roots, entry.templateName(g.templates), target, fileName)
 		}
 	}
 
@@ -202,7 +202,7 @@ func (g *GenOpts) configuredPaths() []templatesrepo.Option {
 		g.Sections.PostModels,
 	} {
 		for _, entry := range section {
-			target, fileName := entry.pathTemplates(g.LanguageOpts.Mangler)
+			target, fileName := entry.pathTemplates(g.templates)
 
 			if entry.Target != "" {
 				declared = append(declared, definedAs(target, entry.Target))
