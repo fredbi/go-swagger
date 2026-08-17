@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
-	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
 func TestTemplateRoots(t *testing.T) {
@@ -87,25 +86,66 @@ func TestTemplateRoots(t *testing.T) {
 }
 
 func TestTemplateSourceNames(t *testing.T) {
-	mangler := language.GolangOpts().Mangler
+	opts := opts()
+	repository := opts.templates
 
 	t.Run("should name a template of the repository", func(t *testing.T) {
 		entry := TemplateOpts{Source: "serverOperation"}
 
-		assert.EqualT(t, "serverOperation", entry.templateName(mangler))
+		assert.EqualT(t, "serverOperation", entry.templateName(repository))
 	})
 
 	t.Run("should trim the extension a configuration may carry", func(t *testing.T) {
 		entry := TemplateOpts{Source: "my_template.gotmpl"}
 
-		assert.EqualT(t, "myTemplate", entry.templateName(mangler))
+		assert.EqualT(t, "myTemplate", entry.templateName(repository))
 	})
 
 	t.Run("should name the templates placing what a section writes", func(t *testing.T) {
 		entry := TemplateOpts{Source: "serverOperation"}
-		target, fileName := entry.pathTemplates(mangler)
+		target, fileName := entry.pathTemplates(repository)
 
 		assert.EqualT(t, "serverOperationTarget", target)
 		assert.EqualT(t, "serverOperationFileName", fileName)
+	})
+}
+
+// The repository names its own templates, and the mangler of the language options names go
+// identifiers. They are two implementations, from two packages, and only the first one decides
+// what a section entry resolves to.
+func TestTemplateNamesComeFromTheRepository(t *testing.T) {
+	opts := NewGenOpts(ForServer())
+	require.NoError(t, ensureMachinery(opts))
+
+	t.Run("should resolve every default section, whatever the mangler says", func(t *testing.T) {
+		for _, section := range [][]TemplateOpts{
+			opts.Sections.Application, opts.Sections.Operations, opts.Sections.OperationGroups,
+			opts.Sections.Models, opts.Sections.PostModels,
+		} {
+			for _, entry := range section {
+				name := entry.templateName(opts.templates)
+				assert.Truef(t, opts.templates.Has(name), "section %q renders no %q", entry.Name, name)
+
+				target, fileName := entry.pathTemplates(opts.templates)
+				assert.Truef(t, opts.templates.Has(target), "section %q has no %s", entry.Name, target)
+				assert.Truef(t, opts.templates.Has(fileName), "section %q has no %s", entry.Name, fileName)
+			}
+		}
+	})
+
+	t.Run("should not follow the extra initialisms of a run", func(t *testing.T) {
+		// the mangler of the language options answers to --with-extra-initialisms, and the names of
+		// the templates must not move under a run that asks for them
+		flagged := NewGenOpts(ForServer())
+		flagged.WithExtraInitialisms = []string{"WXYZ", "ABC"}
+		require.NoError(t, ensureMachinery(flagged))
+
+		for name := range opts.templates.Names() {
+			asset, declared := opts.templates.AssetOf(name)
+			require.True(t, declared)
+
+			assert.Equalf(t, opts.templates.NameOf(asset), flagged.templates.NameOf(asset),
+				"%q moved under extra initialisms", asset)
+		}
 	})
 }
