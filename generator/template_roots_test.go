@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
+	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
 func TestTemplateRoots(t *testing.T) {
@@ -47,45 +48,27 @@ func TestTemplateRoots(t *testing.T) {
 		assert.FalseT(t, server.templates.Has("clientFacade"), "no client facade is rendered by a server run")
 	})
 
-	t.Run("should give up scoping for a source read from disk", func(t *testing.T) {
-		// the renderer reads such a source itself, so the repository cannot vouch for the name
-		opts := NewGenOpts(ForClient())
-		require.NoError(t, ensureMachinery(opts))
-		opts.Sections.Models = append(opts.Sections.Models, TemplateOpts{
-			Name:   "mine",
-			Source: "mytemplate.gotmpl",
-		})
+	t.Run("should leave out what a flag of its own excludes", func(t *testing.T) {
+		// the main package and the embedded spec answer to a flag rather than to the layout, and
+		// the plan is where that is settled, so the scope follows
+		server := NewGenOpts(ForServer())
+		server.IncludeMain = false
+		server.ExcludeSpec = true
+		require.NoError(t, ensureMachinery(server))
+		require.NoError(t, server.loadTemplates())
 
-		roots, scoped := opts.templateRoots()
-		assert.FalseT(t, scoped)
-		assert.Empty(t, roots)
-
-		require.NoError(t, opts.loadTemplates())
-		assert.TrueT(t, opts.templates.Has("serverOperation"), "an unscoped run holds every template")
-	})
-
-	t.Run("should give up scoping for a path no template declares", func(t *testing.T) {
-		// the paths of a section entry are shipped under templates/paths, or declared by the
-		// configuration; a custom directory may bring them too, which cannot be told beforehand
-		opts := NewGenOpts(ForClient())
-		require.NoError(t, ensureMachinery(opts))
-		opts.Sections.Models = append(opts.Sections.Models, TemplateOpts{
-			Name:   "mine",
-			Source: "asset:schemaType", // a template the generator ships, but places nowhere
-		})
-
-		_, scoped := opts.templateRoots()
-		assert.FalseT(t, scoped, "nothing declares schemaTypeTarget")
+		assert.FalseT(t, server.templates.Has("serverMain"))
+		assert.FalseT(t, server.templates.Has("swaggerJsonEmbed"))
 	})
 
 	t.Run("should report a section naming a template no source declares", func(t *testing.T) {
-		// the run says outright that it renders a repository asset, so a name that is not one is
-		// reported when the repository is built, rather than by the render that reaches it
+		// a source names a template, so a name that is not one is reported when the repository is
+		// built, rather than by the render that reaches it
 		opts := NewGenOpts(ForClient())
 		require.NoError(t, ensureMachinery(opts))
 		opts.Sections.Models = append(opts.Sections.Models, TemplateOpts{
 			Name:     "mine",
-			Source:   "asset:neverShipped",
+			Source:   "neverShipped",
 			Target:   "{{ .Target }}",
 			FileName: "mine.go",
 		})
@@ -99,8 +82,30 @@ func TestTemplateRoots(t *testing.T) {
 		opts := NewGenOpts()
 		opts.buildMachinery()
 
-		roots, scoped := opts.templateRoots()
-		assert.FalseT(t, scoped)
-		assert.Empty(t, roots)
+		assert.Empty(t, opts.templateRoots())
+	})
+}
+
+func TestTemplateSourceNames(t *testing.T) {
+	mangler := language.GolangOpts().Mangler
+
+	t.Run("should name a template of the repository", func(t *testing.T) {
+		entry := TemplateOpts{Source: "serverOperation"}
+
+		assert.EqualT(t, "serverOperation", entry.templateName(mangler))
+	})
+
+	t.Run("should trim the extension a configuration may carry", func(t *testing.T) {
+		entry := TemplateOpts{Source: "my_template.gotmpl"}
+
+		assert.EqualT(t, "myTemplate", entry.templateName(mangler))
+	})
+
+	t.Run("should name the templates placing what a section writes", func(t *testing.T) {
+		entry := TemplateOpts{Source: "serverOperation"}
+		target, fileName := entry.pathTemplates(mangler)
+
+		assert.EqualT(t, "serverOperationTarget", target)
+		assert.EqualT(t, "serverOperationFileName", fileName)
 	})
 }

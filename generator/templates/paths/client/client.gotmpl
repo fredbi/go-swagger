@@ -1,5 +1,0 @@
-{{/* clientClientTarget is where the client section writes what clientClient renders. */}}
-{{ define "clientClientTarget" }}{{ joinFilePath .Target (toPackagePath .ClientPackage) (toPackagePath .Name)}}{{ end }}
-
-{{/* clientClientFileName is the name of the file it writes. */}}
-{{ define "clientClientFileName" }}{{ (snakize (pascalize .Name)) }}_client.go{{ end }}

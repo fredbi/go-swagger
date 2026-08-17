@@ -92,7 +92,7 @@ func TestPrepare_ConfigLayoutOverridesDefaults(t *testing.T) {
 layout:
   models:
     - name: custom-model
-      source: asset:model
+      source: model
       target: "{{ joinFilePath .Target (toPackagePath .ModelPackage) }}"
       file_name: "{{ (snakize (pascalize .Name)) }}.go"
 `

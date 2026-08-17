@@ -111,7 +111,9 @@ func (g *GenOpts) buildMachinery() {
 	g.funcMap = DefaultFuncMap(g.LanguageOpts)
 
 	templates, err := templatesrepo.New(
+		templatesrepo.WithSkipDirectories("contrib", "paths"),
 		templatesrepo.FromFS(embeddedTemplates(), ""),
+		templatesrepo.FromFS(embeddedPaths(), ""),
 		templatesrepo.WithFuncMap(g.funcMap),
 	)
 	if err != nil {
@@ -165,9 +167,41 @@ func (g *GenOpts) buildMachinery() {
 	g.machineryBuilt = true
 }
 
+// applicationSections keeps the entries of the application section a run actually renders.
+//
+// Two of them answer to a flag of their own rather than to the layout: the main package and the
+// embedded spec. A configuration replacing the section keeps them, so the flags reach a layout of
+// the user's own as they reach the default one.
+//
+// They are recognised by the name the section entry carries, which is the name the layout
+// documents for them, mangled so that a spelling of one's own still matches.
+func (g *GenOpts) applicationSections() []TemplateOpts {
+	kept := make([]TemplateOpts, 0, len(g.Sections.Application))
+
+	for _, entry := range g.Sections.Application {
+		switch g.LanguageOpts.Mangler.ToFileName(g.LanguageOpts.Mangler.ToGoName(entry.Name)) {
+		case "main":
+			if !g.IncludeMain {
+				continue
+			}
+		case "embedded_spec":
+			if g.ExcludeSpec {
+				continue
+			}
+		}
+
+		kept = append(kept, entry)
+	}
+
+	return kept
+}
+
 // resolveSections computes the render plan (which templates produce which
 // files): it fills the default sections from the include flags and package
 // layout, then layers any config-file `layout:` overrides on top.
+//
+// The plan is the whole of what a run renders: nothing is decided again while it runs, so what the
+// plan holds is also what the templates repository is scoped to.
 //
 // It is guarded so the plan is resolved exactly once.
 func (g *GenOpts) resolveSections() error {
@@ -186,6 +220,7 @@ func (g *GenOpts) resolveSections() error {
 		g.Sections = g.Sections.overrideWith(def.Layout)
 	}
 
+	g.Sections.Application = g.applicationSections()
 	g.sectionsResolved = true
 
 	return nil

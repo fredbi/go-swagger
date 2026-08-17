@@ -49,16 +49,17 @@ const (
 // Where each section writes is not decided here: a target and a file name are templates like any
 // other, and a configuration replaces one by declaring it.
 //
-// They live under templates/paths, mirroring the tree of the templates they place, so the paths of
-// templates/server/parameter.gotmpl are in templates/paths/server/parameter.gotmpl. The names they
-// declare are those of the template they place, suffixed with Target and FileName.
+// They live under templates/paths, mirroring the tree of the templates they place, and are named
+// after the template they place, suffixed with Target and FileName: where
+// templates/server/parameter.gotmpl writes is templates/paths/server/parameter/target.gotmpl,
+// declaring serverParameterTarget.
 func DefaultSectionOpts(gen *GenOpts) {
 	sec := gen.Sections
 	if len(sec.Models) == 0 {
 		opts := []TemplateOpts{
 			{
 				Name:   "definition",
-				Source: "asset:model",
+				Source: "model",
 			},
 		}
 		sec.Models = opts
@@ -71,7 +72,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 		opts := []TemplateOpts{
 			{
 				Name:   "clidefinitionhook",
-				Source: "asset:cliModelcli",
+				Source: "cliModelcli",
 			},
 		}
 		sec.PostModels = opts
@@ -82,17 +83,17 @@ func DefaultSectionOpts(gen *GenOpts) {
 			opts := []TemplateOpts{
 				{
 					Name:   "parameters",
-					Source: "asset:clientParameter",
+					Source: "clientParameter",
 				},
 				{
 					Name:   "responses",
-					Source: "asset:clientResponse",
+					Source: "clientResponse",
 				},
 			}
 			if gen.IncludeCLi {
 				opts = append(opts, TemplateOpts{
 					Name:   "clioperation",
-					Source: "asset:cliOperation",
+					Source: "cliOperation",
 				})
 			}
 			sec.Operations = opts
@@ -101,25 +102,25 @@ func DefaultSectionOpts(gen *GenOpts) {
 			if gen.IncludeParameters {
 				ops = append(ops, TemplateOpts{
 					Name:   "parameters",
-					Source: "asset:serverParameter",
+					Source: "serverParameter",
 				})
 			}
 			if gen.IncludeURLBuilder {
 				ops = append(ops, TemplateOpts{
 					Name:   "urlbuilder",
-					Source: "asset:serverUrlbuilder",
+					Source: "serverUrlbuilder",
 				})
 			}
 			if gen.IncludeResponses {
 				ops = append(ops, TemplateOpts{
 					Name:   "responses",
-					Source: "asset:serverResponses",
+					Source: "serverResponses",
 				})
 			}
 			if gen.IncludeHandler {
 				ops = append(ops, TemplateOpts{
 					Name:   "handler",
-					Source: "asset:serverOperation",
+					Source: "serverOperation",
 				})
 			}
 			sec.Operations = ops
@@ -131,7 +132,7 @@ func DefaultSectionOpts(gen *GenOpts) {
 			sec.OperationGroups = []TemplateOpts{
 				{
 					Name:   "client",
-					Source: "asset:clientClient",
+					Source: "clientClient",
 				},
 			}
 		} else {
@@ -144,23 +145,23 @@ func DefaultSectionOpts(gen *GenOpts) {
 			opts := []TemplateOpts{
 				{
 					Name:   "facade",
-					Source: "asset:clientFacade",
+					Source: "clientFacade",
 				},
 			}
 			if gen.IncludeCLi {
 				// include a commandline tool app
 				opts = append(opts, []TemplateOpts{{
 					Name:   "commandline",
-					Source: "asset:cliCli",
+					Source: "cliCli",
 				}, {
 					Name:   "climain",
-					Source: "asset:cliMain",
+					Source: "cliMain",
 				}, {
 					Name:   "cliAutoComplete",
-					Source: "asset:cliCompletion",
+					Source: "cliCompletion",
 				}, {
 					Name:   "cliAutoDocument",
-					Source: "asset:cliDocumentation",
+					Source: "cliDocumentation",
 				}}...)
 			}
 			sec.Application = opts
@@ -168,35 +169,35 @@ func DefaultSectionOpts(gen *GenOpts) {
 			opts := []TemplateOpts{
 				{
 					Name:   "main",
-					Source: "asset:serverMain",
+					Source: "serverMain",
 				},
 				{
 					Name:   "embedded_spec",
-					Source: "asset:swaggerJsonEmbed",
+					Source: "swaggerJsonEmbed",
 				},
 				{
 					Name:   "server",
-					Source: "asset:serverServer",
+					Source: "serverServer",
 				},
 				{
 					Name:   "builder",
-					Source: "asset:serverBuilder",
+					Source: "serverBuilder",
 				},
 				{
 					Name:   "doc",
-					Source: "asset:serverDoc",
+					Source: "serverDoc",
 				},
 			}
 			if gen.ImplementationPackage != "" {
 				// Use auto configure template
 				opts = append(opts, TemplateOpts{
 					Name:   "autoconfigure",
-					Source: "asset:serverAutoconfigureapi",
+					Source: "serverAutoconfigureapi",
 				})
 			} else {
 				opts = append(opts, TemplateOpts{
 					Name:       "configure",
-					Source:     "asset:serverConfigureapi",
+					Source:     "serverConfigureapi",
 					SkipExists: !gen.RegenerateConfigureAPI,
 				})
 			}
@@ -224,7 +225,7 @@ func MarkdownSectionOpts(gen *GenOpts, output string) {
 	gen.Sections.Application = []TemplateOpts{
 		{
 			Name:     "markdowndocs",
-			Source:   "asset:markdownDocs",
+			Source:   "markdownDocs",
 			Target:   filepath.Dir(output),
 			FileName: filepath.Base(output),
 		},
@@ -241,20 +242,24 @@ type TemplateOpts struct {
 	SkipFormat bool   `mapstructure:"skip_format"` // not a feature, but for debugging. generated code before formatting might not work because of unused imports.
 }
 
+// templateName is the template of the repository a section entry renders.
+//
+// A source names a template, and never a file: everything a run renders is read and resolved when
+// the repository is built, so there is nothing left to look for when it runs. A configuration may
+// still name a template by the file it was written in, extension and all, which is trimmed and
+// mangled the way the repository names its own assets.
+func (t TemplateOpts) templateName(mangler mangling.NameMangler) string {
+	return mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
+}
+
 // pathTemplates names the templates giving the directory and the file a section entry writes to.
 //
 // They are named after the template the entry renders, which is what tells them apart: two
-// sections may hold an entry of the same name, and no two of them render the same template.
-// The templates declaring them live under templates/paths, mirroring the tree of the templates
-// they place.
-//
-// A source that names a file rather than an asset is mangled the way the repository names it, so
-// that a template directory may hold the paths of a template of its own.
+// sections may hold an entry of the same name, and no two of them render the same template. Those
+// shipped with the generator live under templates/paths, one file each, so that a template
+// directory may replace one of them on its own.
 func (t TemplateOpts) pathTemplates(mangler mangling.NameMangler) (target, fileName string) {
-	base := strings.TrimPrefix(t.Source, "asset:")
-	if base == t.Source {
-		base = mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-	}
+	base := t.templateName(mangler)
 
 	return base + "Target", base + "FileName"
 }

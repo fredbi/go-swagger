@@ -6,13 +6,11 @@ package generator
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
-	"text/template"
 
 	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
@@ -69,12 +67,12 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 	// with the generator, or the one a configuration declared in its place
 	targetName, fileNameName := t.pathTemplates(g.LanguageOpts.Mangler)
 
-	pthTpl, err := g.pathTemplate(targetName, t.Target)
+	pthTpl, err := g.templates.Get(targetName)
 	if err != nil {
 		return "", "", fmt.Errorf("no target path for section %q: %w", t.Name, err)
 	}
 
-	fNameTpl, err := g.pathTemplate(fileNameName, t.FileName)
+	fNameTpl, err := g.templates.Get(fileNameName)
 	if err != nil {
 		return "", "", fmt.Errorf("no file name for section %q: %w", t.Name, err)
 	}
@@ -111,75 +109,21 @@ func (g *renderer) location(t *TemplateOpts, data any) (string, string, error) {
 	if e := fNameTpl.Execute(&fNameBuf, d); e != nil {
 		return "", "", e
 	}
-	return pthBuf.String(), g.fileName(fNameBuf.String()), nil
+
+	// a path template is written for a reader, so what it renders is taken without the white space
+	// the layout of its own source leaves around it
+	return strings.TrimSpace(pthBuf.String()), g.fileName(strings.TrimSpace(fNameBuf.String())), nil
 }
 
-// executable is what rendering needs of a template, whichever of the two places it comes from:
-// the repository, or a file read from disk on the spot.
-type executable interface {
-	Execute(w io.Writer, data any) error
-}
-
-// pathTemplate returns the template giving a path a section entry writes to.
+// render executes the template a section entry names, against the data of that section.
 //
-// It comes from the repository, which holds the ones shipped with the generator and the ones a
-// configuration declared in their place. A section entry built in code may carry its path inline
-// instead, and it is then compiled here, for that entry alone.
-func (g *renderer) pathTemplate(name, inline string) (executable, error) {
-	tpl, err := g.templates.Get(name)
-	if err == nil {
-		return tpl, nil
-	}
-
-	if inline == "" {
-		return nil, err
-	}
-
-	return template.New(name).Funcs(g.funcMap).Parse(inline)
-}
-
+// The template comes from the repository, which was built from every source the run declared. A
+// name it does not hold is an error here rather than a search: where a template comes from is
+// settled when the repository is built, and a run never goes looking for one afterwards.
 func (g *renderer) render(t *TemplateOpts, data any) ([]byte, error) {
-	var templ executable
-
-	if strings.HasPrefix(strings.ToLower(t.Source), "asset:") {
-		tt, err := g.templates.Get(strings.TrimPrefix(t.Source, "asset:"))
-		if err != nil {
-			return nil, err
-		}
-		templ = tt
-	}
-
-	if templ == nil {
-		// try to load from repository (and enable dependencies)
-		name := g.LanguageOpts.Mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-		tt, err := g.templates.Get(name)
-		if err == nil {
-			templ = tt
-		}
-	}
-
-	if templ == nil {
-		// try to load template from disk, in TemplateDir if specified
-		// (dependencies resolution is limited to preloaded assets)
-		var templateFile string
-		if g.TemplateDir != "" {
-			templateFile = filepath.Join(g.TemplateDir, t.Source)
-		} else {
-			templateFile = t.Source
-		}
-		content, err := os.ReadFile(templateFile)
-		if err != nil {
-			return nil, fmt.Errorf("error while opening %s template file: %w", templateFile, err)
-		}
-		tt, err := template.New(t.Source).Funcs(g.funcMap).Parse(string(content))
-		if err != nil {
-			return nil, fmt.Errorf("template parsing failed on template %s: %w", t.Name, err)
-		}
-		templ = tt
-	}
-
-	if templ == nil {
-		return nil, fmt.Errorf("template %q not found", t.Source)
+	templ, err := g.templates.Get(t.templateName(g.LanguageOpts.Mangler))
+	if err != nil {
+		return nil, fmt.Errorf("no template for section %q: %w", t.Name, err)
 	}
 
 	var tBuf bytes.Buffer
@@ -262,17 +206,6 @@ func (g *renderer) fileName(in string) string {
 	return g.LanguageOpts.Mangler.ToFileName(strings.TrimSuffix(in, ext)) + ext
 }
 
-func (g *renderer) shouldRenderApp(t *TemplateOpts, _ *GenApp) bool {
-	switch g.LanguageOpts.Mangler.ToFileName(g.LanguageOpts.Mangler.ToGoName(t.Name)) {
-	case "main":
-		return g.IncludeMain
-	case "embedded_spec":
-		return !g.ExcludeSpec
-	default:
-		return true
-	}
-}
-
 func (g *renderer) shouldRenderOperations() bool {
 	return g.IncludeHandler || g.IncludeParameters || g.IncludeResponses
 }
@@ -281,9 +214,6 @@ func (g *renderer) renderApplication(app *GenApp) error {
 	log.Printf("rendering %d templates for application %s", len(g.Sections.Application), app.Name)
 	for _, tp := range g.Sections.Application {
 		templ := tp
-		if !g.shouldRenderApp(&templ, app) {
-			continue
-		}
 		if err := g.write(&templ, app); err != nil {
 			return err
 		}

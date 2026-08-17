@@ -5,13 +5,11 @@ package generator
 
 import (
 	"maps"
-	"strings"
 	"text/template"
 
 	"github.com/spf13/viper"
 
 	"github.com/go-openapi/analysis"
-	"github.com/go-openapi/swag/mangling"
 
 	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
@@ -142,7 +140,7 @@ func (g *GenOpts) loadTemplates() error {
 
 	derived = append(derived, g.configuredPaths()...)
 
-	if roots, scoped := g.templateRoots(); scoped {
+	if roots := g.templateRoots(); len(roots) > 0 {
 		derived = append(derived, templatesrepo.WithRoots(roots...))
 	}
 
@@ -164,12 +162,12 @@ func (g *GenOpts) loadTemplates() error {
 // whatever they reach, and nothing else.
 //
 // A run renders what its sections lay out and nothing besides, so the sections say what the whole
-// run needs: one template per entry, plus the two placing what it writes.
+// run needs: the template each entry renders, plus the two placing where it writes. Nothing is
+// looked for while the run goes, so a name the repository does not hold is reported when it is
+// built, rather than by the render that would have reached it.
 //
-// Scoping is dropped altogether, rather than guessed at, for a section entry naming something this
-// cannot vouch for: a source read from a file on disk, or a template a custom directory is expected
-// to bring. The repository then holds everything, which is what it held before any of this.
-func (g *GenOpts) templateRoots() ([]string, bool) {
+// A run laying out no section at all is not scoped, there being nothing to scope it to.
+func (g *GenOpts) templateRoots() []string {
 	var roots []string
 
 	for _, section := range [][]TemplateOpts{
@@ -180,46 +178,12 @@ func (g *GenOpts) templateRoots() ([]string, bool) {
 		g.Sections.PostModels,
 	} {
 		for _, entry := range section {
-			rendered, known := entry.rootTemplate(g.LanguageOpts.Mangler, g.templates)
-			if !known {
-				return nil, false
-			}
-
 			target, fileName := entry.pathTemplates(g.LanguageOpts.Mangler)
-			if !g.declaresPath(target, entry.Target) || !g.declaresPath(fileName, entry.FileName) {
-				return nil, false
-			}
-
-			roots = append(roots, rendered, target, fileName)
+			roots = append(roots, entry.templateName(g.LanguageOpts.Mangler), target, fileName)
 		}
 	}
 
-	return roots, len(roots) > 0
-}
-
-// declaresPath tells whether the repository is going to hold one of the two templates placing what
-// a section entry writes.
-//
-// A configuration declaring the path inline is what configuredPaths turns into a source, so it
-// lands in the same build. Otherwise it is the one shipped with the generator that stands.
-func (g *GenOpts) declaresPath(name, inline string) bool {
-	return inline != "" || g.templates.Has(name)
-}
-
-// rootTemplate names the template a section entry renders, and tells whether the repository holds
-// it at all.
-//
-// A source is either an asset of the repository, said outright or by a name that mangles to one of
-// them, or a file the renderer reads from disk on its own. Only the first two are templates this
-// repository has anything to say about.
-func (t TemplateOpts) rootTemplate(mangler mangling.NameMangler, repository *templatesrepo.Repository) (string, bool) {
-	if asset, declared := strings.CutPrefix(t.Source, "asset:"); declared {
-		return asset, true
-	}
-
-	name := mangler.ToJSONName(strings.TrimSuffix(t.Source, ".gotmpl"))
-
-	return name, repository.Has(name)
+	return roots
 }
 
 // configuredPaths turns the paths a configuration declares into templates.

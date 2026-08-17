@@ -1,5 +1,0 @@
-{{/* cliMainTarget is where the climain section writes what cliMain renders. */}}
-{{ define "cliMainTarget" }}{{ joinFilePath .Target "cmd" (toPackagePath .CliAppName) }}{{ end }}
-
-{{/* cliMainFileName is the name of the file it writes. */}}
-{{ define "cliMainFileName" }}main.go{{ end }}

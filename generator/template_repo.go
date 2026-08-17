@@ -25,7 +25,21 @@ var templateAssets embed.FS
 
 // embeddedTemplates returns the default templates, rooted at the templates directory.
 func embeddedTemplates() fs.FS {
-	rooted, err := fs.Sub(templateAssets, "templates")
+	return rootedAt("templates")
+}
+
+// embeddedPaths returns the templates saying where each section writes.
+//
+// They live under templates/paths, mirroring the tree of the templates they place, and are rooted
+// there so that the name of one is the name of the template it places, suffixed with Target or
+// FileName: templates/paths/server/parameter/target.gotmpl declares serverParameterTarget.
+func embeddedPaths() fs.FS {
+	return rootedAt("templates/paths")
+}
+
+// rootedAt returns a directory of the embedded templates, as a file system of its own.
+func rootedAt(dir string) fs.FS {
+	rooted, err := fs.Sub(templateAssets, dir)
 	if err != nil {
 		panic(fmt.Errorf("internal error: embedded templates are not readable: %w", err))
 	}

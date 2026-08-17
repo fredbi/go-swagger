@@ -1,5 +1,0 @@
-{{/* serverDocTarget is where the doc section writes what serverDoc renders. */}}
-{{ define "serverDocTarget" }}{{ joinFilePath .Target (toPackagePath .ServerPackage) }}{{ end }}
-
-{{/* serverDocFileName is the name of the file it writes. */}}
-{{ define "serverDocFileName" }}doc.go{{ end }}

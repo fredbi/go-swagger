@@ -274,25 +274,37 @@ func TestTemplates_Paths(t *testing.T) {
 	opts := opts()
 	mangler := opts.LanguageOpts.Mangler
 
-	pathTemplates, err := fs.Glob(embeddedTemplates(), "paths/*.gotmpl")
-	require.NoError(t, err)
-	nested, err := fs.Glob(embeddedTemplates(), "paths/*/*.gotmpl")
-	require.NoError(t, err)
-	pathTemplates = append(pathTemplates, nested...)
+	var pathTemplates []string
+	require.NoError(t, fs.WalkDir(embeddedPaths(), ".", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".gotmpl") {
+			return err
+		}
+		pathTemplates = append(pathTemplates, p)
+
+		return nil
+	}))
 	require.NotEmpty(t, pathTemplates)
 
-	t.Run("should place a template that exists, and declare its two names", func(t *testing.T) {
+	t.Run("should place a template that exists, under the name of its own path", func(t *testing.T) {
+		// a path template needs no define: it is named after the file it lives in, like any other,
+		// which is the name of the template it places suffixed with Target or FileName
 		for _, declaring := range pathTemplates {
-			placed := mangler.ToJSONName(
-				strings.TrimSuffix(strings.TrimPrefix(declaring, "paths/"), ".gotmpl"),
-			)
+			declared := mangler.ToJSONName(strings.TrimSuffix(declaring, ".gotmpl"))
+			require.Truef(t, opts.templates.Has(declared), "%s declares no %q", declaring, declared)
 
+			placed := strings.TrimSuffix(strings.TrimSuffix(declared, "Target"), "FileName")
 			assert.Truef(t, opts.templates.Has(placed),
 				"%s places %q, which the generator does not ship", declaring, placed)
-			assert.Truef(t, opts.templates.Has(placed+"Target"),
-				"%s does not declare %sTarget", declaring, placed)
-			assert.Truef(t, opts.templates.Has(placed+"FileName"),
-				"%s does not declare %sFileName", declaring, placed)
+		}
+	})
+
+	t.Run("should give every placed template both of its paths", func(t *testing.T) {
+		for _, declaring := range pathTemplates {
+			declared := mangler.ToJSONName(strings.TrimSuffix(declaring, ".gotmpl"))
+			placed := strings.TrimSuffix(strings.TrimSuffix(declared, "Target"), "FileName")
+
+			assert.Truef(t, opts.templates.Has(placed+"Target"), "%s has no %sTarget", declaring, placed)
+			assert.Truef(t, opts.templates.Has(placed+"FileName"), "%s has no %sFileName", declaring, placed)
 		}
 	})
 

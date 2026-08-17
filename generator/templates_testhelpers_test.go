@@ -44,3 +44,18 @@ func addedTemplate(opts *GenOpts, name, content string) []templatesrepo.Option {
 
 	return added
 }
+
+// withSectionTemplate declares what a section entry needs of the repository: the template it
+// renders, and the two placing where it writes.
+//
+// A run declares all three when it builds the repository, so a test rendering an entry of its own
+// declares them the same way. Nothing is resolved while a run goes, here no more than there.
+func withSectionTemplate(t *testing.T, opts *GenOpts, entry TemplateOpts, content string) {
+	t.Helper()
+
+	withTemplate(t, opts, entry.templateName(opts.LanguageOpts.Mangler), content)
+
+	target, fileName := entry.pathTemplates(opts.LanguageOpts.Mangler)
+	withTemplate(t, opts, target, entry.Target)
+	withTemplate(t, opts, fileName, entry.FileName)
+}
