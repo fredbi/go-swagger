@@ -167,24 +167,31 @@ func (g *GenOpts) buildMachinery() {
 	g.machineryBuilt = true
 }
 
+// mainSection and embeddedSpecSection are the two application entries that answer to a flag of
+// their own rather than to the layout. They are spelled here as the layout documentation spells
+// them.
+const (
+	mainSection         = "main"
+	embeddedSpecSection = "embedded_spec"
+)
+
 // applicationSections keeps the entries of the application section a run actually renders.
 //
-// Two of them answer to a flag of their own rather than to the layout: the main package and the
-// embedded spec. A configuration replacing the section keeps them, so the flags reach a layout of
-// the user's own as they reach the default one.
+// The main package and the embedded spec are rendered or not according to a flag, and a
+// configuration replacing the section keeps them, so the flags reach a layout of the user's own as
+// they reach the default one.
 //
-// They are recognised by the name the section entry carries, which is the name the layout
-// documents for them, mangled so that a spelling of one's own still matches.
+// An entry is recognised by the name it carries, matched as the layout documentation writes it.
 func (g *GenOpts) applicationSections() []TemplateOpts {
 	kept := make([]TemplateOpts, 0, len(g.Sections.Application))
 
 	for _, entry := range g.Sections.Application {
-		switch g.LanguageOpts.Mangler.ToFileName(g.LanguageOpts.Mangler.ToGoName(entry.Name)) {
-		case "main":
+		switch entry.Name {
+		case mainSection:
 			if !g.IncludeMain {
 				continue
 			}
-		case "embedded_spec":
+		case embeddedSpecSection:
 			if g.ExcludeSpec {
 				continue
 			}
