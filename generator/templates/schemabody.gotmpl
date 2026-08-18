@@ -21,7 +21,7 @@
       {{- if .HasAdditionalProperties }}
         {{- if .AdditionalProperties }}
           {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
-          {{- template "validationStructfieldPropertyValidationDocString" .AdditionalProperties}}
+          {{- template "validationStructfield" .AdditionalProperties -}}
           {{- if and .IsExported (not .IsSubType) }}
             {{ .AdditionalProperties.GoName }}
           {{- else if or (not .AdditionalProperties.IsExported) (.AdditionalProperties.IsBaseType) }}
@@ -33,11 +33,11 @@
       {{- end }}
       {{- if .AdditionalItems }}
         {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
-        {{- template "validationStructfieldPropertyValidationDocString" .AdditionalItems}}
+        {{- template "validationStructfield" .AdditionalItems }}
         {{- if and .IsExported (not $.IsSubType) }}{{/* TODO(fred): make sure inherited AdditionalItems are camelized */}}
-          {{ .AdditionalItems.GoName }}
+          {{- .AdditionalItems.GoName }}
         {{- else }}
-          {{ .AdditionalItems.Name }}
+          {{- .AdditionalItems.Name }}
         {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
       {{- end }}
     {{ else }}{{/* named type composition */}}
@@ -48,22 +48,26 @@
     {{ if or (not $.IsExported) ($.IsBaseType) (.IsBaseType) }}
       {{ if $.IsTuple }}{{ template "privtuplefield" . }}{{ else }}{{template "privstructfield" . }}{{ end }}{{ else }}{{ if $.IsTuple }}{{ template "tuplefield" . }}{{ else }}{{template "structfield" . }}{{ end }}{{ end}}
   {{ end }}
-  {{ if .HasAdditionalProperties }}
+  {{- if .HasAdditionalProperties }}
     {{- if .AdditionalProperties }}
     {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
-    {{- template "validationStructfieldPropertyValidationDocString" .AdditionalProperties}}
+    {{- template "validationStructfield" .AdditionalProperties }}
       {{- if and .IsExported (not .IsSubType) }}
-        {{ .AdditionalProperties.GoName }}
+        {{- .AdditionalProperties.GoName }}
       {{- else }}
-      {{ .AdditionalProperties.GoName }}Field
+        {{- .AdditionalProperties.GoName }}Field
       {{- end }} map[string]{{ template "schemaType" .AdditionalProperties }} `json:"-"`
-    {{ end }}
+    {{- end }}
   {{- end }}
   {{- if .AdditionalItems }}
     {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
-    {{- template "validationStructfieldPropertyValidationDocString" .AdditionalItems}}
-    {{ if and .IsExported (not .IsSubType) }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.GoName }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
-  {{ end }}
+    {{- template "validationStructfield" .AdditionalItems }}
+    {{- if and .IsExported (not .IsSubType) }}
+      {{- .AdditionalItems.GoName }}
+    {{- else }}
+      {{- .AdditionalItems.GoName }}Field
+    {{- end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
+  {{- end }}
 }
 {{- end }}
 

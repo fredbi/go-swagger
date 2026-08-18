@@ -115,6 +115,7 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
 {{- if .WantsStringer }}
   {{ template "serializersStringer" . }}
 {{- end }}
+
 {{- if .WantsGetters }}
   {{- range .Properties }}
     {{- if not .IsBaseType }}
@@ -126,17 +127,20 @@ func ({{ $.ReceiverName }} *{{ $.GoName }}) Get{{ .GoName }}() {{ template "sche
     {{- end }}
   {{- end }}
 {{- end }}
+
 {{- define "mapOrSliceGetter" }}{{/* signature for AdditionalProperties and AdditionalItems getter funcs */}}
   {{- if not .IsBaseType }}
     {{- if .HasAdditionalProperties }}
       {{- with .AdditionalProperties }}
-        {{ template "docstring" (dict "Ctx" .) }}{{- template "validationStructfieldPropertyValidationDocString" . }}
-        {{ .GoName }}() map[string]{{ template "schemaType" . }}
+        {{ template "docstring" (dict "Ctx" .) }}
+        {{- template "validationStructfield" . }}
+        {{- .GoName }}() map[string]{{ template "schemaType" . }}
       {{- end }}
     {{- end }}
     {{- with .AdditionalItems }}
-      {{ template "docstring" (dict "Ctx" .) }}{{- template "validationStructfieldPropertyValidationDocString" . }}
-      {{ .GoName }}() []{{ template "schemaType" . }}
+      {{ template "docstring" (dict "Ctx" .) }}
+      {{- template "validationStructfield" . }}
+      {{- .GoName }}() []{{ template "schemaType" . }}
     {{- end }}
   {{- else }}
   // AdditionalProperties in base type shoud be handled just like regular properties{{/* TODO(fred): add full support for AdditionalProperties in base type */}}
