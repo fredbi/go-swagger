@@ -95,12 +95,13 @@ func TestGenerateModel_DocString(t *testing.T) {
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
 	opts := opts(t)
-	tt := templateTest{t, opts.templates.MustGet("validationStructfieldPropertyValidationDocString")}
+	tt := templateTest{t, opts.templates.MustGet("validationStructfield")}
 
 	var gmp GenSchema
 	gmp.Required = true
 	tt.assertRender(gmp, `
-// Required: true`)
+// Required: true
+`)
 	var fl float64 = 10
 	var in1 int64 = 20
 	var in2 int64 = 30
@@ -124,7 +125,8 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 // Pattern: \w[\w- ]+
 // Max Items: 30
 // Min Items: 30
-// Unique: true`)
+// Unique: true
+`)
 
 	gmp.Required = false
 	gmp.ExclusiveMaximum = false
@@ -137,7 +139,8 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 // Pattern: \w[\w- ]+
 // Max Items: 30
 // Min Items: 30
-// Unique: true`)
+// Unique: true
+`)
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
