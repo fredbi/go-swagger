@@ -1,4 +1,3 @@
-{{ define "aliasedSerializer" }}
 // UnmarshalJSON sets a {{ .GoName }} value from JSON input
 func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(b []byte) error {
   return ((*{{ .AliasedType }})({{ .ReceiverName}})).UnmarshalJSON(b)
@@ -8,4 +7,3 @@ func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(b []byte) error {
 func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) {
   return ({{ .AliasedType }}({{ .ReceiverName}})).MarshalJSON()
 }
-{{- end }}

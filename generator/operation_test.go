@@ -6,7 +6,6 @@ package generator
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -21,7 +20,7 @@ import (
 )
 
 func TestUniqueOperationNameMangling(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	doc, err := loads.Spec("../testdata/bugs/2213/fixture-2213.yaml")
 	require.NoError(t, err)
 	analyzed := analysis.New(doc.Spec())
@@ -31,7 +30,7 @@ func TestUniqueOperationNameMangling(t *testing.T) {
 }
 
 func TestUniqueOperationNames(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
@@ -53,7 +52,7 @@ func TestUniqueOperationNames(t *testing.T) {
 }
 
 func TestEmptyOperationNames(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	doc, err := loads.Spec(fixtureTodoList)
 	require.NoError(t, err)
 
@@ -75,7 +74,7 @@ func TestEmptyOperationNames(t *testing.T) {
 }
 
 func TestMakeResponseHeader(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	hdr := findResponseHeader(&b.Operation, 200, "X-Rate-Limit")
@@ -88,7 +87,7 @@ func TestMakeResponseHeader(t *testing.T) {
 }
 
 func TestMakeResponse_StrfmtHeaderImport(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	hdr := spec.Header{}
@@ -116,7 +115,7 @@ func TestMakeResponse_StrfmtHeaderImport(t *testing.T) {
 }
 
 func TestMakeHeader_XGoNamePreserveExplicitCasing(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	hdr := spec.Header{}
@@ -130,7 +129,7 @@ func TestMakeHeader_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestMakeHeader_XGoNameInvalidTypeFallsBack(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	hdr := spec.Header{}
@@ -143,7 +142,7 @@ func TestMakeHeader_XGoNameInvalidTypeFallsBack(t *testing.T) {
 }
 
 func TestMakeResponseHeaderDefaultValues(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -174,7 +173,7 @@ func TestMakeResponseHeaderDefaultValues(t *testing.T) {
 }
 
 func TestMakeResponse(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
@@ -194,7 +193,7 @@ func TestMakeResponse(t *testing.T) {
 }
 
 func TestMakeResponse_WithAllOfSchema(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/codegen/instagram.yml")
+	b, err := methodPathOpBuilder(t, "get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
@@ -226,7 +225,7 @@ func TestMakeResponse_WithAllOfSchema(t *testing.T) {
 }
 
 func TestMakeOperationParam(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
@@ -238,7 +237,7 @@ func TestMakeOperationParam(t *testing.T) {
 }
 
 func TestMakeOperationParamItem(t *testing.T) {
-	b, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
+	b, err := opBuilder(t, "arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 	resolver := newTypeResolver(b.ModelsPackage, b.Doc, b.GenOpts)
 	gO, err := b.MakeParameterItem("a", "siString", "ii", "siString", "a.SiString", "query", resolver, b.Operation.Parameters[1].Items, nil)
@@ -248,7 +247,7 @@ func TestMakeOperationParamItem(t *testing.T) {
 }
 
 func TestMakeOperation(t *testing.T) {
-	b, err := opBuilder("getTasks", "")
+	b, err := opBuilder(t, "getTasks", "")
 	require.NoError(t, err)
 	gO, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -264,14 +263,14 @@ func TestMakeOperation(t *testing.T) {
 func TestRenderOperation_InstagramSearch(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/codegen/instagram.yml")
+	b, err := methodPathOpBuilder(t, "get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	gO, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opt := opts()
+	opt := opts(t)
 
 	require.NoError(t, opt.templates.MustGet("serverOperation").Execute(buf, gO))
 
@@ -298,14 +297,14 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 	assertInCode(t, "type GetMediaSearchOK struct {", res)
 	assertInCode(t, "GetMediaSearchOKBody", res)
 
-	b, err = methodPathOpBuilderWithFlatten("get", "/media/search", "../testdata/codegen/instagram.yml")
+	b, err = methodPathOpBuilderWithFlatten(t, "get", "/media/search", "../testdata/codegen/instagram.yml")
 	require.NoError(t, err)
 
 	gO, err = b.MakeOperation()
 	require.NoError(t, err)
 
 	buf = bytes.NewBuffer(nil)
-	opt = opts()
+	opt = opts(t)
 	require.NoError(t, opt.templates.MustGet("serverOperation").Execute(buf, gO))
 
 	ff, err = opt.LanguageOpts.FormatContent("operation.go", buf.Bytes())
@@ -327,13 +326,15 @@ func TestRenderOperation_InstagramSearch(t *testing.T) {
 
 const fixtureTodoList = "../testdata/codegen/todolist.simple.yml"
 
-func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
+func methodPathOpBuilder(t *testing.T, method, path, fname string) (codeGenOpBuilder, error) {
+	t.Helper()
+
 	defer discardOutput()()
 
 	if fname == "" {
 		fname = fixtureTodoList
 	}
-	o := opts()
+	o := opts(t)
 	o.Spec = fname
 	specDoc, analyzed, err := newSpecAnalyzer(o).analyzeSpec()
 	if err != nil {
@@ -363,14 +364,16 @@ func methodPathOpBuilder(method, path, fname string) (codeGenOpBuilder, error) {
 }
 
 // methodPathOpBuilderWithFlatten prepares an operation build based on method and path, with spec full flattening.
-func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilder, error) {
+func methodPathOpBuilderWithFlatten(t *testing.T, method, path, fname string) (codeGenOpBuilder, error) {
+	t.Helper()
+
 	defer discardOutput()()
 
 	if fname == "" {
 		fname = fixtureTodoList
 	}
 
-	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
+	o := opBuildGetOpts(t, fname, true, false) // flatten: true, minimal: false
 	o.Spec = fname
 	specDoc, analyzed, err := newSpecAnalyzer(o).analyzeSpec()
 	if err != nil {
@@ -394,7 +397,7 @@ func methodPathOpBuilderWithFlatten(method, path, fname string) (codeGenOpBuilde
 		Analyzed:      analyzed,
 		Authed:        false,
 		ExtraSchemas:  make(map[string]GenSchema),
-		GenOpts:       opts(),
+		GenOpts:       opts(t),
 	}, nil
 }
 
@@ -437,7 +440,9 @@ func opBuilderWithOpts(name, fname string, o *GenOpts) (codeGenOpBuilder, error)
 	}, nil
 }
 
-func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) (opts *GenOpts) {
+func opBuildGetOpts(t *testing.T, specName string, withFlatten bool, withMinimalFlatten bool) (opts *GenOpts) {
+	t.Helper()
+
 	opts = &GenOpts{}
 	opts.ValidateSpec = true
 	opts.FlattenOpts = &analysis.FlattenOpts{
@@ -445,37 +450,43 @@ func opBuildGetOpts(specName string, withFlatten bool, withMinimalFlatten bool) 
 		Minimal: withMinimalFlatten,
 	}
 	opts.Spec = specName
-	if err := ensureMachinery(opts); err != nil {
-		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
-	}
+	ensureMachinery(t, opts)
+
 	return opts
 }
 
 // opBuilderWithFlatten prepares the making of an operation with spec full flattening prior to rendering.
-func opBuilderWithFlatten(name, fname string) (codeGenOpBuilder, error) {
-	o := opBuildGetOpts(fname, true, false) // flatten: true, minimal: false
+func opBuilderWithFlatten(t *testing.T, name, fname string) (codeGenOpBuilder, error) {
+	t.Helper()
+
+	o := opBuildGetOpts(t, fname, true, false) // flatten: true, minimal: false
 	return opBuilderWithOpts(name, fname, o)
 }
 
 /*
 // opBuilderWithMinimalFlatten prepares the making of an operation with spec minimal flattening prior to rendering
 func opBuilderWithMinimalFlatten(name, fname string) (codeGenOpBuilder, error) {
-	o := opBuildGetOpts(fname, true, true) // flatten: true, minimal: true
+	o := opBuildGetOpts(t,fname, true, true) // flatten: true, minimal: true
 	return opBuilderWithOpts(name, fname, o)
 }
 */
 
 // opBuilderWithExpand prepares the making of an operation with spec expansion prior to rendering.
-func opBuilderWithExpand(name, fname string) (codeGenOpBuilder, error) {
-	o := opBuildGetOpts(fname, false, false) // flatten: false => expand
+func opBuilderWithExpand(t *testing.T, name, fname string) (codeGenOpBuilder, error) {
+	t.Helper()
+
+	o := opBuildGetOpts(t, fname, false, false) // flatten: false => expand
 	return opBuilderWithOpts(name, fname, o)
 }
 
 // opBuilder prepares the making of an operation with spec minimal flattening (default for CLI).
-func opBuilder(name, fname string) (codeGenOpBuilder, error) {
-	o := opBuildGetOpts(fname, true, true) // flatten:true, minimal: true
+func opBuilder(t *testing.T, name, fname string) (codeGenOpBuilder, error) {
+	t.Helper()
+
+	o := opBuildGetOpts(t, fname, true, true) // flatten:true, minimal: true
 	// some testdata do not fully validate - skip this
 	o.ValidateSpec = false
+
 	return opBuilderWithOpts(name, fname, o)
 }
 
@@ -501,16 +512,16 @@ func findResponseHeader(op *spec.Operation, code int, name string) *spec.Header 
 }
 
 func TestDateFormat_Spec1(t *testing.T) {
-	b, err := opBuilder("putTesting", "../testdata/bugs/193/spec1.json")
+	b, err := opBuilder(t, "putTesting", "../testdata/bugs/193/spec1.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	opts.IsClient = true
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
@@ -521,16 +532,16 @@ func TestDateFormat_Spec1(t *testing.T) {
 }
 
 func TestDateFormat_Spec2(t *testing.T) {
-	b, err := opBuilder("putTesting", "../testdata/bugs/193/spec2.json")
+	b, err := opBuilder(t, "putTesting", "../testdata/bugs/193/spec2.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	opts.IsClient = true
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
@@ -569,7 +580,7 @@ func TestBuilder_Issue1703(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	appGen, err := newAppGenerator("x-go-type-import-bug", nil, nil, opts)
 	require.NoError(t, err)
@@ -606,7 +617,7 @@ func TestBuilder_Issue287(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	require.NoError(t, err)
@@ -642,7 +653,7 @@ func TestBuilder_Issue465(t *testing.T) {
 		Target:            dr,
 		IsClient:          true,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	appGen, err := newAppGenerator("plainTexter", nil, nil, opts)
 	require.NoError(t, err)
@@ -677,7 +688,7 @@ func TestBuilder_Issue500(t *testing.T) {
 		ClientPackage:     "client",
 		Target:            dr,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	appGen, err := newAppGenerator("multiTags", nil, nil, opts)
 	require.NoError(t, err)
@@ -697,31 +708,31 @@ func TestBuilder_Issue500(t *testing.T) {
 }
 
 func TestGenClient_IllegalBOM(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/v3/attachments/{attachmentId}", "../testdata/bugs/727/swagger.json")
+	b, err := methodPathOpBuilder(t, "get", "/v3/attachments/{attachmentId}", "../testdata/bugs/727/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	opts.IsClient = true
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(buf, op))
 }
 
 func TestGenClient_CustomFormatPath(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../testdata/bugs/789/swagger.yml")
+	b, err := methodPathOpBuilder(t, "get", "/mosaic/experimental/series/{SeriesId}/mosaics", "../testdata/bugs/789/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	opts.IsClient = true
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
@@ -729,16 +740,16 @@ func TestGenClient_CustomFormatPath(t *testing.T) {
 }
 
 func TestGenClient_Issue733(t *testing.T) {
-	b, err := opBuilder("get_characters_character_id_mail_mail_id", "../testdata/bugs/733/swagger.json")
+	b, err := opBuilder(t, "get_characters_character_id_mail_mail_id", "../testdata/bugs/733/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	opts.IsClient = true
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(buf, op))
 
@@ -767,7 +778,7 @@ func TestGenServerIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 	}
 
 	// Testing Server Generation
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	// Full flattening
 	opts.FlattenOpts.Expand = false
@@ -798,7 +809,7 @@ func TestGenClientIssue890_ValidationTrueFlatteningTrue(t *testing.T) {
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = fixture890
 	opts.ValidateSpec = true
 	opts.FlattenOpts.Minimal = false
@@ -829,7 +840,7 @@ func TestGenServerIssue890_ValidationFalseFlattenTrue(t *testing.T) {
 	}
 
 	// Testing Server Generation
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	// full flattening
 	opts.FlattenOpts.Minimal = false
@@ -858,7 +869,7 @@ func TestGenClientIssue890_ValidationFalseFlatteningTrue(t *testing.T) {
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = fixture890
 	opts.ValidateSpec = false
 	// full flattening
@@ -890,7 +901,7 @@ func TestGenServerIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 	}
 
 	// Testing Server Generation
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	// minimal flattening
 	opts.FlattenOpts.Minimal = true
@@ -907,7 +918,7 @@ func TestGenClientIssue890_ValidationFalseFlattenFalse(t *testing.T) {
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = fixture890
 	opts.ValidateSpec = false
 	// minimal flattening
@@ -940,7 +951,7 @@ func TestGenServerIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 	}
 
 	// Testing Server Generation
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	// minimal flattening
 	opts.FlattenOpts.Minimal = true
@@ -1009,7 +1020,7 @@ func TestGenServerWithTemplate(t *testing.T) {
 				t.Parallel()
 
 				// Testing Server Generation
-				require.NoError(t, ensureMachinery(tt.opts))
+				ensureMachinery(t, tt.opts)
 
 				// minimal flattening
 				tt.opts.FlattenOpts.Minimal = true
@@ -1032,7 +1043,7 @@ func TestGenClientIssue890_ValidationTrueFlattenFalse(t *testing.T) {
 		_ = os.RemoveAll(filepath.Join(filepath.FromSlash(dr), "restapi"))
 	}()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = filepath.FromSlash(fixture890)
 	opts.ValidateSpec = true
 	// Testing this is enough as there is only one operation which is specified as $ref.
@@ -1062,7 +1073,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	appGen, e := newAppGenerator("fixture-1214", nil, nil, opts)
 	require.NoError(t, e)
@@ -1124,7 +1135,7 @@ func TestBuilder_Issue1214(t *testing.T) {
 func TestGenSecurityRequirements(t *testing.T) {
 	for range 5 {
 		operation := "asecOp"
-		b, err := opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
+		b, err := opBuilder(t, operation, "../testdata/bugs/1214/fixture-1214.yaml")
 		require.NoError(t, err)
 
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1162,7 +1173,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 		}, genRequirements)
 
 		operation = "bsecOp"
-		b, err = opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
+		b, err = opBuilder(t, operation, "../testdata/bugs/1214/fixture-1214.yaml")
 		require.NoError(t, err)
 
 		b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1193,7 +1204,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	}
 
 	operation := "csecOp"
-	b, err := opBuilder(operation, "../testdata/bugs/1214/fixture-1214.yaml")
+	b, err := opBuilder(t, operation, "../testdata/bugs/1214/fixture-1214.yaml")
 	require.NoError(t, err)
 
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1202,7 +1213,7 @@ func TestGenSecurityRequirements(t *testing.T) {
 	assert.Empty(t, genRequirements)
 
 	operation = "nosecOp"
-	b, err = opBuilder(operation, "../testdata/bugs/1214/fixture-1214-2.yaml")
+	b, err = opBuilder(t, operation, "../testdata/bugs/1214/fixture-1214-2.yaml")
 	require.NoError(t, err)
 
 	b.Security = b.Analyzed.SecurityRequirementsFor(&b.Operation)
@@ -1227,7 +1238,7 @@ func TestGenerateServerOperation(t *testing.T) {
 		Target:            tgt,
 	}
 	t.Run("gen options should be valid", func(t *testing.T) {
-		require.NoError(t, ensureMachinery(o))
+		ensureMachinery(t, o)
 	})
 
 	t.Run("shoud init go.mod", gentest.GoModInit(tgt))
@@ -1316,8 +1327,7 @@ func TestBuilder_Issue1646(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	err := ensureMachinery(opts)
-	require.NoError(t, err)
+	ensureMachinery(t, opts)
 	appGen, err := newAppGenerator("fixture-1646", nil, nil, opts)
 	require.NoError(t, err)
 
@@ -1356,7 +1366,7 @@ func TestGenServer_StrictAdditionalProperties(t *testing.T) {
 		Target:            dr,
 		IsClient:          false,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	opts.StrictAdditionalProperties = true
 
@@ -1399,7 +1409,7 @@ func testInvalidParams() map[string]spec.Parameter {
 }
 
 func TestParamMappings(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	builder := codeGenOpBuilder{GenOpts: opts}
 	// Test deconfliction of duplicate param names across param locations
 	mappings, _, _, err := builder.paramMappings(testInvalidParams())
@@ -1443,7 +1453,7 @@ func TestGenServer_2161_panic(t *testing.T) {
 		IsClient:                   false,
 		StrictAdditionalProperties: true,
 	}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	t.Run("should construct an app generator", func(t *testing.T) {
 		appGen, err := newAppGenerator("inlinedSubtype", nil, nil, opts)
@@ -1751,7 +1761,7 @@ func TestGenServer_1659_Principal(t *testing.T) {
 			t.Parallel()
 
 			opts := fixture.Opts
-			require.NoError(t, ensureMachinery(opts))
+			ensureMachinery(t, opts)
 			require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 			appGen, err := newAppGenerator(fixture.Title, nil, nil, opts)

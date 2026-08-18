@@ -1,4 +1,3 @@
-{{ define "hasDiscriminated" }}
 // UnmarshalJSON unmarshals this object with a polymorphic type from a JSON structure
 func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
   var data {{ template "withoutBaseTypeBody" . }}
@@ -169,4 +168,3 @@ func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) { {{ $recei
 
 	return jsonutils.ConcatJSON(b1, b2, b3), nil
 }
-{{- end }}

@@ -184,7 +184,7 @@ func TestPrintTags(t *testing.T) {
 func mustGetAsJSON(t *testing.T) func(any) (string, error) {
 	t.Helper()
 
-	opts := opts()
+	opts := opts(t)
 	funcMap := opts.funcMap
 	asJSON, ok := funcMap["json"].(func(any) (string, error))
 	require.TrueTf(t, ok, "internal error: asJSON function expected to be func(any) (string,error), but got %T", asJSON)

@@ -1,5 +1,4 @@
-{{ define "allOf" }}
-  {{- $receiverName := .ReceiverName }}
+{{- $receiverName := .ReceiverName }}
 // UnmarshalJSON unmarshals this object from a JSON structure
 func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(raw []byte) error {
   {{- range .AllOf }}
@@ -177,4 +176,3 @@ func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) {
   {{- end }}
   return jsonutils.ConcatJSON(_parts...), nil
 }
-{{- end }}

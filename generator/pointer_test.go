@@ -20,7 +20,7 @@ const (
 )
 
 func TestTypeResolver_NestedAliasedSlice(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
 

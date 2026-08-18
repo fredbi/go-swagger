@@ -21,7 +21,7 @@ import (
 
 func TestTemplates_CustomTemplates(t *testing.T) {
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -39,7 +39,7 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customMultiple)
 	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
@@ -49,7 +49,7 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 
 func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	withTemplate(t, opts, "newtemplate", customNewTemplate)
 	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customExistingUsesNew)
 	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
@@ -73,7 +73,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, templ)
 
-	opts := opts()
+	opts := opts(t)
 	const expected = "My copyright clause"
 	opts.Copyright = expected
 
@@ -86,7 +86,7 @@ func TestTemplates_DefinitionCopyright(t *testing.T) {
 	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
-	genOperation, err := getOperationEnvironment("get", "/media/search", "../testdata/codegen/instagram.yml", opts)
+	genOperation, err := getOperationEnvironment(t, "get", "/media/search", "../testdata/codegen/instagram.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genOperation)
 	rendered.Reset()
@@ -106,7 +106,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	require.NotNil(t, templ)
 
 	// Non existing target would panic: to be tested too, but in another module
-	opts := opts()
+	opts := opts(t)
 	opts.Target = "../testdata"
 	expected := "github.com/go-swagger/go-swagger/testdata"
 
@@ -120,7 +120,7 @@ func TestTemplates_DefinitionTargetImportPath(t *testing.T) {
 	assert.EqualT(t, expected, rendered.String())
 
 	// executes template against operations definitions
-	genOperation, err := getOperationEnvironment("get", "/media/search", "../testdata/codegen/instagram.yml", opts)
+	genOperation, err := getOperationEnvironment(t, "get", "/media/search", "../testdata/codegen/instagram.yml", opts)
 	require.NoError(t, err)
 	require.NotNil(t, genOperation)
 
@@ -163,10 +163,12 @@ func getModelEnvironment(_ string, opts *GenOpts) (*GenDefinition, error) {
 }
 
 // Simulates a definition environment for operation templates.
-func getOperationEnvironment(operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
+func getOperationEnvironment(t *testing.T, operation string, path string, spec string, opts *GenOpts) (*GenOperation, error) {
+	t.Helper()
+
 	defer discardOutput()()
 
-	b, err := methodPathOpBuilder(operation, path, spec)
+	b, err := methodPathOpBuilder(t, operation, path, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +190,7 @@ func TestTemplates_AddTemplate(t *testing.T) {
 	const funcTpl = `{{ pascalize "hello world" }}`
 
 	t.Run("should add a template of its own", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		withTemplate(t, opts, "functpl", funcTpl)
 
 		_, err := opts.templates.Get("functpl")
@@ -196,7 +198,7 @@ func TestTemplates_AddTemplate(t *testing.T) {
 	})
 
 	t.Run("should replace one the generator ships", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		withTemplate(t, opts, "schemabody", funcTpl)
 
 		var buf bytes.Buffer
@@ -205,7 +207,7 @@ func TestTemplates_AddTemplate(t *testing.T) {
 	})
 
 	t.Run("should reach the templates depending on the one replaced", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		withTemplate(t, opts, "docstring", `{{ define "docstring" }}// replaced{{ end }}`)
 
 		var buf bytes.Buffer
@@ -237,7 +239,7 @@ func TestTemplates_LoadContrib(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// a client run, since the templates this contrib set replaces are rendered by one
 			opts := NewGenOpts(ForClient())
-			require.NoError(t, ensureMachinery(opts))
+			ensureMachinery(t, opts)
 			opts.Template = tt.template
 
 			err := opts.buildTemplates(opts.scope()...)
@@ -257,11 +259,11 @@ func TestTemplates_LoadContrib(t *testing.T) {
 func TestTemplates_Dump(t *testing.T) {
 	var buf bytes.Buffer
 
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.Dump(&buf))
 
 	document := buf.String()
-	assert.StringContainsT(t, document, "### serializersTupleTupleSerializer")
+	assert.StringContainsT(t, document, "### serializersTuple")
 	assert.StringContainsT(t, document, "## serializers/tuple.gotmpl")
 	assert.StringContainsT(t, document, "`schematypeSchemaType`")
 }
@@ -271,7 +273,7 @@ func TestTemplates_Dump(t *testing.T) {
 // templates/paths/server/parameter.gotmpl, declaring serverParameterTarget and
 // serverParameterFileName.
 func TestTemplates_Paths(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	mangler := opts.LanguageOpts.Mangler
 
 	var pathTemplates []string

@@ -15,14 +15,14 @@ import (
 )
 
 func TestSimpleResponseRender(t *testing.T) {
-	b, err := opBuilder("updateTask", "../testdata/codegen/todolist.responses.yml")
+	b, err := opBuilder(t, "updateTask", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("update_task_responses.go", buf.Bytes())
@@ -33,14 +33,14 @@ func TestSimpleResponseRender(t *testing.T) {
 }
 
 func TestDefaultResponseRender(t *testing.T) {
-	b, err := opBuilder("getAllParameters", "../testdata/codegen/todolist.responses.yml")
+	b, err := opBuilder(t, "getAllParameters", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
@@ -54,7 +54,7 @@ func TestDefaultResponseRender(t *testing.T) {
 }
 
 func TestSimpleResponses(t *testing.T) {
-	b, err := opBuilder("updateTask", "../testdata/codegen/todolist.responses.yml")
+	b, err := opBuilder(t, "updateTask", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("updateTask")
@@ -90,7 +90,7 @@ func TestSimpleResponses(t *testing.T) {
 }
 
 func TestInlinedSchemaResponses(t *testing.T) {
-	b, err := opBuilder("getTasks", "../testdata/codegen/todolist.responses.yml")
+	b, err := opBuilder(t, "getTasks", "../testdata/codegen/todolist.responses.yml")
 	require.NoError(t, err)
 
 	_, _, op, ok := b.Analyzed.OperationForName("getTasks")
@@ -127,14 +127,14 @@ func TestInlinedSchemaResponses(t *testing.T) {
 }
 
 func TestGenResponses_Issue540(t *testing.T) {
-	b, err := opBuilder("postPet", "../testdata/bugs/540/swagger.yml")
+	b, err := opBuilder(t, "postPet", "../testdata/bugs/540/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_pet_responses.go", buf.Bytes())
@@ -145,14 +145,14 @@ func TestGenResponses_Issue540(t *testing.T) {
 }
 
 func TestGenResponses_Issue718_NotRequired(t *testing.T) {
-	b, err := opBuilder("doEmpty", "../testdata/codegen/todolist.simple.yml")
+	b, err := opBuilder(t, "doEmpty", "../testdata/codegen/todolist.simple.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
@@ -164,7 +164,7 @@ func TestGenResponses_Issue718_NotRequired(t *testing.T) {
 
 func TestGenResponses_Issue718_Required(t *testing.T) {
 	t.Run("should prepare operation builder", func(t *testing.T) {
-		b, err := opBuilder("doEmpty", "../testdata/codegen/todolist.simple.yml")
+		b, err := opBuilder(t, "doEmpty", "../testdata/codegen/todolist.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should build operation", func(t *testing.T) {
@@ -173,7 +173,7 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 
 			t.Run("should generate response", func(t *testing.T) {
 				var buf bytes.Buffer
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 				t.Run("response code should be properly go-formatted", func(t *testing.T) {
@@ -200,12 +200,12 @@ func TestGenResponses_Issue718_Required(t *testing.T) {
 func TestGenResponses_Issue776_Spec(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("GetItem", "../testdata/bugs/776/spec.yaml")
+	b, err := opBuilderWithFlatten(t, "GetItem", "../testdata/bugs/776/spec.yaml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	if err != nil {
@@ -220,12 +220,12 @@ func TestGenResponses_Issue776_Spec(t *testing.T) {
 func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("getHealthy", "../testdata/bugs/776/swagger-template.yml")
+	b, err := opBuilderWithFlatten(t, "getHealthy", "../testdata/bugs/776/swagger-template.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	if err != nil {
@@ -238,12 +238,12 @@ func TestGenResponses_Issue776_SwaggerTemplate(t *testing.T) {
 func TestIssue846(t *testing.T) {
 	// do it 8 times, to ensure it's always in the same order
 	for range 8 {
-		b, err := opBuilder("getFoo", "../testdata/bugs/846/swagger.yml")
+		b, err := opBuilder(t, "getFoo", "../testdata/bugs/846/swagger.yml")
 		require.NoError(t, err)
 		op, err := b.MakeOperation()
 		require.NoError(t, err)
 		var buf bytes.Buffer
-		opts := opts()
+		opts := opts(t)
 		require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 		ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 		if err != nil {
@@ -264,7 +264,7 @@ func TestIssue846(t *testing.T) {
 }
 
 func TestIssue881(t *testing.T) {
-	b, err := opBuilder("getFoo", "../testdata/bugs/881/swagger.yml")
+	b, err := opBuilder(t, "getFoo", "../testdata/bugs/881/swagger.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -273,7 +273,7 @@ func TestIssue881(t *testing.T) {
 }
 
 func TestIssue881Deep(t *testing.T) {
-	b, err := opBuilder("getFoo", "../testdata/bugs/881/deep.yml")
+	b, err := opBuilder(t, "getFoo", "../testdata/bugs/881/deep.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
@@ -282,12 +282,12 @@ func TestIssue881Deep(t *testing.T) {
 }
 
 func TestGenResponses_XGoName(t *testing.T) {
-	b, err := opBuilder("putTesting", "../testdata/specs/response_name.json")
+	b, err := opBuilder(t, "putTesting", "../testdata/specs/response_name.json")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("put_testing_responses.go", buf.Bytes())
 	if err != nil {
@@ -301,14 +301,14 @@ func TestGenResponses_XGoName(t *testing.T) {
 }
 
 func TestGenResponses_Issue892(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/media/search", "../testdata/bugs/982/swagger.yaml")
+	b, err := methodPathOpBuilder(t, "get", "/media/search", "../testdata/bugs/982/swagger.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, b.GenOpts.templates.MustGet("clientResponse").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
@@ -318,14 +318,14 @@ func TestGenResponses_Issue892(t *testing.T) {
 }
 
 func TestGenResponses_Issue1013(t *testing.T) {
-	b, err := methodPathOpBuilder("get", "/test", "../testdata/bugs/1013/fixture-1013.yaml")
+	b, err := methodPathOpBuilder(t, "get", "/test", "../testdata/bugs/1013/fixture-1013.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opt := opts()
+	opt := opts(t)
 	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 
 	ff, err := opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
@@ -333,13 +333,13 @@ func TestGenResponses_Issue1013(t *testing.T) {
 	assertInCode(t, "Payload *models.Response `json:\"body,omitempty\"`", string(ff))
 
 	buf.Reset()
-	b, err = methodPathOpBuilder("get", "/test2", "../testdata/bugs/1013/fixture-1013.yaml")
+	b, err = methodPathOpBuilder(t, "get", "/test2", "../testdata/bugs/1013/fixture-1013.yaml")
 	require.NoError(t, err)
 
 	op, err = b.MakeOperation()
 	require.NoError(t, err)
 
-	opt = opts()
+	opt = opts(t)
 	require.NoError(t, b.GenOpts.templates.MustGet("serverResponses").Execute(&buf, op))
 	ff, err = opt.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())

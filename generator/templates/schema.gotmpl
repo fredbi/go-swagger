@@ -3,7 +3,7 @@
 {{- else if .IsSuperAlias }}
   type {{ .GoName }} {{ template "typeSchemaType" . }}{{/* For types declared as $ref on some other type, just declare the type as a golang _aliased_ type, e.g. type A = B. No method shall be redeclared.  */}}
   {{- if .IsBaseType }}
-    {{ template "serializersBasetypeBaseType" . }}{{/* When the alias redeclares a polymorphic type, define factory methods with this alias. */}}
+    {{ template "serializersBaseType" . }}{{/* When the alias redeclares a polymorphic type, define factory methods with this alias. */}}
   {{- end }}
 {{- else if .IsEmbedded }}
   {{- template "schemaEmbedded" . }}
@@ -47,7 +47,7 @@
     type {{ .GoName }} {{ template "typeSchemaType" . }}
   {{- end }}
   {{- if (and .IsPrimitive .IsAliased .IsCustomFormatter (not (stringContains .Zero "(\""))) }}
-    {{ template "serializersAliasedAliasedSerializer" . }}
+    {{ template "serializersAliased" . }}
   {{- end }}
   {{- if or .IsSubType (and .HasBaseType (gt (len .AllOf) 0)) }}
     {{ range .AllOf }}
@@ -76,7 +76,7 @@
   {{- if .IsSubType }}
     {{ template "mapOrSliceGetter" . }}
   {{- end }}
-  {{ template "serializersSchemaSchemaSerializer" . }}
+  {{- template "serializersSchema" . }}
 {{- end }}
 {{- if and .IncludeValidator (not .IsSuperAlias) (not .IsEmbedded) }}{{/* aliased types type A = B do not redefine methods */}}
   {{- if and (not (or .IsInterface .IsStream)) (or .Required .HasValidations .HasBaseType) }}
@@ -112,10 +112,10 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{- end }}
 {{- end }}
 {{- if .WantsMarshalBinary }}
-  {{ template "serializersMarshalbinaryMarshalBinary" . }}
+  {{ template "serializersMarshalBinary" . }}
 {{- end }}
 {{- if .WantsStringer }}
-  {{ template "serializersStringerStringerSerializer" . }}
+  {{ template "serializersStringer" . }}
 {{- end }}
 {{- if .WantsGetters }}
   {{- range .Properties }}

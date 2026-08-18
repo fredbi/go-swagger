@@ -1,4 +1,3 @@
-{{ define "polymorphic" }}
 // Unmarshal{{ .GoName }}Slice unmarshals polymorphic slices of {{ .GoName }}
 func Unmarshal{{ .GoName }}Slice(reader io.Reader, consumer runtime.Consumer) ([]{{ .GoName }}, error) {
   var elements []json.RawMessage
@@ -54,16 +53,3 @@ func unmarshal{{ .GoName }}(data []byte, consumer runtime.Consumer) ({{ .GoName 
   }
   return nil, errors.New(422, "invalid {{ .DiscriminatorField }} value: %q", getType.{{ pascalize .DiscriminatorField }})
 }
-{{- end }}
-
-{{ define "baseType" }}
-// Unmarshal{{ .GoName }} unmarshals polymorphic {{ .GoName }}
-func Unmarshal{{ .GoName }}(reader io.Reader, consumer runtime.Consumer) ({{ .GoName }}, error) {
-  return Unmarshal{{ pascalize .GoType }}(reader, consumer)
-}
-
-// Unmarshal{{ .GoName }}Slice unmarshals polymorphic slices of {{ .GoName }}
-func Unmarshal{{ .GoName }}Slice(reader io.Reader, consumer runtime.Consumer) ([]{{ .GoName }}, error) {
-  return Unmarshal{{ pascalize .GoType }}Slice(reader, consumer)
-}
-{{- end }}

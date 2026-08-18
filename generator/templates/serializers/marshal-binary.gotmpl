@@ -1,4 +1,3 @@
-{{ define "marshalBinary" }}
 // MarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ .GoName }}) MarshalBinary() ([]byte, error) {
   if {{ .ReceiverName }} == nil {
@@ -16,4 +15,3 @@ func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalBinary(b []byte) error {
   *{{ .ReceiverName }} = res
   return nil
 }
-{{- end }}

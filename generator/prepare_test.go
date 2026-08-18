@@ -44,7 +44,7 @@ func TestPrepare_EquivalentToLegacySequence(t *testing.T) {
 
 	// historical sequence, as the generator entry points still drive it
 	legacy := mk()
-	require.NoError(t, ensureMachinery(legacy))
+	ensureMachinery(t, legacy)
 	require.NoError(t, validateOpts(legacy))
 	require.NoError(t, legacy.buildTemplates(legacy.scope()...))
 

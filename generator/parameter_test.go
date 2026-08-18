@@ -17,7 +17,7 @@ import (
 
 func TestBodyParams(t *testing.T) {
 	t.Run("with updateTask", func(t *testing.T) {
-		b, err := opBuilder("updateTask", "../testdata/codegen/todolist.bodyparams.yml")
+		b, err := opBuilder(t, "updateTask", "../testdata/codegen/todolist.bodyparams.yml")
 		require.NoError(t, err)
 
 		_, _, op, ok := b.Analyzed.OperationForName("updateTask")
@@ -44,7 +44,7 @@ func TestBodyParams(t *testing.T) {
 	})
 
 	t.Run("with createTask", func(t *testing.T) {
-		b, err := opBuilder("createTask", "../testdata/codegen/todolist.bodyparams.yml")
+		b, err := opBuilder(t, "createTask", "../testdata/codegen/todolist.bodyparams.yml")
 		require.NoError(t, err)
 
 		_, _, op, ok := b.Analyzed.OperationForName("createTask")
@@ -93,7 +93,7 @@ var arrayFormParams = []paramTestContext{
 }
 
 func TestFormArrayParams(t *testing.T) {
-	b, err := opBuilder("arrayFormParams", "../testdata/codegen/todolist.arrayform.yml")
+	b, err := opBuilder(t, "arrayFormParams", "../testdata/codegen/todolist.arrayform.yml")
 	require.NoError(t, err)
 
 	for _, v := range arrayFormParams {
@@ -115,7 +115,7 @@ var arrayQueryParams = []paramTestContext{
 }
 
 func TestQueryArrayParams(t *testing.T) {
-	b, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
+	b, err := opBuilder(t, "arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 
 	for _, v := range arrayQueryParams {
@@ -136,7 +136,7 @@ var simplePathParams = []paramTestContext{
 }
 
 func TestSimplePathParams(t *testing.T) {
-	b, err := opBuilder("simplePathParams", "../testdata/codegen/todolist.simplepath.yml")
+	b, err := opBuilder(t, "simplePathParams", "../testdata/codegen/todolist.simplepath.yml")
 	require.NoError(t, err)
 
 	for _, v := range simplePathParams {
@@ -158,7 +158,7 @@ var simpleHeaderParams = []paramTestContext{
 }
 
 func TestSimpleHeaderParams(t *testing.T) {
-	b, err := opBuilder("simpleHeaderParams", "../testdata/codegen/todolist.simpleheader.yml")
+	b, err := opBuilder(t, "simpleHeaderParams", "../testdata/codegen/todolist.simpleheader.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleHeaderParams {
@@ -180,7 +180,7 @@ var simpleFormParams = []paramTestContext{
 }
 
 func TestSimpleFormParams(t *testing.T) {
-	b, err := opBuilder("simpleFormParams", "../testdata/codegen/todolist.simpleform.yml")
+	b, err := opBuilder(t, "simpleFormParams", "../testdata/codegen/todolist.simpleform.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleFormParams {
@@ -202,7 +202,7 @@ var simpleQueryParams = []paramTestContext{
 }
 
 func TestSimpleQueryParamsAST(t *testing.T) {
-	b, err := opBuilder("simpleQueryParams", "../testdata/codegen/todolist.simplequery.yml")
+	b, err := opBuilder(t, "simpleQueryParams", "../testdata/codegen/todolist.simplequery.yml")
 	require.NoError(t, err)
 
 	for _, v := range simpleQueryParams {
@@ -221,7 +221,7 @@ var bug163Properties = []paramTestContext{
 func TestGenParameters_Simple(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getSearch", "../testdata/bugs/163/swagger.yml")
+	b, err := opBuilder(t, "getSearch", "../testdata/bugs/163/swagger.yml")
 	require.NoError(t, err)
 
 	for _, v := range bug163Properties {
@@ -233,14 +233,14 @@ func TestGenParameters_Simple(t *testing.T) {
 func TestGenParameter_Enhancement936(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("find", "../testdata/enhancements/936/fixture-936.yml")
+	b, err := opBuilder(t, "find", "../testdata/enhancements/936/fixture-936.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("find_parameters.go", buf.Bytes())
@@ -254,13 +254,13 @@ func TestGenParameter_Enhancement936(t *testing.T) {
 func TestGenParameter_Issue163(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getSearch", "../testdata/bugs/163/swagger.yml")
+	b, err := opBuilder(t, "getSearch", "../testdata/bugs/163/swagger.yml")
 	require.NoError(t, err)
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_search_parameters.go", buf.Bytes())
@@ -275,14 +275,14 @@ func TestGenParameter_Issue163(t *testing.T) {
 func TestGenParameter_Issue195(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("getTesting", "../testdata/bugs/195/swagger.json")
+	b, err := opBuilder(t, "getTesting", "../testdata/bugs/195/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_testing.go", buf.Bytes())
@@ -297,7 +297,7 @@ func TestGenParameter_Issue196(t *testing.T) {
 	defer discardOutput()()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		b, err := opBuilder("postEvents", "../testdata/bugs/196/swagger.yml")
+		b, err := opBuilder(t, "postEvents", "../testdata/bugs/196/swagger.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -306,7 +306,7 @@ func TestGenParameter_Issue196(t *testing.T) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -334,7 +334,7 @@ func TestGenParameter_Issue217(t *testing.T) {
 
 func assertNoValidator(t *testing.T, opName, path string) {
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		b, err := opBuilder(opName, path)
+		b, err := opBuilder(t, opName, path)
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -343,7 +343,7 @@ func assertNoValidator(t *testing.T, opName, path string) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				var buf bytes.Buffer
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -361,7 +361,7 @@ func assertNoValidator(t *testing.T, opName, path string) {
 
 func TestGenParameter_Issue249(t *testing.T) {
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		b, err := opBuilder("putTesting", "../testdata/bugs/249/swagger.json")
+		b, err := opBuilder(t, "putTesting", "../testdata/bugs/249/swagger.json")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -370,7 +370,7 @@ func TestGenParameter_Issue249(t *testing.T) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -387,14 +387,14 @@ func TestGenParameter_Issue249(t *testing.T) {
 }
 
 func TestGenParameter_Issue248(t *testing.T) {
-	b, err := opBuilder("CreateThing", "../testdata/bugs/248/swagger.json")
+	b, err := opBuilder(t, "CreateThing", "../testdata/bugs/248/swagger.json")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("create_thing.go", buf.Bytes())
@@ -422,7 +422,7 @@ func TestGenParameter_Issue303(t *testing.T) {
 		t.Run(fmt.Sprintf("%s-%s", t.Name(), service), func(t *testing.T) {
 			t.Parallel()
 
-			gen, err := opBuilder(service, "../testdata/enhancements/303/swagger.yml")
+			gen, err := opBuilder(t, service, "../testdata/enhancements/303/swagger.yml")
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
@@ -440,7 +440,7 @@ func TestGenParameter_Issue303(t *testing.T) {
 			assert.TrueT(t, xGoEnumCI)
 
 			buf := bytes.NewBuffer(nil)
-			opts := opts()
+			opts := opts(t)
 			require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 			ff, err := opts.LanguageOpts.FormatContent("case_insensitive_enum_parameter.go", buf.Bytes())
@@ -455,14 +455,14 @@ func TestGenParameter_Issue303(t *testing.T) {
 }
 
 func TestGenParameter_Issue350(t *testing.T) {
-	b, err := opBuilder("withBoolDefault", "../testdata/codegen/todolist.allparams.yml")
+	b, err := opBuilder(t, "withBoolDefault", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("with_bool_default.go", buf.Bytes())
@@ -473,14 +473,14 @@ func TestGenParameter_Issue350(t *testing.T) {
 }
 
 func TestGenParameter_Issue351(t *testing.T) {
-	b, err := opBuilder("withArray", "../testdata/codegen/todolist.allparams.yml")
+	b, err := opBuilder(t, "withArray", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("with_array.go", buf.Bytes())
@@ -491,14 +491,14 @@ func TestGenParameter_Issue351(t *testing.T) {
 }
 
 func TestGenParameter_Issue511(t *testing.T) {
-	gen, err := opBuilder("postModels", "../testdata/bugs/511/swagger.yml")
+	gen, err := opBuilder(t, "postModels", "../testdata/bugs/511/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -509,14 +509,14 @@ func TestGenParameter_Issue511(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Collection(t *testing.T) {
-	gen, err := opBuilder("collection", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "collection", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -529,14 +529,14 @@ func TestGenParameter_Issue628_Collection(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Single(t *testing.T) {
-	gen, err := opBuilder("single", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "single", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -548,14 +548,14 @@ func TestGenParameter_Issue628_Single(t *testing.T) {
 }
 
 func TestGenParameter_Issue628_Details(t *testing.T) {
-	gen, err := opBuilder("details", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "details", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -567,14 +567,14 @@ func TestGenParameter_Issue628_Details(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Collection(t *testing.T) {
-	gen, err := opBuilder("collection", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "collection", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -594,14 +594,14 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Single(t *testing.T) {
-	gen, err := opBuilder("single", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "single", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -613,14 +613,14 @@ func TestGenParameter_Issue731_Single(t *testing.T) {
 }
 
 func TestGenParameter_Issue731_Details(t *testing.T) {
-	gen, err := opBuilder("details", "../testdata/bugs/628/swagger.yml")
+	gen, err := opBuilder(t, "details", "../testdata/bugs/628/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -630,14 +630,14 @@ func TestGenParameter_Issue731_Details(t *testing.T) {
 }
 
 func TestGenParameter_Issue809_Client(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/foo", "../testdata/bugs/809/swagger.yml")
+	gen, err := methodPathOpBuilder(t, "get", "/foo", "../testdata/bugs/809/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -654,14 +654,14 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 }
 
 func TestGenParameter_Issue809_Server(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/foo", "../testdata/bugs/809/swagger.yml")
+	gen, err := methodPathOpBuilder(t, "get", "/foo", "../testdata/bugs/809/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -671,14 +671,14 @@ func TestGenParameter_Issue809_Server(t *testing.T) {
 }
 
 func TestGenParameter_Issue1010_Server(t *testing.T) {
-	gen, err := methodPathOpBuilder("get", "/widgets/", "../testdata/bugs/1010/swagger.yml")
+	gen, err := methodPathOpBuilder(t, "get", "/widgets/", "../testdata/bugs/1010/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_widgets.go", buf.Bytes())
@@ -690,14 +690,14 @@ func TestGenParameter_Issue1010_Server(t *testing.T) {
 func TestGenParameter_Issue710(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := opBuilder("createTask", "../testdata/codegen/todolist.allparams.yml")
+	gen, err := opBuilder(t, "createTask", "../testdata/codegen/todolist.allparams.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
@@ -709,14 +709,14 @@ func TestGenParameter_Issue710(t *testing.T) {
 func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilderWithFlatten("GetItem", "../testdata/bugs/776/param.yaml")
+	b, err := opBuilderWithFlatten(t, "GetItem", "../testdata/bugs/776/param.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(&buf, op))
 	ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, "unexpected format error: %s\n%s", err, buf.String())
@@ -727,14 +727,14 @@ func TestGenParameter_Issue776_LocalFileRef(t *testing.T) {
 }
 
 func TestGenParameter_Issue1111(t *testing.T) {
-	gen, err := opBuilder("start-es-cluster-instances", "../testdata/bugs/1111/arrayParam.json")
+	gen, err := opBuilder(t, "start-es-cluster-instances", "../testdata/bugs/1111/arrayParam.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
@@ -744,14 +744,14 @@ func TestGenParameter_Issue1111(t *testing.T) {
 }
 
 func TestGenParameter_Issue1462(t *testing.T) {
-	gen, err := opBuilder("start-es-cluster-instances", "../testdata/bugs/1462/arrayParam.json")
+	gen, err := opBuilder(t, "start-es-cluster-instances", "../testdata/bugs/1462/arrayParam.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
@@ -767,14 +767,14 @@ func TestGenParameter_Issue1199(t *testing.T) {
 		}
 	}`
 
-	gen, err := opBuilder("move-clusters", "../testdata/bugs/1199/nonEmptyBody.json")
+	gen, err := opBuilder(t, "move-clusters", "../testdata/bugs/1199/nonEmptyBody.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
@@ -786,14 +786,14 @@ func TestGenParameter_Issue1199(t *testing.T) {
 func TestGenParameter_Issue1325(t *testing.T) {
 	defer discardOutput()()
 
-	gen, err := opBuilder("uploadFile", "../testdata/bugs/1325/swagger.yaml")
+	gen, err := opBuilder(t, "uploadFile", "../testdata/bugs/1325/swagger.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
@@ -804,14 +804,14 @@ func TestGenParameter_Issue1325(t *testing.T) {
 
 //nolint:dupword // OK: false positives on code assertions
 func TestGenParameter_ArrayQueryParameters(t *testing.T) {
-	gen, err := opBuilder("arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
+	gen, err := opBuilder(t, "arrayQueryParams", "../testdata/codegen/todolist.arrayquery.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("array_query_params.go", buf.Bytes())
@@ -959,20 +959,20 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 			switch {
 			case minimalFlatten && !withExpand:
 				// proceed with minimal spec flattening
-				gen, err = opBuilder(fixtureIndex, fixture)
+				gen, err = opBuilder(t, fixtureIndex, fixture)
 			case !minimalFlatten:
 				// proceed with full flattening
-				gen, err = opBuilderWithFlatten(fixtureIndex, fixture)
+				gen, err = opBuilderWithFlatten(t, fixtureIndex, fixture)
 			default:
 				// proceed with spec expansion
-				gen, err = opBuilderWithExpand(fixtureIndex, fixture)
+				gen, err = opBuilderWithExpand(t, fixtureIndex, fixture)
 			}
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
 			require.NoError(t, err)
 
-			opts := opts()
+			opts := opts(t)
 			for fixtureTemplate, expectedCode := range fixtureContents {
 				buf := bytes.NewBuffer(nil)
 				require.NoErrorf(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
@@ -1251,13 +1251,13 @@ func TestGenParameter_Issue909(t *testing.T) {
 			t.Parallel()
 
 			fixtureSpec := strings.Join([]string{"fixture-909-", fixtureIndex, ".yaml"}, "")
-			gen, err := opBuilder("getOptional", filepath.Join("..", "testdata", "bugs", "909", fixtureSpec))
+			gen, err := opBuilder(t, "getOptional", filepath.Join("..", "testdata", "bugs", "909", fixtureSpec))
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
 			require.NoError(t, err)
 
-			opts := opts()
+			opts := opts(t)
 			for fixtureTemplate, expectedCode := range fixtureContents {
 				buf := bytes.NewBuffer(nil)
 				err := opts.templates.MustGet(fixtureTemplate).Execute(buf, op)
@@ -1298,13 +1298,13 @@ func TestGenParameter_Issue1237(t *testing.T) {
 	}
 	for _, fixtureContents := range fixtureConfig {
 		fixtureSpec := strings.Join([]string{"fixture-1237", ".json"}, "")
-		gen, err := opBuilder("add sg", filepath.Join("..", "testdata", "bugs", "1237", fixtureSpec))
+		gen, err := opBuilder(t, "add sg", filepath.Join("..", "testdata", "bugs", "1237", fixtureSpec))
 		require.NoError(t, err)
 
 		op, err := gen.MakeOperation()
 		require.NoError(t, err)
 
-		opts := opts()
+		opts := opts(t)
 		for fixtureTemplate, expectedCode := range fixtureContents {
 			buf := bytes.NewBuffer(nil)
 			require.NoErrorf(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
@@ -1492,13 +1492,13 @@ func TestGenParameter_Issue1392(t *testing.T) {
 				operationToTest = "Bodybuilder23"
 			}
 
-			gen, err := opBuilder(operationToTest, filepath.Join("..", "testdata", "bugs", "1392", fixtureSpec))
+			gen, err := opBuilder(t, operationToTest, filepath.Join("..", "testdata", "bugs", "1392", fixtureSpec))
 			require.NoError(t, err)
 
 			op, err := gen.MakeOperation()
 			require.NoError(t, err)
 
-			opts := opts()
+			opts := opts(t)
 			for fixtureTemplate, expectedCode := range fixtureContents {
 				buf := bytes.NewBuffer(nil)
 				require.NoError(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
@@ -1523,14 +1523,14 @@ func TestGenParameter_Issue1513(t *testing.T) {
 
 	assertion := `r.SetBodyParam(o.Something)`
 
-	gen, err := opBuilderWithFlatten("put-enum", "../testdata/bugs/1513/enums.yaml")
+	gen, err := opBuilderWithFlatten(t, "put-enum", "../testdata/bugs/1513/enums.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
@@ -4121,14 +4121,14 @@ func TestGenParameter_Issue2167(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
+	gen, err := opBuilder(t, "xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
@@ -4145,14 +4145,14 @@ func TestGenParameter_Issue2273(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("postSnapshot", "../testdata/bugs/2273/swagger.json")
+	gen, err := opBuilder(t, "postSnapshot", "../testdata/bugs/2273/swagger.json")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_snapshot_parameters.go", buf.Bytes())
@@ -4165,14 +4165,14 @@ func TestGenParameter_Issue2448_Numbers(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("getNumbers", "../testdata/bugs/2448/fixture-2448.yaml")
+	gen, err := opBuilder(t, "getNumbers", "../testdata/bugs/2448/fixture-2448.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_numbers_parameters.go", buf.Bytes())
@@ -4194,14 +4194,14 @@ func TestGenParameter_Issue2448_Integers(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
-	gen, err := opBuilder("getIntegers", "../testdata/bugs/2448/fixture-2448.yaml")
+	gen, err := opBuilder(t, "getIntegers", "../testdata/bugs/2448/fixture-2448.yaml")
 	require.NoError(t, err)
 
 	op, err := gen.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_integers_parameters.go", buf.Bytes())
@@ -4236,7 +4236,7 @@ func TestGenParameter_Issue2448_Integers(t *testing.T) {
 func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("streamingUpload", "../testdata/codegen/streaming-form.yml")
+	b, err := opBuilder(t, "streamingUpload", "../testdata/codegen/streaming-form.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -4247,7 +4247,7 @@ func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 	assert.Len(t, op.ServerParams, 1)
 	assert.EqualT(t, "token", op.ServerParams[0].Name)
 
-	opts := opts()
+	opts := opts(t)
 
 	t.Run("server binding hands the stream to the handler", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
@@ -4297,7 +4297,7 @@ func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 func TestGenParameter_BufferedMultipartFormUnaffected(t *testing.T) {
 	defer discardOutput()()
 
-	b, err := opBuilder("bufferedUpload", "../testdata/codegen/streaming-form.yml")
+	b, err := opBuilder(t, "bufferedUpload", "../testdata/codegen/streaming-form.yml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
@@ -4305,7 +4305,7 @@ func TestGenParameter_BufferedMultipartFormUnaffected(t *testing.T) {
 	require.FalseT(t, op.HasStreamingForm)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	formatted, err := opts.LanguageOpts.FormatContent("buffered_upload_parameters.go", buf.Bytes())
@@ -4341,7 +4341,7 @@ func TestGenParameter_StreamingMultipartFormExtensionValidation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			b, err := opBuilder(test.operation, "../testdata/codegen/streaming-form-invalid.yml")
+			b, err := opBuilder(t, test.operation, "../testdata/codegen/streaming-form-invalid.yml")
 			require.NoError(t, err)
 
 			_, err = b.MakeOperation()

@@ -138,7 +138,7 @@ func TestBaseImport(t *testing.T) {
 	// needed (inherited from old GOPATH shinenigans).
 
 	tempdir := t.TempDir()
-	opts := opts()
+	opts := opts(t)
 
 	for _, item := range baseImportTestFixtures(tempdir) {
 		t.Run(fmt.Sprintf("TestBaseImport(%q)", item.title), func(t *testing.T) {
@@ -185,7 +185,7 @@ func TestGenerateMarkdown(t *testing.T) {
 	defer discardOutput()()
 
 	t.Run("should generate doc for demo fixture", func(t *testing.T) {
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = "../testdata/enhancements/184/fixture-184.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 
@@ -208,7 +208,7 @@ func TestGenerateMarkdown(t *testing.T) {
 	// so GenerateMarkdown carries out the target checks itself.
 	t.Run("with an unusable target", func(t *testing.T) {
 		t.Run("should fail on a missing target", func(t *testing.T) {
-			opts := testGenOpts()
+			opts := testGenOpts(t)
 			opts.Spec = "../testdata/enhancements/184/fixture-184.yaml"
 			opts.Target = filepath.Join(t.TempDir(), "missing")
 
@@ -217,7 +217,7 @@ func TestGenerateMarkdown(t *testing.T) {
 		})
 
 		t.Run("should not create the target when the spec cannot be found", func(t *testing.T) {
-			opts := testGenOpts()
+			opts := testGenOpts(t)
 			opts.Spec = "../testdata/enhancements/184/nosuchfixture.yaml"
 			opts.Target = filepath.Join(t.TempDir(), "missing")
 			opts.EnsureTarget = true
@@ -228,7 +228,7 @@ func TestGenerateMarkdown(t *testing.T) {
 	})
 
 	t.Run("should handle new lines in descriptions", func(t *testing.T) {
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = "../testdata/bugs/2700/2700.yaml"
 		output := filepath.Join(t.TempDir(), "markdown.md")
 

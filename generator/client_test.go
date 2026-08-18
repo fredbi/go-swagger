@@ -4,7 +4,6 @@
 package generator
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -47,7 +46,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail on invalid templates location (1)", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.TemplateDir = "dir/nowhere"
 				require.Error(t,
 					GenerateClient(clientName, []string{"model1"}, []string{"op1", "op2"}, opts),
@@ -55,7 +54,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail on invalid templates location (2)", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.TemplateDir = "http://nowhere.com"
 				require.Error(t,
 					GenerateClient(clientName, []string{"model1"}, []string{"op1", "op2"}, opts),
@@ -63,7 +62,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail on invalid spec location", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = "dir/nowhere.yaml"
 				require.Error(t,
 					GenerateClient(clientName, []string{"model1"}, []string{"op1", "op2"}, opts),
@@ -71,7 +70,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail on invalid model name", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = basicFixture
 				require.Error(t,
 					GenerateClient(clientName, []string{"model1"}, []string{}, opts),
@@ -79,7 +78,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail on bad content in spec (HTML, not json)", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = ts.URL + routeRemoteHTMLSpec
 				require.Error(t,
 					GenerateClient(clientName, []string{}, []string{}, opts),
@@ -87,7 +86,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should fail when no valid operation is selected", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				require.Error(t,
 					GenerateClient(clientName, []string{}, []string{"wrongOperationID"}, opts),
@@ -95,7 +94,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should refuse to generate from garbled parameters", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = filepath.Join("..", "testdata", "bugs", "2527", "swagger.yml")
 				opts.ValidateSpec = false
 				err := GenerateClient(clientName, []string{}, []string{"GetDeposits"}, opts)
@@ -110,7 +109,7 @@ func TestGenClient(t *testing.T) {
 
 		t.Run("should generate client", func(t *testing.T) {
 			t.Run("from remote spec", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				opts.Target = prepareClientTarget(t, root)
 				opts.IsClient = true
@@ -122,7 +121,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("from fixed spec (issue #2527)", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = filepath.Join("..", "testdata", "bugs", "2527", "swagger-fixed.yml")
 				opts.Target = prepareClientTarget(t, root)
 				opts.IsClient = true
@@ -134,7 +133,7 @@ func TestGenClient(t *testing.T) {
 			})
 
 			t.Run("should dump template data", func(t *testing.T) {
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				opts.Target = prepareClientTarget(t, root)
 				opts.DumpData = true
@@ -181,7 +180,7 @@ func TestGenClientFixtures(t *testing.T) {
 				t.Parallel()
 
 				base := prepareClientTarget(t, root)
-				opts := testClientGenOpts()
+				opts := testClientGenOpts(t)
 				opts.Spec = basicFixture
 				opts.Template = tt.template
 				opts.Target = filepath.Join(
@@ -222,7 +221,7 @@ func TestGenClient_1518(t *testing.T) {
 
 	// test client response handling when unexpected success response kicks in
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "1518", "fixture-1518.yaml")
 	opts.Target = prepareClientTarget(t, root)
 
@@ -278,7 +277,7 @@ func TestGenClient_2945(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2945", "fixture-2945.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -307,7 +306,7 @@ func TestGenClient_2471(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2471", "fixture-2471.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -368,7 +367,7 @@ func TestGenClient_2096(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2096", "fixture-2096.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -408,7 +407,7 @@ func TestGenClient_909_3(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-3.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -510,7 +509,7 @@ func TestGenClient_909_5(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-5.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -678,7 +677,7 @@ func TestGenClient_909_6(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "909", "fixture-909-6.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -959,7 +958,7 @@ func TestGenClient_2590(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2590", "2590.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -990,7 +989,7 @@ func TestGenClient_2773(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2773", "2773.yaml")
 	opts.Target = prepareClientTarget(t, root)
 	require.NoError(t, GenerateClient("client", []string{}, []string{}, opts))
@@ -1060,7 +1059,7 @@ func TestGenClient_3432(t *testing.T) {
 	defer discardOutput()()
 
 	root := t.TempDir()
-	opts := testClientGenOpts()
+	opts := testClientGenOpts(t)
 	// the context guard is emitted for every operation, so any client fixture exercises it
 	opts.Spec = filepath.Join("..", "testdata", "bugs", "2945", "fixture-2945.yaml")
 	opts.Target = prepareClientTarget(t, root)
@@ -1089,12 +1088,12 @@ func TestGenClient_3432(t *testing.T) {
 	})
 }
 
-func testClientGenOpts() *GenOpts {
+func testClientGenOpts(t *testing.T) *GenOpts {
+	t.Helper()
+
 	g := NewGenOpts(ForClient())
 	g.Target = "."
-	if err := ensureMachinery(g); err != nil {
-		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
-	}
+	ensureMachinery(t, g)
 
 	return g
 }

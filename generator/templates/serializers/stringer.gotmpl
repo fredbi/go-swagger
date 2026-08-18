@@ -1,4 +1,3 @@
-{{ define "stringerSerializer" }}
 // String implements the fmt.Stringer interface.
 //
 // It renders the field values of this {{ humanize .Name }} as JSON, so that pointer
@@ -13,4 +12,3 @@ func ({{.ReceiverName}} *{{ .GoName }}) String() string {
   }
   return string(b)
 }
-{{- end }}

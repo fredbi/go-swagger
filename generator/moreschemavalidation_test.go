@@ -5,7 +5,6 @@ package generator
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -133,9 +132,7 @@ func (f *modelFixture) AddRun(expandSpec bool) *modelTestRun {
 	opts.IncludeModel = true
 	opts.ValidateSpec = false
 	opts.Spec = f.SpecFile
-	if err := ensureMachinery(opts); err != nil {
-		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
-	}
+	mustEnsureMachinery(opts)
 
 	// sets gen options (e.g. flatten vs expand) - full flatten is the default setting for this test (NOT the default CLI option!)
 	opts.FlattenOpts.Expand = expandSpec
@@ -361,7 +358,7 @@ func TestModelGenerateDefinition(t *testing.T) {
 		o.Spec = fixtureSpec
 		o.ModelPackage = "models"
 		o.Target = gendir
-		require.NoError(t, ensureMachinery(o))
+		ensureMachinery(t, o)
 
 		// sets gen options (e.g. flatten vs expand) - minimal flatten is the default setting
 		o.FlattenOpts.Minimal = false

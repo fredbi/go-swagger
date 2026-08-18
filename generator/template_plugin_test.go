@@ -65,7 +65,7 @@ func TestTemplatePlugin(t *testing.T) {
 	})
 
 	t.Run("should let a template call a function the plugin adds", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.TemplatePlugin = plugin
 		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
@@ -77,7 +77,7 @@ func TestTemplatePlugin(t *testing.T) {
 	})
 
 	t.Run("should let a plugin replace a function the generator provides", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.TemplatePlugin = plugin
 		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
@@ -91,7 +91,7 @@ func TestTemplatePlugin(t *testing.T) {
 	t.Run("should reach the templates the generator ships", func(t *testing.T) {
 		// the repository is built again with the functions of the plugin, so a template parsed
 		// before it was loaded calls them too
-		opts := opts()
+		opts := opts(t)
 		opts.TemplatePlugin = plugin
 		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
@@ -101,7 +101,7 @@ func TestTemplatePlugin(t *testing.T) {
 
 func TestTemplatePluginErrors(t *testing.T) {
 	t.Run("should report a plugin that is not there", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.TemplatePlugin = filepath.Join(t.TempDir(), "nowhere.so")
 
 		require.Error(t, opts.buildTemplates(opts.scope()...))

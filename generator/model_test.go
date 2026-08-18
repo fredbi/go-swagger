@@ -25,6 +25,8 @@ type templateTest struct {
 }
 
 func (tt *templateTest) assertRender(data any, expected string) (success bool) {
+	tt.t.Helper()
+
 	buf := bytes.NewBuffer(nil)
 	defer func() {
 		success = !tt.t.Failed()
@@ -50,7 +52,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 
 	t.Run("mode sanity check", func(t *testing.T) {
 		for k, schema := range definitions {
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -66,7 +68,7 @@ func TestGenerateModel_Sanity(t *testing.T) {
 }
 
 func TestGenerateModel_DocString(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tt := templateTest{t, opts.templates.MustGet("docstring")}
 	const (
 		title = "The title of the property"
@@ -92,7 +94,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 }
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tt := templateTest{t, opts.templates.MustGet("validationStructfieldPropertyValidationDocString")}
 
 	var gmp GenSchema
@@ -139,7 +141,7 @@ func TestGenerateModel_PropertyValidation(t *testing.T) {
 }
 
 func TestGenerateModel_SchemaField(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tt := templateTest{t, opts.templates.MustGet("structfield")}
 
 	var gmp GenSchema
@@ -247,7 +249,7 @@ var schTypeGenDataSimple = []struct {
 }
 
 func TestGenSchemaType(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tt := templateTest{t, opts.templates.MustGet("schematypeSchemaType")}
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
@@ -255,7 +257,7 @@ func TestGenSchemaType(t *testing.T) {
 }
 
 func TestGenerateModel_Primitives(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tt := templateTest{t, opts.templates.MustGet("schema")}
 	for _, v := range schTypeGenDataSimple {
 		v.Value.IncludeValidator = true
@@ -269,10 +271,10 @@ func TestGenerateModel_Primitives(t *testing.T) {
 		val.GoName = exportGoName("theType", false, opts.LanguageOpts.Mangler)
 		exp := v.Expected
 		if val.IsInterface || val.IsStream {
-			tt.assertRender(&val, "type TheType "+exp+"\n  \n")
+			tt.assertRender(&val, "type TheType "+exp+"\n\n")
 			continue
 		}
-		tt.assertRender(&val, "type TheType "+exp+"\n  \n// Validate validates this the type\nfunc (o theType) Validate(_ strfmt.Registry) error {\n  return nil\n}\n// ContextValidate validates this the type based on context it is used \nfunc (o theType) ContextValidate(_ context.Context, _ strfmt.Registry) error {\n  return nil\n}\n")
+		tt.assertRender(&val, "type TheType "+exp+"\n\n// Validate validates this the type\nfunc (o theType) Validate(_ strfmt.Registry) error {\n  return nil\n}\n// ContextValidate validates this the type based on context it is used \nfunc (o theType) ContextValidate(_ context.Context, _ strfmt.Registry) error {\n  return nil\n}\n")
 	}
 }
 
@@ -349,7 +351,7 @@ func TestGenerateModel_Nota(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Nota"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -367,7 +369,7 @@ func TestGenerateModel_NotaWithRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "NotaWithRef"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -388,7 +390,7 @@ func TestGenerateModel_NotaWithMeta(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "NotaWithMeta"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -412,7 +414,7 @@ func TestGenerateModel_XGoNamePreserveExplicitCasing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "response"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -438,14 +440,14 @@ func TestGenerateModel_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestGenParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
-	b, err := methodPathOpBuilder("post", "/test", "../testdata/bugs/3319/3319.yaml")
+	b, err := methodPathOpBuilder(t, "post", "/test", "../testdata/bugs/3319/3319.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_test_parameters.go", buf.Bytes())
@@ -459,14 +461,14 @@ func TestGenParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
 }
 
 func TestGenClientParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
-	b, err := methodPathOpBuilder("post", "/test", "../testdata/bugs/3319/3319.yaml")
+	b, err := methodPathOpBuilder(t, "post", "/test", "../testdata/bugs/3319/3319.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts()
+	opts := opts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_test_parameters.go", buf.Bytes())
@@ -486,7 +488,7 @@ func TestGenerateModel_RunParameters(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "RunParameters"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -511,7 +513,7 @@ func TestGenerateModel_NotaWithName(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "NotaWithName"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -548,7 +550,7 @@ func TestGenerateModel_NotaWithRefRegistry(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "NotaWithRefRegistry"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -568,7 +570,7 @@ func TestGenerateModel_WithCustomTag(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithCustomTag"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -585,7 +587,7 @@ func TestGenerateModel_NotaWithMetaRegistry(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "NotaWithMetaRegistry"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -608,7 +610,7 @@ func TestGenerateModel_WithMap(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMap"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -631,7 +633,7 @@ func TestGenerateModel_WithMapInterface(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMapInterface"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("WithMapInterface", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -659,7 +661,7 @@ func TestGenerateModel_WithMapRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithMapRef"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -683,7 +685,7 @@ func TestGenerateModel_WithMapComplex(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithMapComplex"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -706,7 +708,7 @@ func TestGenerateModel_WithMapRegistry(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithMapRegistry"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("WithMap", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -730,7 +732,7 @@ func TestGenerateModel_WithMapRegistryRef(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithMapRegistryRef"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -754,7 +756,7 @@ func TestGenerateModel_WithMapComplexRegistry(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithMapComplexRegistry"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -778,7 +780,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "WithAdditional"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
@@ -827,7 +829,7 @@ func TestGenerateModel_WithAdditional(t *testing.T) {
 }
 
 func TestGenerateModel_JustRef(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -850,7 +852,7 @@ func TestGenerateModel_JustRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithRef(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -872,7 +874,7 @@ func TestGenerateModel_WithRef(t *testing.T) {
 }
 
 func TestGenerateModel_WithNullableRef(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("schema")
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.models.yml")
 	require.NoError(t, err)
@@ -903,7 +905,7 @@ func TestGenerateModel_Scores(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Scores"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -923,7 +925,7 @@ func TestGenerateModel_JaggedScores(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "JaggedScores"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -943,7 +945,7 @@ func TestGenerateModel_Notables(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Notables"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.EqualT(t, "[]*Notable", genModel.GoType)
@@ -966,7 +968,7 @@ func TestGenerateModel_Notablix(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Notablix"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -987,7 +989,7 @@ func TestGenerateModel_Stats(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Stats"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1010,7 +1012,7 @@ func TestGenerateModel_Statix(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Statix"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1032,7 +1034,7 @@ func TestGenerateModel_WithItems(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithItems"]
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("schema")
 
 	genModel, err := makeGenDefinition("WithItems", "models", schema, specDoc, opts)
@@ -1061,7 +1063,7 @@ func TestGenerateModel_WithComplexItems(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithComplexItems"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1091,7 +1093,7 @@ func TestGenerateModel_WithItemsAndAdditional(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithItemsAndAdditional"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1121,7 +1123,7 @@ func TestGenerateModel_WithItemsAndAdditional2(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithItemsAndAdditional2"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1151,7 +1153,7 @@ func TestGenerateModel_WithComplexAdditional(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithComplexAdditional"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1180,7 +1182,7 @@ func TestGenerateModel_SimpleTuple(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SimpleTuple"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 
 	tpl := opts.templates.MustGet("model")
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
@@ -1240,7 +1242,7 @@ func TestGenerateModel_TupleWithExtra(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "TupleWithExtra"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.Empty(t, genModel.ExtraSchemas)
@@ -1305,7 +1307,7 @@ func TestGenerateModel_TupleWithComplex(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "TupleWithComplex"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1369,7 +1371,7 @@ func TestGenerateModel_WithTuple(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithTuple"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.ExtraSchemas)
@@ -1436,7 +1438,7 @@ func TestGenerateModel_WithTupleWithExtra(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithTupleWithExtra"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("model")
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
@@ -1513,7 +1515,7 @@ func TestGenerateModel_WithAllOfAndDiscriminator(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["Cat"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("Cat", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
@@ -1539,7 +1541,7 @@ func TestGenerateModel_WithAllOfAndDiscriminatorAndArrayOfPolymorphs(t *testing.
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["PetWithPets"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("PetWithPets", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.Len(t, genModel.AllOf, 2)
@@ -1564,7 +1566,7 @@ func TestGenerateModel_WithAllOf(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["WithAllOf"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("WithAllOf", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1619,7 +1621,7 @@ func TestNumericKeys(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["AvatarUrls"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("AvatarUrls", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1639,7 +1641,7 @@ func TestGenModel_Issue196(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["Event"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("Event", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1659,7 +1661,7 @@ func TestGenModel_Issue222(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "Price"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 	require.TrueT(t, genModel.HasValidations)
@@ -1682,7 +1684,7 @@ func TestGenModel_Issue243(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "HasDynMeta"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1702,7 +1704,7 @@ func TestGenModel_Issue252(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "SodaBrand"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 	require.FalseT(t, genModel.IsNullable)
@@ -1725,7 +1727,7 @@ func TestGenModel_Issue251(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "example"
-	opts := opts()
+	opts := opts(t)
 	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
@@ -1752,7 +1754,7 @@ func TestGenModel_Issue257(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "HasSpecialCharProp"
-	opts := opts()
+	opts := opts(t)
 	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
@@ -1776,7 +1778,7 @@ func TestGenModel_Issue340(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "ImageTar"
-	opts := opts()
+	opts := opts(t)
 	mangle := opts.LanguageOpts.Mangler.ToGoName
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
@@ -1799,7 +1801,7 @@ func TestGenModel_Issue381(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "flags_list"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1819,7 +1821,7 @@ func TestGenModel_Issue300(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "ActionItem"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1839,7 +1841,7 @@ func TestGenModel_Issue398(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "Property"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1862,7 +1864,7 @@ func TestGenModel_Issue454(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["genericResource"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("genericResource", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1885,7 +1887,7 @@ func TestGenModel_Issue423(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions["SRN"]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition("SRN", "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -1906,7 +1908,7 @@ func TestGenModel_Issue453(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "out_obj"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1926,7 +1928,7 @@ func TestGenModel_Issue455(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "out_obj"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1946,7 +1948,7 @@ func TestGenModel_Issue763(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "test_list"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1968,7 +1970,7 @@ func TestGenModel_Issue811_NullType(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "teamRepos"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -1988,7 +1990,7 @@ func TestGenModel_Issue811_Emojis(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "emojis"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -2009,7 +2011,7 @@ func TestGenModel_Issue752_EOFErr(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "OperationResult"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -2028,7 +2030,7 @@ func TestImports_ExistingModel(t *testing.T) {
 	require.NoError(t, err)
 
 	definitions := specDoc.Spec().Definitions
-	opts := opts()
+	opts := opts(t)
 
 	k := "JsonWebKeySet"
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
@@ -2053,7 +2055,7 @@ func TestGenModel_Issue786(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "MyFirstObject"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -2075,7 +2077,7 @@ func TestGenModel_Issue822(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "Pet"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -2102,7 +2104,7 @@ func TestGenModel_Issue981(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "User"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 
@@ -2127,7 +2129,7 @@ func TestGenModel_Issue1341(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ExecutableValueString"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2153,7 +2155,7 @@ func TestGenModel_Issue1347(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2176,7 +2178,7 @@ func TestGenModel_Issue1348(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "ContainerConfig"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2199,7 +2201,7 @@ func TestGenModel_Issue1198(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "pet"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2222,7 +2224,7 @@ func TestGenModel_Issue1397a(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "ContainerConfig"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2245,7 +2247,7 @@ func TestGenModel_Issue1397b(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "ContainerConfig"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2268,7 +2270,7 @@ func TestGenModel_Issue1409(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Graph"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2299,7 +2301,7 @@ func TestGenModel_Issue1632(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "HalRscLinks"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2329,7 +2331,7 @@ func TestGenModel_Issue2911(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "animal"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2364,7 +2366,7 @@ func TestGenModel_Issue866(t *testing.T) {
 	for k, r := range responses {
 		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
 			schema := *r.Schema
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition("GetOKBody", "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -2391,7 +2393,7 @@ func TestGenModel_Issue946(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "mydate"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2423,7 +2425,7 @@ func TestGenModel_Issue910(t *testing.T) {
 	for k, r := range responses {
 		t.Run(fmt.Sprintf("with response %d", k), func(t *testing.T) {
 			schema := *r.Schema
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition("GetMyTestOKBody", "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -2454,7 +2456,7 @@ func TestGenerateModel_Xorder(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "sessionData"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2494,7 +2496,7 @@ func TestGenModel_Issue1623(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Foo"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
@@ -2526,7 +2528,7 @@ func TestGenerateModel_Issue2457(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ObjWithCustomTag"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -2574,7 +2576,7 @@ func TestGenModel_Pr2464(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			k := spec.model
 			schema := definitions[k]
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -2590,7 +2592,7 @@ func TestGenModel_Pr2464(t *testing.T) {
 
 func TestGenModel_KeepSpecPropertiesOrder(t *testing.T) {
 	ymlFile := "../testdata/codegen/keep-spec-order.yml"
-	opts := opts()
+	opts := opts(t)
 	abcType := "abctype"
 
 	specDoc, err := loads.Spec(ymlFile)
@@ -2657,7 +2659,7 @@ func TestGenModel_StrictAdditionalProperties(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Body"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 
 	opts.StrictAdditionalProperties = true
 
@@ -2693,7 +2695,7 @@ func TestGenModel_XMLStructTags_WithXML(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "XmlWithAttribute"
-	opts := opts()
+	opts := opts(t)
 	opts.WithXML = true
 
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
@@ -2720,7 +2722,7 @@ func TestGenModel_XMLStructTags_Explicit(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "XmlWithAttribute"
-	opts := opts()
+	opts := opts(t)
 
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
@@ -2747,7 +2749,7 @@ func Test_PointerConversions(t *testing.T) {
 
 	definitions := specDoc.Spec().Definitions
 	k := "SodaBrand"
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", definitions[k], specDoc, opts)
 	require.NoError(t, err)
 	require.FalseT(t, genModel.IsNullable)
@@ -2785,7 +2787,7 @@ func TestIssue2597(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 
 	t.Run("with RootedErrorPath option", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.WantsRootedErrorPath = true
 
 		t.Run("should generate the extra path for arrays and maps", func(t *testing.T) {
@@ -2831,7 +2833,7 @@ func TestIssue2597(t *testing.T) {
 	})
 
 	t.Run("without RootedErrorPath option", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 
 		t.Run("should NOT generate the extra path for arrays and maps", func(t *testing.T) {
 			for _, model := range []string{
@@ -2904,7 +2906,7 @@ func TestIssue872(t *testing.T) {
 	}
 
 	t.Run("with WantsStringer option", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.WantsStringer = true
 
 		res := render(t, opts)
@@ -2919,7 +2921,7 @@ func TestIssue872(t *testing.T) {
 	})
 
 	t.Run("without WantsStringer option (default)", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 
 		res := render(t, opts)
 
