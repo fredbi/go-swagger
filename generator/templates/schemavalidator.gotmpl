@@ -1,6 +1,6 @@
 {{ define "primitivefieldcontextvalidator" }}
   {{- if .ReadOnly }}
-    if err := validate.ReadOnly(ctx, {{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil{
+    if err := validate.ReadOnly(ctx, {{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil{
       return err
     }
   {{- end }}
@@ -16,25 +16,25 @@
            useful.
     */}}
     {{- if and (eq .GoType "string") (not .IsNullable) }}
-  if err := validate.RequiredString({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.RequiredString({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     {{- else }}
-  if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     {{- end }}
     return err
   }
   {{- end }}
   {{ if .MinLength }}
-    if err := validate.MinLength({{ path . }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MinLength }}); err != nil {
+    if err := validate.MinLength({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MinLength }}); err != nil {
     return err
   }
   {{- end }}
   {{ if .MaxLength }}
-  if err := validate.MaxLength({{ path . }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MaxLength }}); err != nil {
+  if err := validate.MaxLength({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ToString }}, {{.MaxLength }}); err != nil {
     return err
   }
   {{ end }}
   {{ if .Pattern }}
-  if err := validate.Pattern({{ path . }}, {{ printf "%q" .Location }}, {{ .ToString }}, `{{ escapeBackticks .Pattern }}`); err != nil {
+  if err := validate.Pattern({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ToString }}, `{{ escapeBackticks .Pattern }}`); err != nil {
     return err
   }
   {{- end }}
@@ -49,7 +49,7 @@
   {{ end }}
   {{ if .Enum }}
   // value enum
-  if err := {{.ReceiverName }}.validate{{ .GoName }}{{ .Suffix }}Enum({{ path . }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
+  if err := {{.ReceiverName }}.validate{{ .GoName }}{{ .Suffix }}Enum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ if .IsNullable }}*{{ end }}{{.ValueExpression }}); err != nil {
     return err
   }
   {{- end }}
@@ -60,7 +60,7 @@
 
 {{ define "slicecontextvalidator" }}
   {{ if .ReadOnly }}
-    if err := validate.ReadOnly(ctx, {{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil{
+    if err := validate.ReadOnly(ctx, {{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil{
       return err
     }
   {{ end }}
@@ -80,11 +80,11 @@
       if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
         ve := new(errors.Validation)
         if stderrors.As(err, &ve) {
-          return ve.ValidateName({{ path . }})
+          return ve.ValidateName({{ .ErrPath }})
         }
         ce := new(errors.CompositeError)
         if stderrors.As(err, &ce) {
-          return ce.ValidateName({{ path . }})
+          return ce.ValidateName({{ .ErrPath }})
         }
 
         return err
@@ -98,7 +98,7 @@
 
 {{define "slicevalidator" }}
   {{ if .Required }}
-    if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+    if err := validate.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
       return err
     }
   {{ end }}
@@ -106,23 +106,23 @@
     {{ .IndexVar }}{{ .GoName }}Size := int64(len({{.ValueExpression }}))
   {{ end }}
   {{ if .MinItems }}
-    if err := validate.MinItems({{ path . }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ .GoName }}Size, {{.MinItems }}); err != nil {
+    if err := validate.MinItems({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ .GoName }}Size, {{.MinItems }}); err != nil {
       return err
     }
   {{ end }}
   {{ if .MaxItems }}
-    if err := validate.MaxItems({{ path . }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ .GoName }}Size, {{.MaxItems }}); err != nil {
+    if err := validate.MaxItems({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .IndexVar }}{{ .GoName }}Size, {{.MaxItems }}); err != nil {
       return err
     }
   {{ end }}
   {{ if .UniqueItems }}
-    if err := validate.UniqueItems({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+    if err := validate.UniqueItems({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
       return err
     }
   {{ end }}
   {{ if .Enum }}
     // for slice
-    if err := {{.ReceiverName }}.validate{{ .GoName }}Enum({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+    if err := {{.ReceiverName }}.validate{{ .GoName }}Enum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
       return err
     }
   {{ end }}
@@ -151,11 +151,11 @@
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         ve := new(errors.Validation)
         if stderrors.As(err, &ve) {
-          return ve.ValidateName({{ path . }})
+          return ve.ValidateName({{ .ErrPath }})
         }
         ce := new(errors.CompositeError)
         if stderrors.As(err, &ce) {
-          return ce.ValidateName({{ path . }})
+          return ce.ValidateName({{ .ErrPath }})
         }
 
         return err
@@ -170,10 +170,10 @@
   {{- if and .Required }}
     {{- if or .IsNullable .IsInterface }}
     if {{ .ReceiverName }}.{{ .GoName }} == nil {
-      return errors.Required({{ path . }}, {{ printf "%q" .Location }}, nil)
+      return errors.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, nil)
     }
     {{- else }}
-    if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{ .ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+    if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{ .ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
       return err
     }
     {{- end }}
@@ -229,7 +229,7 @@
           {{ template "mapcontextvalidator" . }}
         {{- else if and .IsMap .IsInterface }}
           {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
+      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
           {{- end }}
@@ -294,10 +294,10 @@
   {{- if and .Required }}
     {{- if or .IsNullable .IsInterface }}
     if {{ .ReceiverName }}.{{ .GoName }} == nil {
-      return errors.Required({{ path . }}, {{ printf "%q" .Location }}, nil)
+      return errors.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, nil)
     }
     {{- else }}
-    if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{ .ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+    if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{ .ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
       return err
     }
     {{- end }}
@@ -316,7 +316,7 @@
         continue
       }
         {{- else if and (.Required) (not .IsArray) }}{{/* Required slice is processed below */}}
-      if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
+      if err := validate.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
         {{- end }}
@@ -330,11 +330,11 @@
           if err := val.Validate(formats); err != nil {
               ve := new(errors.Validation)
               if stderrors.As(err, &ve) {
-                return ve.ValidateName({{ path . }})
+                return ve.ValidateName({{ .ErrPath }})
               }
               ce := new(errors.CompositeError)
               if stderrors.As(err, &ce) {
-                return ce.ValidateName({{ path . }})
+                return ce.ValidateName({{ .ErrPath }})
               }
 
               return err
@@ -362,7 +362,7 @@
           {{- end }}
         {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
           {{- if .Required }}
-      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
+      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ if not (or .IsAnonymous .IsNullable) }}{{ .GoType }}({{ end }}{{.ValueExpression }}{{ if not (or .IsAnonymous .IsNullable) }}){{ end }}); err != nil {
         return err
       }
           {{- end }}
@@ -375,13 +375,13 @@
           {{ template "minmaxProperties" .}}
           {{ template "mapvalidator" . }}
           {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
+      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
           {{- end }}
         {{- else if and .IsMap .IsInterface }}
           {{ if .Enum }}
-      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ path . }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
+      if err := {{ .ReceiverName }}.validate{{ .GoName }}ValueEnum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ $validatedValues }}[{{ $keyVar }}]); err != nil {
         return err
       }
           {{- end }}
@@ -394,11 +394,11 @@
           if err := val.Validate(formats); err != nil {
               ve := new(errors.Validation)
               if stderrors.As(err, &ve) {
-                return ve.ValidateName({{ path . }})
+                return ve.ValidateName({{ .ErrPath }})
               }
               ce := new(errors.CompositeError)
               if stderrors.As(err, &ce) {
-                return ce.ValidateName({{ path . }})
+                return ce.ValidateName({{ .ErrPath }})
               }
 
               return err
@@ -427,7 +427,7 @@
     {{ end }}
     {{ if .Enum }}
     // from map
-    if err := {{ .ReceiverName }}.validate{{ .GoName }}Enum({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
+    if err := {{ .ReceiverName }}.validate{{ .GoName }}Enum({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ValueExpression }}); err != nil {
       return err
     }
     {{ end }}
@@ -493,11 +493,11 @@
       if err := {{.ValueExpression }}.ContextValidate(ctx, formats); err != nil {
         ve := new(errors.Validation)
         if stderrors.As(err, &ve) {
-          return ve.ValidateName({{ path . }})
+          return ve.ValidateName({{ .ErrPath }})
         }
         ce := new(errors.CompositeError)
         if stderrors.As(err, &ce) {
-          return ce.ValidateName({{ path . }})
+          return ce.ValidateName({{ .ErrPath }})
         }
 
         return err
@@ -531,7 +531,7 @@
 
     // short circuits minProperties > 0
     if {{ .ReceiverName }} == nil {
-      return errors.TooFewProperties({{ path . }}, {{ printf "%q" .Location }}, {{ .MinProperties }})
+      return errors.TooFewProperties({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .MinProperties }})
     }
         {{- end }}
       {{- end }}
@@ -551,13 +551,13 @@
     {{ if .MinProperties }}
     // minProperties: {{ .MinProperties }}
     if nprops < {{ .MinProperties }} {
-      return errors.TooFewProperties({{ path . }}, {{ printf "%q" .Location }}, {{ .MinProperties }})
+      return errors.TooFewProperties({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .MinProperties }})
     }
     {{- end }}
     {{ if .MaxProperties }}
     // maxProperties: {{ .MaxProperties }}
     if nprops > {{ .MaxProperties }} {
-      return errors.TooManyProperties({{ path . }}, {{ printf "%q" .Location }}, {{ .MaxProperties }})
+      return errors.TooManyProperties({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .MaxProperties }})
     }
     {{- end }}
   {{- end }}
@@ -582,7 +582,7 @@
   */}}
   {{- if not .IsAnonymous }}
     {{- if and .Required (or .IsNullable .IsBaseType .IsMap) (not .IsPrimitive) }}
-      if err := validate.Required({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      if err := validate.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
       {{- if and (not .Required) .IsBaseType }}
@@ -598,11 +598,11 @@
       if err := {{.ValueExpression }}.Validate(formats); err != nil {
         ve := new(errors.Validation)
         if stderrors.As(err, &ve) {
-          return ve.ValidateName({{ path . }})
+          return ve.ValidateName({{ .ErrPath }})
         }
         ce := new(errors.CompositeError)
         if stderrors.As(err, &ce) {
-          return ce.ValidateName({{ path . }})
+          return ce.ValidateName({{ .ErrPath }})
         }
 
         return err
@@ -640,7 +640,7 @@
     // at https://github.com/go-swagger/go-swagger/issues
     {{- if .ReadOnly }}
 
-  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.ReadOnly{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
     {{- end }}
@@ -663,7 +663,7 @@
   {{- if .IsPrimitive }}
     {{- if .IsAliased }}
       {{- if and .Required (not .IsAnonymous) }}
-  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
       {{- end }}
@@ -673,7 +673,7 @@
     {{- end }}
   {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
     {{- if .Required }}
-  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
     {{- end }}
@@ -689,10 +689,10 @@
     {{- if and .IsAdditionalProperties .Required (not .IsAliased) }}
       {{- if or .IsNullable .IsInterface }}
       if {{ .ValueExpression }} == nil {
-        return errors.Required({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
+        return errors.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
       }
       {{- else }}
-      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
       {{- end }}
@@ -701,10 +701,10 @@
   {{- else if and .IsExternal .Required }}
     {{- if or .IsNullable .IsInterface }}
       if {{ .ValueExpression }} == nil {
-        return errors.Required({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
+        return errors.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
       }
     {{- else }}
-      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+      if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
         return err
       }
     {{- end }}
@@ -735,7 +735,7 @@
     {{ template "primitivefieldvalidator" . }}
   {{- else if and .IsCustomFormatter (or .HasValidations .Required) }}{{/* custom format not captured as primitive */}}
     {{- if .Required }}
-  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ path . }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
+  if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}({{ .ErrPath }}, {{ printf "%q" .Location }}, {{.ValueExpression }}); err != nil {
     return err
   }
     {{- end }}
@@ -1098,11 +1098,11 @@ func ({{.ReceiverName }} *{{ if $.Discriminates }}{{ camelize $.Name }}{{ else i
         {{- if and $.IsTuple .IsMap .Required }}
           {{- if .IsInterface }}
   if {{ .ValueExpression }} == nil {
-    return errors.Required({{ path . }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
+    return errors.Required({{ .ErrPath }}, {{ printf "%q" .Location }}, {{ .ValueExpression }})
   }
           {{- else }}
   if err := validate.Required{{ if and (eq .GoType "string") (not .IsNullable) }}String{{ end }}(
-            {{ path . }}, {{ printf "%q" .Location }},
+            {{ .ErrPath }}, {{ printf "%q" .Location }},
             {{- if and (eq .GoType "string") (not (or .IsAnonymous .IsNullable)) }}{{ .GoType }}({{ end }}
             {{- .ValueExpression }}
             {{- if and (eq .GoType "string") (not (or .IsAnonymous .IsNullable)) }}){{ end }}); err != nil {
