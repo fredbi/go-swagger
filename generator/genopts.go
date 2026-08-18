@@ -171,13 +171,14 @@ func (g *GenOpts) templateSources() ([]templatesrepo.Option, error) {
 // shippedTemplates declares the templates the generator ships: the ones it renders, and the ones
 // saying where each section writes.
 //
-// A contrib set is read only when a run selects it, which the default settings of a repository
-// already arrange. The paths are a source of their own, so that a file names the template it places
-// rather than repeating the name in a define, and so that a template directory may hold paths of
-// its own under whatever directory it likes.
+// A contrib set is read only when a run selects it, which is why the source shipping them walks
+// past that directory. The paths are a source of their own, so that a file names the template it
+// places rather than repeating the name in a define, and so that a template directory may hold
+// paths of its own under whatever directory it likes.
 func shippedTemplates() []templatesrepo.Option {
 	return []templatesrepo.Option{
-		templatesrepo.FromFS(embeddedTemplates(), ""),
+		// the alternate sets are stacked by name, never read wholesale
+		templatesrepo.FromFS(embeddedTemplates(), "", templatesrepo.SkippingDirectories("contrib")),
 		templatesrepo.FromFS(embeddedPaths(), ""),
 	}
 }
