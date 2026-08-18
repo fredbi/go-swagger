@@ -204,6 +204,21 @@ func (g GenSchema) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
 }
 
+// ErrPath the quoted error location.
+func (g GenSchema) ErrPath() string {
+	pth := g.Path
+
+	if pth == "" {
+		if g.WantsRootedErrorPath && (g.IsArray || g.IsMap) {
+			return strconv.Quote("[" + g.Name + "]")
+		}
+
+		return `""`
+	}
+
+	return pth
+}
+
 func (g GenSchema) renderMarshalTag() string {
 	if g.HasBaseType {
 		return "-"
@@ -289,6 +304,14 @@ type GenResponse struct {
 	ReturnErrors     bool
 }
 
+func (g GenResponse) ErrPath() string {
+	if g.Path == "" {
+		return `""`
+	}
+
+	return g.Path
+}
+
 // GenResponseExamples is a sortable collection []GenResponseExample.
 type GenResponseExamples []GenResponseExample
 
@@ -343,6 +366,14 @@ func (h *GenHeader) ItemsDepth() string {
 // ToString returns a string conversion expression for the header.
 func (h GenHeader) ToString() string {
 	return h.resolvedType.ToString(h.ValueExpression)
+}
+
+func (h GenHeader) ErrPath() string {
+	if h.Path == "" {
+		return `""`
+	}
+
+	return h.Path
 }
 
 // GenHeaders is a sorted collection of headers for codegen.
@@ -466,6 +497,14 @@ func (g GenParameter) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
 }
 
+func (g GenParameter) ErrPath() string {
+	if g.Path == "" {
+		return `""`
+	}
+
+	return g.Path
+}
+
 // GenParameters represents a sorted parameter collection.
 type GenParameters []GenParameter
 
@@ -528,6 +567,14 @@ func (g GenItems) UnderlyingType() string {
 // ToString returns a string conversion expression for the item.
 func (g GenItems) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
+}
+
+func (g GenItems) ErrPath() string {
+	if g.Path == "" {
+		return `""`
+	}
+
+	return g.Path
 }
 
 // GenOperationGroup represents a named (tagged) group of operations.
@@ -672,6 +719,14 @@ type GenOperation struct {
 	ExternalDocs     *spec.ExternalDocumentation
 	Produces         []string // original produces for operation (for doc)
 	Consumes         []string // original consumes for operation (for doc)
+}
+
+func (g GenOperation) ErrPath() string {
+	if g.Path == "" {
+		return `""`
+	}
+
+	return g.Path
 }
 
 // GenOperations represents a list of operations to generate
