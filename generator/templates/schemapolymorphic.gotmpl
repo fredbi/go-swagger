@@ -13,7 +13,7 @@
   {{ range .AllOf }}
     {{- if .IsAnonymous }}
       {{ range .Properties }}
-        {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{template "structfieldIface" . }}{{ end }}
+        {{ if $.IsTuple }}{{ template "tuplefieldIface" . }}{{ else }}{{template "iface" . }}{{ end }}
       {{- end }}
       {{ template "mapOrSliceGetter" . }}
     {{- else }}
@@ -24,7 +24,7 @@
     {{- if $.IsTuple }}
       {{ template "tuplefieldIface" . }}
     {{- else }}
-      {{ template "structfieldIface" . }}
+      {{ template "iface" . }}
     {{- end }}
   {{- end }}
   {{ template "mapOrSliceGetter" . }}
@@ -49,5 +49,5 @@
       {{- end }}
     }
   {{- end }}{{/* TODO(fred): AdditionalProperties */}}
-  {{ template "polymorphicSerializer" . }}
+  {{ template "serializersBasetypePolymorphic" . }}
 {{- end }}

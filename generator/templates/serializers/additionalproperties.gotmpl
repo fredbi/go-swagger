@@ -1,4 +1,4 @@
-{{ define "additionalPropertiesSerializer" }}
+{{ define "additionalProperties" }}
 // UnmarshalJSON unmarshals this object with additional properties from JSON
 func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(data []byte) error {
   // stage 1, bind the properties
@@ -74,7 +74,7 @@ func ({{.ReceiverName}} {{ .GoName }}) MarshalJSON() ([]byte, error) {
 }
 {{- end }}
 
-{{ define "noAdditionalPropertiesSerializer" }}
+{{ define "noAdditionalProperties" }}
 // UnmarshalJSON unmarshals this object while disallowing additional properties from JSON
 func ({{.ReceiverName}} *{{ .GoName }}) UnmarshalJSON(data []byte) error {
   var props {{ template "withoutAdditionalBody" . }}

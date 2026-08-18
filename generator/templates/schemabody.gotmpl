@@ -21,7 +21,7 @@
       {{- if .HasAdditionalProperties }}
         {{- if .AdditionalProperties }}
           {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
-          {{- template "propertyValidationDocString" .AdditionalProperties}}
+          {{- template "validationStructfieldPropertyValidationDocString" .AdditionalProperties}}
           {{- if and .IsExported (not .IsSubType) }}
             {{ .AdditionalProperties.GoName }}
           {{- else if or (not .AdditionalProperties.IsExported) (.AdditionalProperties.IsBaseType) }}
@@ -33,7 +33,7 @@
       {{- end }}
       {{- if .AdditionalItems }}
         {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
-        {{- template "propertyValidationDocString" .AdditionalItems}}
+        {{- template "validationStructfieldPropertyValidationDocString" .AdditionalItems}}
         {{- if and .IsExported (not $.IsSubType) }}{{/* TODO(fred): make sure inherited AdditionalItems are camelized */}}
           {{ .AdditionalItems.GoName }}
         {{- else }}
@@ -51,7 +51,7 @@
   {{ if .HasAdditionalProperties }}
     {{- if .AdditionalProperties }}
     {{ template "docstring" (dict "Ctx" .AdditionalProperties) }}
-    {{- template "propertyValidationDocString" .AdditionalProperties}}
+    {{- template "validationStructfieldPropertyValidationDocString" .AdditionalProperties}}
       {{- if and .IsExported (not .IsSubType) }}
         {{ .AdditionalProperties.GoName }}
       {{- else }}
@@ -61,7 +61,7 @@
   {{- end }}
   {{- if .AdditionalItems }}
     {{ template "docstring" (dict "Ctx" .AdditionalItems) }}
-    {{- template "propertyValidationDocString" .AdditionalItems}}
+    {{- template "validationStructfieldPropertyValidationDocString" .AdditionalItems}}
     {{ if and .IsExported (not .IsSubType) }}{{ .AdditionalItems.GoName }}{{ else }}{{ .AdditionalItems.GoName }}Field{{ end }} []{{ template "schemaType" .AdditionalItems }} `json:"-"`
   {{ end }}
 }
@@ -311,7 +311,7 @@
 }
 {{- end }}
 
-{{ define "JustBaseTypeBody" }}struct {
+{{ define "justBaseTypeBody" }}struct {
   /* Just the base type fields. Used for unmashalling polymorphic types.*/
   {{ range .AllOf }}
     {{ if .IsBaseType }}
