@@ -24,7 +24,7 @@ import (
 // place, so that neither is read as part of the other, and so that a template directory of the
 // user's own may mirror either.
 //
-//go:embed all:templates all:filepaths
+//go:embed all:templates
 var templateAssets embed.FS
 
 // embeddedTemplates returns the default templates, rooted at the templates directory.
@@ -38,7 +38,7 @@ func embeddedTemplates() fs.FS {
 // so that the name of one is the name of the template it places, suffixed with Target or FileName:
 // filepaths/server/parameter/target.gotmpl declares serverParameterTarget.
 func embeddedPaths() fs.FS {
-	return rootedAt("filepaths")
+	return rootedAt("templates/filepaths")
 }
 
 // rootedAt returns a directory of the embedded templates, as a file system of its own.

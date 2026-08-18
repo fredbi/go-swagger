@@ -22,7 +22,7 @@ func TestSpec_Issue1429(t *testing.T) {
 	_, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = specPath
 	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
 	require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestSpec_Issue2527(t *testing.T) {
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true // test options skip validation by default
 		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -66,7 +66,7 @@ func TestSpec_Issue2527(t *testing.T) {
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -107,7 +107,7 @@ func TestSpec_Issue1621(t *testing.T) {
 	_, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = specPath
 	opts.ValidateSpec = true
 	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -122,7 +122,7 @@ func TestShared_Issue1614(t *testing.T) {
 	_, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = specPath
 	opts.ValidateSpec = true
 	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -135,7 +135,7 @@ func Test_AnalyzeSpec_Issue2216(t *testing.T) {
 	t.Run("single-swagger-file", func(t *testing.T) {
 		specPath := filepath.Join("..", "testdata", "bugs", "2216", "swagger-single.yml")
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		opts.PropertiesSpecOrder = true
@@ -146,7 +146,7 @@ func Test_AnalyzeSpec_Issue2216(t *testing.T) {
 	t.Run("splitted-swagger-file", func(t *testing.T) {
 		specPath := filepath.Join("..", "testdata", "bugs", "2216", "swagger.yml")
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		opts.PropertiesSpecOrder = true

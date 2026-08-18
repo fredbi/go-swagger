@@ -22,7 +22,7 @@ func TestEnum_StringThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "StringThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -45,7 +45,7 @@ func TestEnum_ComposedThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ComposedThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestEnum_IntThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "IntThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -92,7 +92,7 @@ func TestEnum_FloatThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "FloatThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -115,7 +115,7 @@ func TestEnum_SliceThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SliceThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -138,7 +138,7 @@ func TestEnum_SliceAndItemsThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SliceAndItemsThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -164,7 +164,7 @@ func TestEnum_SliceAndAdditionalItemsThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "SliceAndAdditionalItemsThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -192,7 +192,7 @@ func TestEnum_MapThing(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "MapThing"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -231,7 +231,7 @@ func TestEnum_ObjectThing(t *testing.T) {
 
 			definitions := specDoc.Spec().Definitions
 			schema := definitions[k]
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			require.NoError(t, err)
 
@@ -313,7 +313,7 @@ func TestEnum_ComputeInstance(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "ComputeInstance"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -340,7 +340,7 @@ func TestEnum_Cluster(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Cluster"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -369,7 +369,7 @@ func TestEnum_NewPrototype(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "NewPrototype"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -399,7 +399,7 @@ func TestEnum_Issue265(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	const k = "SodaBrand"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -417,7 +417,7 @@ func TestGenerateModel_Issue303(t *testing.T) {
 	specDoc, e := loads.Spec("../testdata/enhancements/303/swagger.yml")
 	require.NoError(t, e)
 
-	opts := opts()
+	opts := opts(t)
 	tpl := opts.templates.MustGet("schema")
 	definitions := specDoc.Spec().Definitions
 	for name, schema := range definitions {
@@ -458,7 +458,7 @@ func TestEnum_Issue325(t *testing.T) {
 		schema := definitions[k]
 
 		t.Run("should generate model", func(t *testing.T) {
-			modelOpts := opts()
+			modelOpts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
 			require.NoError(t, err)
 
@@ -482,7 +482,7 @@ func TestEnum_Issue325(t *testing.T) {
 		schema := definitions[k]
 
 		t.Run("should generate model", func(t *testing.T) {
-			modelOpts := opts()
+			modelOpts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, modelOpts)
 			require.NoError(t, err)
 
@@ -514,7 +514,7 @@ func TestEnum_Issue352(t *testing.T) {
 
 		t.Run("should generate model", func(t *testing.T) {
 			schema := definitions[k]
-			opts := opts()
+			opts := opts(t)
 			genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 			require.NoError(t, err)
 

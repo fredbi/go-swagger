@@ -17,7 +17,7 @@ import (
 func TestBuildDiscriminatorMap(t *testing.T) {
 	specDoc, err := loads.Spec("../testdata/codegen/todolist.discriminators.yml")
 	require.NoError(t, err)
-	opts := opts()
+	opts := opts(t)
 
 	di := discriminatorInfo(analysis.New(specDoc.Spec()), opts)
 	assert.Len(t, di.Discriminators, 1)
@@ -32,7 +32,7 @@ func TestGenerateModel_DiscriminatorSlices(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Kennel"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	assert.TrueT(t, genModel.HasBaseType)
@@ -62,7 +62,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 
 	for _, k := range []string{"cat", "Dog"} {
 		schema := definitions[k]
-		opts := opts()
+		opts := opts(t)
 		genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 		require.NoError(t, err)
 
@@ -110,7 +110,7 @@ func TestGenerateModel_Discriminators(t *testing.T) {
 
 	const k = "Pet"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -155,7 +155,7 @@ func TestGenerateModel_UsesDiscriminator(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "WithPet"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -184,7 +184,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 	require.TrueT(t, ok)
 
-	opts := opts()
+	opts := opts(t)
 	bldr := codeGenOpBuilder{
 		Name:          "modelOp",
 		Method:        method,
@@ -226,7 +226,7 @@ func TestGenerateServer_Parameters(t *testing.T) {
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 	require.TrueT(t, ok)
 
-	opts := opts()
+	opts := opts(t)
 	bldr := codeGenOpBuilder{
 		Name:          "modelOp",
 		Method:        method,
@@ -266,7 +266,7 @@ func TestGenerateModel_Discriminator_Billforward(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "FlatPricingComponent"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.TrueT(t, genModel.IsSubType)
@@ -291,7 +291,7 @@ func TestGenerateModel_Bitbucket_Repository(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "repository"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -325,7 +325,7 @@ func TestGenerateModel_Bitbucket_WebhookSubscription(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "webhook_subscription"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 
@@ -350,7 +350,7 @@ func TestGenerateModel_Issue319(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Container"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.EqualT(t, "map[string]Base", genModel.Properties[0].GoType)
@@ -375,7 +375,7 @@ func TestGenerateModel_Issue541(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Lion"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.AllOf)
@@ -401,7 +401,7 @@ func TestGenerateModel_Issue436(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Image"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.AllOf)
@@ -430,7 +430,7 @@ func TestGenerateModel_Issue740(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Bar"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.AllOf)
@@ -456,7 +456,7 @@ func TestGenerateModel_Issue743(t *testing.T) {
 	definitions := specDoc.Spec().Definitions
 	k := "Awol"
 	schema := definitions[k]
-	opts := opts()
+	opts := opts(t)
 	genModel, err := makeGenDefinition(k, "models", schema, specDoc, opts)
 	require.NoError(t, err)
 	require.NotEmpty(t, genModel.AllOf)

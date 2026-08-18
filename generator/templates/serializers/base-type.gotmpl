@@ -1,0 +1,9 @@
+// Unmarshal{{ .GoName }} unmarshals polymorphic {{ .GoName }}
+func Unmarshal{{ .GoName }}(reader io.Reader, consumer runtime.Consumer) ({{ .GoName }}, error) {
+  return Unmarshal{{ pascalize .GoType }}(reader, consumer)
+}
+
+// Unmarshal{{ .GoName }}Slice unmarshals polymorphic slices of {{ .GoName }}
+func Unmarshal{{ .GoName }}Slice(reader io.Reader, consumer runtime.Consumer) ([]{{ .GoName }}, error) {
+  return Unmarshal{{ pascalize .GoType }}Slice(reader, consumer)
+}

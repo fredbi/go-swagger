@@ -5,7 +5,6 @@ package generator
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -54,22 +53,34 @@ func TestMain(m *testing.M) {
 // contrib set, no template directory, no scoping. Prepare builds the one a run works with, so an
 // unreadable source is still reported there, and a test may reach a template its own plan leaves
 // out.
-func ensureMachinery(g *GenOpts) error {
+func ensureMachinery(t *testing.T, g *GenOpts) {
+	t.Helper()
+
+	g.buildMachinery()
+
+	require.NoError(t, g.resolveSections())
+	templates, err := templatesrepo.New(
+		append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))...,
+	)
+	require.NoError(t, err)
+	g.templates = templates
+}
+
+func mustEnsureMachinery(g *GenOpts) {
 	g.buildMachinery()
 
 	if err := g.resolveSections(); err != nil {
-		return err
+		panic("dev error could not resolve sections in test")
 	}
 
 	templates, err := templatesrepo.New(
 		append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))...,
 	)
 	if err != nil {
-		return err
+		panic("dev error could not resolve templates in test")
 	}
-	g.templates = templates
 
-	return nil
+	g.templates = templates
 }
 
 // validateOpts runs the pure validation and path-normalization phases on g.
@@ -89,24 +100,24 @@ func assertValidOpts(t *testing.T, g *GenOpts) {
 	require.NoError(t, validateOpts(g))
 }
 
-func opts() *GenOpts {
+func opts(t *testing.T) *GenOpts {
+	t.Helper()
+
 	g := NewGenOpts()
 	g.IncludeValidator = true
 	g.IncludeModel = true
-	if err := ensureMachinery(g); err != nil {
-		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
-	}
+	ensureMachinery(t, g)
 
 	return g
 }
 
-func testGenOpts() *GenOpts {
+func testGenOpts(t *testing.T) *GenOpts {
+	t.Helper()
+
 	g := NewGenOpts(ForServer())
 	g.Target = "."
 	g.ExcludeSpec = true
-	if err := ensureMachinery(g); err != nil {
-		panic(fmt.Errorf("internal error: options ensureMachinery should not fail in tests: %w", err))
-	}
+	ensureMachinery(t, g)
 
 	return g
 }
@@ -124,7 +135,7 @@ func TestShared_CheckOpts(t *testing.T) {
 	testPath := filepath.Join("a", "b", "b")
 
 	opts := new(GenOpts)
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	cwd, _ := os.Getwd()
 	opts.Spec = "../testdata/codegen/simplesearch.yml"
 
@@ -166,11 +177,11 @@ func TestShared_CheckOpts(t *testing.T) {
 
 func TestShared_EnsureDefaults(t *testing.T) {
 	opts := &GenOpts{}
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 	assert.TrueT(t, opts.machineryBuilt)
 	// machinery is built once: a second pass must not overwrite values
 	opts.DefaultConsumes = "https"
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	assert.EqualT(t, "https", opts.DefaultConsumes)
 }
 
@@ -185,7 +196,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// relative target
 	opts := new(GenOpts)
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y"
 	expected := filepath.Join("..", "..", "c")
@@ -194,7 +205,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// relative target, server path
 	opts = new(GenOpts)
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	opts.Target = filepath.Join(".", "a", "b", "c")
 	opts.ServerPackage = "y/z"
 	expected = filepath.Join("..", "..", "..", "c")
@@ -203,7 +214,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// absolute target
 	opts = new(GenOpts)
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = "y"
 	expected = filepath.Join("..", "..", "c")
@@ -212,7 +223,7 @@ func TestShared_TargetPath(t *testing.T) {
 
 	// absolute target, server path
 	opts = new(GenOpts)
-	_ = ensureMachinery(opts)
+	ensureMachinery(t, opts)
 	opts.Target = filepath.Join(cwd, "a", "b", "c")
 	opts.ServerPackage = path.Join("y", "z")
 	expected = filepath.Join("..", "..", "..", "c")
@@ -230,7 +241,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with http URL spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = "http://a/b/c"
 		opts.ServerPackage = "y"
 		expected := opts.Spec
@@ -240,7 +251,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with https URL spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = "https://a/b/c"
 		opts.ServerPackage = "y"
 		expected := opts.Spec
@@ -250,7 +261,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = "d"
 		opts.ServerPackage = "y"
@@ -261,7 +272,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = filepath.Join("d", "e")
 		opts.ServerPackage = fullPackage
@@ -272,7 +283,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with relative spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = filepath.Join(".", "a", "b", "c")
 		opts.Target = filepath.Join(".", "a", "b")
 		opts.ServerPackage = fullPackage
@@ -283,7 +294,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with absolute spec", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = filepath.Join(cwd, "a", "b", "c")
 		opts.ServerPackage = "y"
 		expected := filepath.Join("..", "a", "b", "c")
@@ -293,7 +304,7 @@ func TestShared_SpecPath(t *testing.T) {
 
 	t.Run("with absolute spec, server path", func(t *testing.T) {
 		opts := new(GenOpts)
-		_ = ensureMachinery(opts)
+		ensureMachinery(t, opts)
 		opts.Spec = filepath.Join("..", "a", "b", "c")
 		opts.Target = ""
 		opts.ServerPackage = path.Join("y", "z")
@@ -305,7 +316,7 @@ func TestShared_SpecPath(t *testing.T) {
 	if runtime.GOOS == winOS {
 		t.Run("with windows drive letter", func(t *testing.T) {
 			opts := new(GenOpts)
-			_ = ensureMachinery(opts)
+			ensureMachinery(t, opts)
 			opts.Spec = filepath.Join("a", "b", "c")
 			opts.Target = filepath.Join("Z:", "e", "f", "f")
 			opts.ServerPackage = fullPackage
@@ -320,7 +331,7 @@ func TestShared_SpecPath(t *testing.T) {
 func TestShared_NotFoundTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	tplOpts := TemplateOpts{
 		Name:       "NotFound",
 		Source:     "notfound",
@@ -339,7 +350,7 @@ func TestShared_NotFoundTemplate(t *testing.T) {
 func TestShared_GarbledTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	t.Run("should fail on invalid template", func(t *testing.T) {
 		const garbled = "func x {{;;; garbled"
 		require.Error(t, templateError(opts, "garbled", garbled))
@@ -374,7 +385,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	t.Run("should not fail: no value data", func(t *testing.T) {
 		const execfailure1 = "func x {{ .NotInData }}"
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		withTemplate(t, opts, "execfailure1", execfailure1)
 
 		tplOpts := TemplateOpts{
@@ -394,7 +405,7 @@ func TestShared_ExecTemplate(t *testing.T) {
 	t.Run("should fail: execution error", func(t *testing.T) {
 		const execfailure2 = "func {{ .MyFaultyMethod }}"
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		withTemplate(t, opts, "execfailure2", execfailure2)
 		tplOpts := TemplateOpts{
 			Name:       "execFailure2",
@@ -419,7 +430,7 @@ func TestShared_BadFormatTemplate(t *testing.T) {
 	tmp := t.TempDir()
 
 	t.Run("should add template producing bad formatted go", func(t *testing.T) {
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		badFormat := "func x {;;; garbled"
 
 		t.Run("with Not skipping format option", func(t *testing.T) {
@@ -493,7 +504,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 	// Not skipping format
 	content := "func x {}"
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	withTemplate(t, opts, "gendir", content)
 	// where a section writes is a template of the repository, declared here as a run would
 	withTemplate(t, opts, "gendirTarget", "TestGenDir")
@@ -527,7 +538,7 @@ func TestShared_DirectoryTemplate(t *testing.T) {
 func TestShared_LoadTemplate(t *testing.T) {
 	defer discardOutput()()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	tplOpts := TemplateOpts{
 		Name:       "File",
 		Source:     "File",
@@ -559,7 +570,7 @@ func TestShared_AppNameOrDefault(t *testing.T) {
 	require.NotNil(t, specDoc.Spec().Info)
 	specDoc.Spec().Info.Title = "    "
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	assert.EqualT(t, "Xyz", appNameOrDefault(opts.LanguageOpts, specDoc, "  ", "xyz"))
 	specDoc.Spec().Info.Title = "test"
 	assert.EqualT(t, "Xyz", appNameOrDefault(opts.LanguageOpts, specDoc, "  ", "xyz"))
@@ -672,8 +683,7 @@ func TestResolvePrincipal(t *testing.T) {
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
 			opts := &GenOpts{Principal: fixture.Principal}
-			err := ensureMachinery(opts)
-			require.NoError(t, err)
+			ensureMachinery(t, opts)
 			alias, principal, target := resolvePrincipal(opts.Principal)
 			require.EqualT(t, fixture.Expected[0], alias)
 			require.EqualT(t, fixture.Expected[1], principal)
@@ -802,9 +812,7 @@ func TestDefaultImports(t *testing.T) {
 
 		t.Run(fixture.Title, func(t *testing.T) {
 			t.Parallel()
-			err := ensureMachinery(fixture.Opts)
-			require.NoError(t, err)
-
+			ensureMachinery(t, fixture.Opts)
 			imports, err := newImportsBuilder(fixture.Opts).defaultImports()
 			require.NoError(t, err)
 			require.Equalf(t, fixture.Expected, imports, "unexpected imports generated with fixture %q[%d]", fixture.Title, i)
@@ -820,7 +828,7 @@ func TestShared_Issue2113(t *testing.T) {
 	_, err := loads.Spec(specPath)
 	require.NoError(t, err)
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = specPath
 	opts.ValidateSpec = true
 	_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -836,7 +844,7 @@ func TestShared_Issue2743(t *testing.T) {
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()
@@ -848,7 +856,7 @@ func TestShared_Issue2743(t *testing.T) {
 		_, err := loads.Spec(specPath)
 		require.NoError(t, err)
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.ValidateSpec = true
 		_, err = newSpecAnalyzer(opts).validateAndFlattenSpec()

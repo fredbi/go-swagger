@@ -15,7 +15,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		gen, err := opBuilder("simplePathParams", "../testdata/codegen/todolist.url.simple.yml")
+		gen, err := opBuilder(t, "simplePathParams", "../testdata/codegen/todolist.url.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -24,7 +24,7 @@ func TestURLBuilder_SimplePathParams(t *testing.T) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		gen, err := opBuilder("simpleQueryParams", "../testdata/codegen/todolist.url.simple.yml")
+		gen, err := opBuilder(t, "simpleQueryParams", "../testdata/codegen/todolist.url.simple.yml")
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestURLBuilder_SimpleQueryParams(t *testing.T) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestURLBuilder_ArrayQueryParams_BasePath(t *testing.T) {
 
 func testArrayQueryParams(t *testing.T, filePath, basePath string) {
 	t.Run("should construct an operation builder", func(t *testing.T) {
-		gen, err := opBuilder("arrayQueryParams", filePath)
+		gen, err := opBuilder(t, "arrayQueryParams", filePath)
 		require.NoError(t, err)
 
 		t.Run("should make an operation", func(t *testing.T) {
@@ -167,7 +167,7 @@ func testArrayQueryParams(t *testing.T, filePath, basePath string) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts()
+				opts := opts(t)
 				require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -308,7 +308,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 
 	t.Run("with happy path", func(t *testing.T) {
 		t.Run("should construct an operation builder", func(t *testing.T) {
-			gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
+			gen, err := opBuilder(t, "xGoNameInParams", "../testdata/enhancements/2167/swagger.yml")
 			require.NoError(t, err)
 
 			t.Run("should make an operation", func(t *testing.T) {
@@ -317,7 +317,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 
 				t.Run("should generate go code", func(t *testing.T) {
 					buf := bytes.NewBuffer(nil)
-					opts := opts()
+					opts := opts(t)
 					require.NoError(t, opts.templates.MustGet("serverUrlbuilder").Execute(buf, op))
 
 					t.Run("should format go code", func(t *testing.T) {
@@ -338,7 +338,7 @@ func TestURLBuilder_Issue2167(t *testing.T) {
 
 		t.Run("with error path", func(t *testing.T) {
 			t.Run("should construct an operation builder", func(t *testing.T) {
-				gen, err := opBuilder("xGoNameInParams", "../testdata/enhancements/2167/swagger-error.yml")
+				gen, err := opBuilder(t, "xGoNameInParams", "../testdata/enhancements/2167/swagger-error.yml")
 				require.NoError(t, err)
 
 				t.Run("should NOT make an operation", func(t *testing.T) {

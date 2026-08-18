@@ -46,7 +46,7 @@ toPackageName={{ toPackageName "d-e/f-g" }}
 func TestTemplates_FuncMap_Model(t *testing.T) {
 	defer discardOutput()()
 
-	opts := opts()
+	opts := opts(t)
 	modelTpl := testModelTpl()
 
 	withTemplate(t, opts, "modeltpl", modelTpl)

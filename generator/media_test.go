@@ -50,7 +50,7 @@ func TestMediaGoName(t *testing.T) {
 }
 
 func TestMediaMakeSerializers(t *testing.T) {
-	o := opts()
+	o := opts(t)
 	app := appGenerator{
 		Name:      "myapp",
 		Receiver:  "myReceiver",
@@ -180,26 +180,26 @@ func TestMediaMakeSerializers(t *testing.T) {
 	assert.EqualT(t, expectedMime, res[0].Name)
 }
 
-func mustGetMediaMime(tb testing.TB) func(string) string {
-	tb.Helper()
+func mustGetMediaMime(t *testing.T) func(string) string {
+	t.Helper()
 
-	opts := opts()
+	opts := opts(t)
 	funcMap := opts.funcMap
 	mediaMime, ok := funcMap["mediaTypeName"].(func(string) string)
-	require.TrueTf(tb, ok, "internal error: mediaTypeName function expected to be func(string) string, but got %T", mediaMime)
-	require.NotNil(tb, mediaMime)
+	require.TrueTf(t, ok, "internal error: mediaTypeName function expected to be func(string) string, but got %T", mediaMime)
+	require.NotNil(t, mediaMime)
 
 	return mediaMime
 }
 
-func mustGetMediaGoName(tb testing.TB) func(string) string {
-	tb.Helper()
+func mustGetMediaGoName(t *testing.T) func(string) string {
+	t.Helper()
 
-	opts := opts()
+	opts := opts(t)
 	funcMap := opts.funcMap
 	mediaGoName, ok := funcMap["mediaGoName"].(func(string) string)
-	require.TrueTf(tb, ok, "internal error: mediaGoName function expected to be func(string) string, but got %T", mediaGoName)
-	require.NotNil(tb, mediaGoName)
+	require.TrueTf(t, ok, "internal error: mediaGoName function expected to be func(string) string, but got %T", mediaGoName)
+	require.NotNil(t, mediaGoName)
 
 	return mediaGoName
 }

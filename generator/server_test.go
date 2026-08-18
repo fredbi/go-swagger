@@ -102,7 +102,7 @@ func TestServer_StreamingMultipartForm(t *testing.T) {
 func TestServer_InvalidSpec(t *testing.T) {
 	defer discardOutput()()
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Spec = invalidSpecExample
 	opts.ValidateSpec = true
 
@@ -372,7 +372,7 @@ func TestServer_Issue1746(t *testing.T) {
 	t.Chdir(targetdir) // all the following tests are executed relative to the current working directory
 	const target = "x"
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	opts.Target = target
 	opts.Spec = filepath.Join(specPath, "bugs", "1746", "fixture-1746.yaml")
 	relative, err := filepath.Rel(filepath.Join(targetdir, target), opts.Spec) // attention: on windows, this means that TempDir is located on the same drive as your code
@@ -424,7 +424,7 @@ func TestServer_Issue2346(t *testing.T) {
 	t.Run("should build server with flatten Expand option", func(t *testing.T) {
 		const target = "x"
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Target = target
 		opts.FlattenOpts.Expand = true // this issue pops up spcifically when using this option
 		opts.Spec = filepath.Join(specPath, "bugs", "2346", "swagger.yaml")
@@ -437,7 +437,7 @@ func TestServer_Issue2346(t *testing.T) {
 	t.Run("should build server with flatten Minimal (no expand)", func(t *testing.T) {
 		const target = "y"
 
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Target = target
 		opts.FlattenOpts.Minimal = true
 		opts.FlattenOpts.Expand = false
@@ -449,15 +449,17 @@ func TestServer_Issue2346(t *testing.T) {
 	})
 }
 
-func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, error) {
+func testAppGenerator(t *testing.T, specPath, name string) (*appGenerator, error) {
+	t.Helper()
+
 	specDoc, err := loads.Spec(specPath)
-	require.NoError(tb, err)
+	require.NoError(t, err)
 	analyzed := analysis.New(specDoc.Spec())
 
 	models, err := gatherModels(specDoc, nil)
-	require.NoError(tb, err)
+	require.NoError(t, err)
 
-	opts := testGenOpts()
+	opts := testGenOpts(t)
 	mangler := opts.LanguageOpts.Mangler
 	operations := gatherOperations(opts, analyzed, nil)
 	if len(operations) == 0 {
@@ -466,7 +468,7 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 
 	opts.Spec = specPath
 	apiPackage := opts.LanguageOpts.MangleName(mangler.ToFileName(opts.APIPackage), apiPkg)
-	mediaMime := mustGetMediaMime(tb)
+	mediaMime := mustGetMediaMime(t)
 
 	return &appGenerator{
 		Name:            appNameOrDefault(opts.LanguageOpts, specDoc, name, "swagger"),
@@ -492,20 +494,20 @@ func testAppGenerator(tb testing.TB, specPath, name string) (*appGenerator, erro
 	}, nil
 }
 
-func doGenAppTemplate(tb testing.TB, fixture, template string) string {
-	tb.Helper()
+func doGenAppTemplate(t *testing.T, fixture, template string) string {
+	t.Helper()
 
-	gen, err := testAppGenerator(tb, fixture, "generate: "+fixture)
-	require.NoError(tb, err)
+	gen, err := testAppGenerator(t, fixture, "generate: "+fixture)
+	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()
-	require.NoError(tb, err)
+	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	require.NoError(tb, gen.GenOpts.templates.MustGet(template).Execute(buf, app))
+	require.NoError(t, gen.GenOpts.templates.MustGet(template).Execute(buf, app))
 
 	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
-	require.NoError(tb, err)
+	require.NoError(t, err)
 
 	return string(formatted)
 }

@@ -392,12 +392,15 @@ func TestTypeResolver_Notables(t *testing.T) {
 	assert.EqualT(t, "[]*models.Notable", rest.GoType)
 }
 
-func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, error) {
-	opts := opts()
+func specResolver(t *testing.T, path string) (*loads.Document, *typeResolver, error) {
+	t.Helper()
+
+	opts := opts(t)
 	tlb, err := loads.Spec(path)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	resolver := newTypeResolver("models", tlb, opts)
 	resolver.KnownDefs = make(map[string]struct{})
 	for k := range tlb.Spec().Definitions {
@@ -407,8 +410,10 @@ func specResolver(_ testing.TB, path string) (*loads.Document, *typeResolver, er
 	return tlb, resolver, nil
 }
 
-func basicTaskListResolver(_ testing.TB) (*loads.Document, *typeResolver, error) {
-	opts := opts()
+func basicTaskListResolver(t *testing.T) (*loads.Document, *typeResolver, error) {
+	t.Helper()
+
+	opts := opts(t)
 	tlb, err := loads.Spec("../testdata/codegen/tasklist.basic.yml")
 	if err != nil {
 		return nil, nil, err
@@ -595,7 +600,7 @@ func assertPrimitiveResolve(t *testing.T, tpe, tfmt, exp string, tr resolvedType
 }
 
 func TestTypeResolver_ExistingModel(t *testing.T) {
-	opts := opts()
+	opts := opts(t)
 	doc, err := loads.Spec("../testdata/codegen/existing-model.yml")
 	require.NoError(t, err)
 	resolver := newTypeResolver("model", doc, opts)

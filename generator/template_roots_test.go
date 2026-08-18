@@ -17,7 +17,7 @@ import (
 func TestTemplateRoots(t *testing.T) {
 	t.Run("should scope a client run to the templates it renders", func(t *testing.T) {
 		opts := NewGenOpts(ForClient())
-		require.NoError(t, ensureMachinery(opts))
+		ensureMachinery(t, opts)
 
 		shipped := len(slices.Collect(opts.templates.Names()))
 		require.NoError(t, opts.buildTemplates(opts.scope()...))
@@ -33,7 +33,7 @@ func TestTemplateRoots(t *testing.T) {
 
 	t.Run("should keep the templates placing what a run writes", func(t *testing.T) {
 		opts := NewGenOpts(ForClient())
-		require.NoError(t, ensureMachinery(opts))
+		ensureMachinery(t, opts)
 		require.NoError(t, opts.buildTemplates(opts.scope()...))
 
 		// the target and the file name of a section entry are templates like any other
@@ -43,7 +43,7 @@ func TestTemplateRoots(t *testing.T) {
 
 	t.Run("should scope a server run to other templates than a client one", func(t *testing.T) {
 		server := NewGenOpts(ForServer())
-		require.NoError(t, ensureMachinery(server))
+		ensureMachinery(t, server)
 		require.NoError(t, server.buildTemplates(server.scope()...))
 
 		assert.TrueT(t, server.templates.Has("serverBuilder"))
@@ -56,7 +56,7 @@ func TestTemplateRoots(t *testing.T) {
 		server := NewGenOpts(ForServer())
 		server.IncludeMain = false
 		server.ExcludeSpec = true
-		require.NoError(t, ensureMachinery(server))
+		ensureMachinery(t, server)
 		require.NoError(t, server.buildTemplates(server.scope()...))
 
 		assert.FalseT(t, server.templates.Has("serverMain"))
@@ -67,7 +67,7 @@ func TestTemplateRoots(t *testing.T) {
 		// a source names a template, so a name that is not one is reported when the repository is
 		// built, rather than by the render that reaches it
 		opts := NewGenOpts(ForClient())
-		require.NoError(t, ensureMachinery(opts))
+		ensureMachinery(t, opts)
 		opts.Sections.Models = append(opts.Sections.Models, TemplateOpts{
 			Name:     "mine",
 			Source:   "neverShipped",
@@ -115,7 +115,7 @@ func TestTemplateSourceNames(t *testing.T) {
 // what a section entry resolves to.
 func TestTemplateNamesComeFromTheRepository(t *testing.T) {
 	opts := NewGenOpts(ForServer())
-	require.NoError(t, ensureMachinery(opts))
+	ensureMachinery(t, opts)
 
 	t.Run("should resolve every default section, whatever the mangler says", func(t *testing.T) {
 		for _, section := range [][]TemplateOpts{
@@ -138,7 +138,7 @@ func TestTemplateNamesComeFromTheRepository(t *testing.T) {
 		// the templates must not move under a run that asks for them
 		flagged := NewGenOpts(ForServer())
 		flagged.WithExtraInitialisms = []string{"WXYZ", "ABC"}
-		require.NoError(t, ensureMachinery(flagged))
+		ensureMachinery(t, flagged)
 
 		for name := range opts.templates.Names() {
 			asset, declared := opts.templates.AssetOf(name)
@@ -216,7 +216,7 @@ func TestConfiguredPathTemplates(t *testing.T) {
 
 		g := NewGenOpts(ForServer())
 		g.TemplateDir = dir
-		require.NoError(t, ensureMachinery(g))
+		ensureMachinery(t, g)
 		g.Sections.Models = []TemplateOpts{{
 			Name:   "definition",
 			Source: "model",
@@ -245,7 +245,7 @@ func TestConfiguredPathTemplates(t *testing.T) {
 
 		g := NewGenOpts(ForServer())
 		g.TemplateDir = dir
-		require.NoError(t, ensureMachinery(g))
+		ensureMachinery(t, g)
 		require.NoError(t, g.buildTemplates())
 
 		var out strings.Builder
@@ -256,7 +256,7 @@ func TestConfiguredPathTemplates(t *testing.T) {
 
 	t.Run("should report a path naming a template no source declares", func(t *testing.T) {
 		g := NewGenOpts(ForServer())
-		require.NoError(t, ensureMachinery(g))
+		ensureMachinery(t, g)
 		g.Sections.Models = []TemplateOpts{{
 			Name:   "definition",
 			Source: "model",

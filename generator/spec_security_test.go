@@ -83,14 +83,14 @@ func TestSpec_RootedModeBlocksEscapingRef(t *testing.T) {
 	require.NoError(t, os.WriteFile(specPath, []byte(doc), 0o600))
 
 	t.Run("unconfined resolves the escaping $ref", func(t *testing.T) {
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		_, err := newSpecAnalyzer(opts).validateAndFlattenSpec()
 		require.NoError(t, err)
 	})
 
 	t.Run("rooted mode blocks the escaping $ref", func(t *testing.T) {
-		opts := testGenOpts()
+		opts := testGenOpts(t)
 		opts.Spec = specPath
 		opts.Rooted = root
 		_, err := newSpecAnalyzer(opts).validateAndFlattenSpec()
