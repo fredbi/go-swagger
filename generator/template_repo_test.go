@@ -22,15 +22,15 @@ import (
 func TestTemplates_CustomTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts()
-	headerTempl, err := opts.templates.Get("bindprimitiveparam")
+	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
 	assert.EqualT(t, "\n", buf.String())
 
 	buf.Reset()
-	withTemplate(t, opts, "bindprimitiveparam", customHeader)
+	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customHeader)
 
-	headerTempl, err = opts.templates.Get("bindprimitiveparam")
+	headerTempl, err = opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	assert.NotNil(t, headerTempl)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -40,8 +40,8 @@ func TestTemplates_CustomTemplates(t *testing.T) {
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts()
-	withTemplate(t, opts, "differentFileName", customMultiple)
-	headerTempl, err := opts.templates.Get("bindprimitiveparam")
+	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customMultiple)
+	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
 	assert.EqualT(t, "custom primitive", buf.String())
@@ -51,8 +51,8 @@ func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts()
 	withTemplate(t, opts, "newtemplate", customNewTemplate)
-	withTemplate(t, opts, "existingUsesNew", customExistingUsesNew)
-	headerTempl, err := opts.templates.Get("bindprimitiveparam")
+	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customExistingUsesNew)
+	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
 	assert.EqualT(t, "new template", buf.String())
@@ -261,9 +261,9 @@ func TestTemplates_Dump(t *testing.T) {
 	require.NoError(t, opts.templates.Dump(&buf))
 
 	document := buf.String()
-	assert.StringContainsT(t, document, "### tupleSerializer")
-	assert.StringContainsT(t, document, "## serializers/tupleserializer.gotmpl")
-	assert.StringContainsT(t, document, "`schemaType`")
+	assert.StringContainsT(t, document, "### serializersTupleTupleSerializer")
+	assert.StringContainsT(t, document, "## serializers/tuple.gotmpl")
+	assert.StringContainsT(t, document, "`schematypeSchemaType`")
 }
 
 // Every template a section renders says where it writes, in a template mirroring its own place in

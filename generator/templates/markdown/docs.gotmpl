@@ -1,4 +1,4 @@
-{{- define "externalDoc" }}{{/* renders external documentation */}}
+{{- define "external" }}{{/* renders external documentation */}}
   {{- with .ExternalDocs }}
     {{- if .URL }}
       {{- if .Description }}
@@ -12,11 +12,11 @@
   {{- end }}
 {{- end }}
 
-{{- define "docParam" }}{{/* renders a parameter with simple schema */}}
+{{- define "param" }}{{/* renders a parameter with simple schema */}}
 | {{ .Name }} | `{{ .Location }}` | {{ paramDocType . }} | `{{ .GoType }}` | {{ if .CollectionFormat }}`{{ docCollectionFormat .CollectionFormat .Child }}`{{ end }} | {{ if .Required }}✓{{ end }} | {{ if .Default }}`{{ json .Default }}`{{ end }} | {{ mdBlock .Description }} |
 {{- end }}
 
-{{- define "docModelSchema" }}{{/* renders a schema */}}
+{{- define "modelSchema" }}{{/* renders a schema */}}
   {{- if .IsArray }}
     {{- if .IsAliased }}
  [{{- dropPackage .GoType }}](#{{ dasherize (dropPackage .GoType) -}})
@@ -57,11 +57,11 @@ any
       {{- if .IsAnonymous }}
 * inlined member (*{{ .Name }}*)
 
-{{ template "docModelSchema" . }}
+{{ template "modelSchema" . }}
       {{- else if or .IsComplexObject .IsPrimitive }}
 * composed type [{{- dropPackage .GoType }}](#{{ dasherize (dropPackage .GoType) -}})
       {{- else }}
-* {{ template "docModelSchema" . }}
+* {{ template "modelSchema" . }}
       {{- end }}
     {{- end }}
     {{- if .Properties }}
@@ -71,7 +71,7 @@ any
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
       {{- range .Properties }}
-| {{ .Name }} | {{ template "docSchemaSimple" . }}| `{{ .GoType }}` | {{ if .Required }}✓{{ end }} | {{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
+| {{ .Name }} | {{ template "schemaSimple" . }}| `{{ .GoType }}` | {{ if .Required }}✓{{ end }} | {{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
       {{- end }}
 {{ printf "\n" }}
     {{- end }}
@@ -86,10 +86,10 @@ any
 
 | Type | Go type | Default | Description | Example |
 |------|---------| ------- |-------------|---------|
-| {{ template "docSchemaSimple" . }} | `{{ .GoType }}` |{{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
+| {{ template "schemaSimple" . }} | `{{ .GoType }}` |{{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
         {{- else }}
 
-{{ template "docModelSchema" . }}
+{{ template "modelSchema" . }}
         {{- end }}
       {{- end }}
     {{- end }}
@@ -104,31 +104,31 @@ any
 
 | Type | Go type | Default | Description | Example |
 |------|---------| ------- |-------------|---------|
-| {{ template "docSchemaSimple" . }} | `{{ .GoType }}` |{{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
+| {{ template "schemaSimple" . }} | `{{ .GoType }}` |{{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} | {{ if .Example }}`{{ .Example }}`{{ end }} |
         {{- else }}
 
-{{ template "docModelSchema" . }}
+{{ template "modelSchema" . }}
         {{- end }}
       {{- end }}
     {{- end }}
   {{- end -}}
 {{- end }}
 
-{{- define "docModel" }}{{/* renders a definition */}}
+{{- define "model" }}{{/* renders a definition */}}
   {{- with .Description }}
 > {{ .}}
   {{- end }}
   {{- if .ExternalDocs }}
-{{ template "externalDoc" . }}
+{{ template "external" . }}
   {{- end }}
   {{ if or .Description .ExternalDocs }}
 {{ printf "\n" }}
   {{- end }}
 
-{{ template "docModelSchema" .}}
+{{ template "modelSchema" .}}
 {{- end }}
 
-{{- define "docSchemaSimple" }}{{/* renders a simple property */}}
+{{- define "schemaSimple" }}{{/* renders a simple property */}}
   {{- if .IsAliased -}}
  [{{- dropPackage .GoType }}](#{{ dasherize (dropPackage .GoType) -}})
   {{- else if .IsArray }}
@@ -160,11 +160,11 @@ any
   {{- end -}}
 {{- end }}
 
-{{- define "docModelBodyParam" }}{{/* layout for body param schema */}}
-| {{ .Name }} | `body` | {{ template "docSchemaSimple" .Schema }} | `{{ .Schema.GoType }}` | | {{ if .Required }}✓{{ end }} | {{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} |
+{{- define "modelBodyParam" }}{{/* layout for body param schema */}}
+| {{ .Name }} | `body` | {{ template "schemaSimple" .Schema }} | `{{ .Schema.GoType }}` | | {{ if .Required }}✓{{ end }} | {{ if .Default }}`{{ json .Default }}`{{ end }}| {{ mdBlock .Description }} |
 {{- end }}
 
-{{- define "docHeaders" }}{{/* renders response headers */}}
+{{- define "headers" }}{{/* renders response headers */}}
   {{- if .Headers }}
 | Name | Type | Go type | Separator | Default | Description |
 |------|------|---------|-----------|---------|-------------|
@@ -183,7 +183,7 @@ any
   {{- with .Info.Description }}
 {{ . }}
   {{- end }}
-  {{ template "externalDoc" . }}
+  {{ template "external" . }}
 
   {{- if or .Info.Version .Info.License .Info.Contact .Info.TermsOfService }}
 
@@ -218,7 +218,7 @@ any
 {{ . }}
   {{- end }}
 {{- else }}
-  {{ template "externalDoc" . }}
+  {{ template "external" . }}
 {{- end }}
 
 {{- if .Tags }}
@@ -333,7 +333,7 @@ Name | Description
   {{- range $alltags }}
     {{- if eq .Name $pkg }}
 
-  {{ template "externalDoc" . }}
+  {{ template "external" . }}
     {{- end }}
   {{- end }}
 
@@ -409,13 +409,13 @@ Name | Description
 
 | Name | Source | Type | Go type | Separator | Required | Default | Description |
 |------|--------|------|---------|-----------| :------: |---------|-------------|
-{{- range .PathParams }}{{ template "docParam" . }}{{ end }}
-{{- range .HeaderParams }}{{ template "docParam" . }}{{ end }}
-{{- range .QueryParams }}{{ template "docParam" . }}{{ end }}
-{{- range .FormParams }}{{ template "docParam" . }}{{ end }}
+{{- range .PathParams }}{{ template "param" . }}{{ end }}
+{{- range .HeaderParams }}{{ template "param" . }}{{ end }}
+{{- range .QueryParams }}{{ template "param" . }}{{ end }}
+{{- range .FormParams }}{{ template "param" . }}{{ end }}
 {{- range .Params }}
 {{- if .IsBodyParam }}
-{{- template "docModelBodyParam" . }}
+{{- template "modelBodyParam" . }}
   {{- end }}
 {{- end }}
 {{- end }}{{/* end .Params */}}
@@ -438,7 +438,7 @@ Status: {{ httpStatus .Code }}
 
 ###### <span id="{{ dasherize $opname }}-{{ .Code }}-schema"></span> Schema
   {{- if .Schema }}
-   {{ template "docModel" .Schema }}
+   {{ template "model" .Schema }}
   {{- end }}
 
   {{- if .Examples }}
@@ -455,7 +455,7 @@ Status: {{ httpStatus .Code }}
   {{- if .Headers }}
 
 ###### Response headers
-{{ template "docHeaders" . }}
+{{ template "headers" . }}
   {{- end }}
 {{- end }}
 
@@ -466,7 +466,7 @@ Status: {{ httpStatus .Code }}
 
 ###### <span id="{{ dasherize $opname }}-default-schema"></span> Schema
   {{- if .Schema }}
-{{ template "docModel" .Schema }}
+{{ template "model" .Schema }}
   {{- else }}
 empty schema
   {{- end }}
@@ -485,7 +485,7 @@ empty schema
   {{- if .Headers }}
 
 ###### Response headers
-{{ template "docHeaders" . }}
+{{ template "headers" . }}
   {{- end }}
 {{- end }}
 
@@ -497,7 +497,7 @@ empty schema
 
 **<span id="{{ dasherize .Name }}"></span> {{ .Name }}**
 
-{{ template "docModel" . }}
+{{ template "model" . }}
       {{- end }}
     {{- end }}
   {{- end }}
@@ -510,7 +510,7 @@ empty schema
 
 ### <span id="{{ dasherize .Name }}"></span> {{ .Name }}
 
-{{ template "docModel" . }}
+{{ template "model" . }}
 
   {{- if .ExtraSchemas }}
 
@@ -520,7 +520,7 @@ empty schema
 
 **<span id="{{ dasherize .Name }}"></span> {{ .Name }}**
 
-{{ template "docModel" . }}
+{{ template "model" . }}
       {{- end }}
     {{- end }}
   {{- end }}

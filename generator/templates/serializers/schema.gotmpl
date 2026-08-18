@@ -1,15 +1,15 @@
 {{ define "schemaSerializer" }}{{/* switches to the appropriate serializer for any given type */}}
   {{- if and .IsSubType (not .HasBaseType) }}
-    {{ template "hasDiscriminatedSerializer" . }}
+    {{ template "hasDiscriminated" . }}
   {{- else if .IsTuple }}
     {{ template "tupleSerializer" . }}
   {{- else if .HasBaseType }}
-    {{ template "hasDiscriminatedSerializer" . }}
+    {{ template "hasDiscriminated" . }}
   {{- else if .IsAdditionalProperties }}
-    {{ template "additionalPropertiesSerializer" . }}
+    {{ template "additionalProperties" . }}
   {{- else if and (gt (len .AllOf) 0) (not .IsSubType ) }}
-    {{ template "allOfSerializer" . }}
+    {{ template "allOf" . }}
   {{- else if and .IsComplexObject .StrictAdditionalProperties }}
-    {{ template "noAdditionalPropertiesSerializer" . }}
+    {{ template "noAdditionalProperties" . }}
   {{- end }}
 {{- end }}

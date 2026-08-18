@@ -15,9 +15,9 @@ const (
 	// Test template environment.
 	// singleTemplate        = `test`.
 	customHeader          = `custom header`
-	customMultiple        = `{{define "bindprimitiveparam" }}custom primitive{{end}}`
+	customMultiple        = `custom primitive`
 	customNewTemplate     = `new template`
-	customExistingUsesNew = `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`
+	customExistingUsesNew = `{{ template "newtemplate" }}`
 )
 
 // testModelTpl exercises the full funcmap against a GenDefinition context,

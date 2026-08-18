@@ -93,7 +93,7 @@ func TestGenerateModel_DocString(t *testing.T) {
 
 func TestGenerateModel_PropertyValidation(t *testing.T) {
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("propertyValidationDocString")}
+	tt := templateTest{t, opts.templates.MustGet("validationStructfieldPropertyValidationDocString")}
 
 	var gmp GenSchema
 	gmp.Required = true
@@ -248,7 +248,7 @@ var schTypeGenDataSimple = []struct {
 
 func TestGenSchemaType(t *testing.T) {
 	opts := opts()
-	tt := templateTest{t, opts.templates.MustGet("schemaType")}
+	tt := templateTest{t, opts.templates.MustGet("schematypeSchemaType")}
 	for _, v := range schTypeGenDataSimple {
 		tt.assertRender(v.Value, v.Expected)
 	}

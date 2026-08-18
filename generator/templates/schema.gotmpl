@@ -3,7 +3,7 @@
 {{- else if .IsSuperAlias }}
   type {{ .GoName }} {{ template "typeSchemaType" . }}{{/* For types declared as $ref on some other type, just declare the type as a golang _aliased_ type, e.g. type A = B. No method shall be redeclared.  */}}
   {{- if .IsBaseType }}
-    {{ template "baseTypeSerializer" . }}{{/* When the alias redeclares a polymorphic type, define factory methods with this alias. */}}
+    {{ template "serializersBasetypeBaseType" . }}{{/* When the alias redeclares a polymorphic type, define factory methods with this alias. */}}
   {{- end }}
 {{- else if .IsEmbedded }}
   {{- template "schemaEmbedded" . }}
@@ -47,7 +47,7 @@
     type {{ .GoName }} {{ template "typeSchemaType" . }}
   {{- end }}
   {{- if (and .IsPrimitive .IsAliased .IsCustomFormatter (not (stringContains .Zero "(\""))) }}
-    {{ template "aliasedSerializer" . }}
+    {{ template "serializersAliasedAliasedSerializer" . }}
   {{- end }}
   {{- if .IsSubType }}
     {{ range .AllOf }}
@@ -74,7 +74,7 @@
     {{- end }}
     {{ template "mapOrSliceGetter" . }}
   {{- end }}
-  {{ template "schemaSerializer" . }}
+  {{ template "serializersSchemaSchemaSerializer" . }}
 {{- end }}
 {{- if and .IncludeValidator (not .IsSuperAlias) (not .IsEmbedded) }}{{/* aliased types type A = B do not redefine methods */}}
   {{- if and (not (or .IsInterface .IsStream)) (or .Required .HasValidations .HasBaseType) }}
@@ -110,10 +110,10 @@ func ({{.ReceiverName}} {{ if or .IsTuple .IsComplexObject .IsAdditionalProperti
   {{- end }}
 {{- end }}
 {{- if .WantsMarshalBinary }}
-  {{ template "marshalBinarySerializer" . }}
+  {{ template "serializersMarshalbinaryMarshalBinary" . }}
 {{- end }}
 {{- if .WantsStringer }}
-  {{ template "stringerSerializer" . }}
+  {{ template "serializersStringerStringerSerializer" . }}
 {{- end }}
 {{- if .WantsGetters }}
   {{- range .Properties }}
@@ -130,12 +130,12 @@ func ({{ $.ReceiverName }} *{{ $.GoName }}) Get{{ .GoName }}() {{ template "sche
   {{- if not .IsBaseType }}
     {{- if .HasAdditionalProperties }}
       {{- with .AdditionalProperties }}
-        {{ template "docstring" (dict "Ctx" .) }}{{- template "propertyValidationDocString" . }}
+        {{ template "docstring" (dict "Ctx" .) }}{{- template "validationStructfieldPropertyValidationDocString" . }}
         {{ .GoName }}() map[string]{{ template "schemaType" . }}
       {{- end }}
     {{- end }}
     {{- with .AdditionalItems }}
-      {{ template "docstring" (dict "Ctx" .) }}{{- template "propertyValidationDocString" . }}
+      {{ template "docstring" (dict "Ctx" .) }}{{- template "validationStructfieldPropertyValidationDocString" . }}
       {{ .GoName }}() []{{ template "schemaType" . }}
     {{- end }}
   {{- else }}

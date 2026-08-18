@@ -1,4 +1,4 @@
-{{ define "marshalBinarySerializer" }}
+{{ define "marshalBinary" }}
 // MarshalBinary interface implementation
 func ({{.ReceiverName}} *{{ .GoName }}) MarshalBinary() ([]byte, error) {
   if {{ .ReceiverName }} == nil {
