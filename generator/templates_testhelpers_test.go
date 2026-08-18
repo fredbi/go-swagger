@@ -17,7 +17,7 @@ import (
 func withTemplate(t *testing.T, opts *GenOpts, name, content string) {
 	t.Helper()
 
-	templates, err := templatesrepo.Clone(opts.templates, addedTemplate(opts, name, content)...)
+	templates, err := templatesrepo.Clone(opts.templates, addedTemplate(name, content)...)
 	require.NoError(t, err)
 
 	opts.templates = templates
@@ -25,7 +25,7 @@ func withTemplate(t *testing.T, opts *GenOpts, name, content string) {
 
 // templateError returns the error of adding a template to the repository of a run.
 func templateError(opts *GenOpts, name, content string) error {
-	_, err := templatesrepo.Clone(opts.templates, addedTemplate(opts, name, content)...)
+	_, err := templatesrepo.Clone(opts.templates, addedTemplate(name, content)...)
 
 	return err
 }
@@ -33,16 +33,13 @@ func templateError(opts *GenOpts, name, content string) error {
 // addedTemplate declares one more template, and keeps it out of the pruning where there is any.
 //
 // A repository scoped to what a run renders drops a template no root reaches, so one added here is
-// named as a root of its own. A repository holding everything has no scope to add to, and naming a
-// root of it would prune everything else away instead.
-func addedTemplate(opts *GenOpts, name, content string) []templatesrepo.Option {
-	added := []templatesrepo.Option{templatesrepo.FromTemplate(name, []byte(content))}
-
-	if len(opts.templates.Roots()) > 0 {
-		added = append(added, templatesrepo.WithRoots(name))
+// named as a root of its own. That says nothing to a repository holding every template, which is
+// what makes it the same call either way.
+func addedTemplate(name, content string) []templatesrepo.Option {
+	return []templatesrepo.Option{
+		templatesrepo.FromTemplate(name, []byte(content)),
+		templatesrepo.WithExtraRoots(name),
 	}
-
-	return added
 }
 
 // withSectionTemplate declares what a section entry needs of the repository: the template it
