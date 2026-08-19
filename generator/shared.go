@@ -207,31 +207,6 @@ func DefaultSectionOpts(gen *GenOpts) {
 	gen.Sections = sec
 }
 
-// MarkdownOpts for rendering a spec as markdown.
-func MarkdownOpts() *language.Options {
-	opts := &language.Options{}
-	opts.Init()
-
-	return opts
-}
-
-// MarkdownSectionOpts for a given opts and output file.
-func MarkdownSectionOpts(gen *GenOpts, output string) {
-	gen.Sections.Models = nil
-	gen.Sections.PostModels = nil
-	gen.Sections.OperationGroups = nil
-	gen.Sections.Operations = nil
-	gen.LanguageOpts = MarkdownOpts()
-	gen.Sections.Application = []TemplateOpts{
-		{
-			Name:     "markdowndocs",
-			Source:   "markdownDocs",
-			Target:   filepath.Dir(output),
-			FileName: filepath.Base(output),
-		},
-	}
-}
-
 // TemplateOpts allows for codegen customization.
 type TemplateOpts struct {
 	Name       string `mapstructure:"name"`

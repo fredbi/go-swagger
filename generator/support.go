@@ -38,43 +38,6 @@ func GenerateSupport(name string, modelNames, operationIDs []string, opts *GenOp
 	return generator.GenerateSupport(nil)
 }
 
-// GenerateMarkdown documentation for a swagger specification.
-func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *GenOpts) error {
-	if output == "." || output == "" {
-		output = "markdown.md"
-	}
-
-	// build the machinery and resolve the default sections up front, so the
-	// markdown-specific section layout below overrides a fully-defaulted plan.
-	// newAppGenerator's Prepare then keeps these (machinery/sections are built
-	// once) and only normalizes paths and loads templates.
-	opts.buildMachinery()
-	if err := opts.resolveSections(); err != nil {
-		return err
-	}
-
-	// the output path is resolved against the target, so the spec and the target are
-	// resolved here rather than left to Prepare. Both steps run exactly once.
-	if err := opts.normalize(); err != nil {
-		return err
-	}
-	if err := opts.ensureTarget(); err != nil {
-		return err
-	}
-
-	if opts.Target != "." {
-		output = filepath.Join(opts.Target, output)
-	}
-	MarkdownSectionOpts(opts, output)
-
-	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
-	if err != nil {
-		return err
-	}
-
-	return generator.GenerateMarkdown()
-}
-
 type appGenerator struct {
 	Name              string
 	Receiver          string
@@ -246,19 +209,6 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	}
 
 	return newRenderer(a.GenOpts).renderApplication(app)
-}
-
-func (a *appGenerator) GenerateMarkdown() error {
-	app, err := a.makeCodegenApp()
-	if err != nil {
-		return err
-	}
-
-	if a.DumpData {
-		return dumpData(os.Stdout, app)
-	}
-
-	return newRenderer(a.GenOpts).renderApplication(&app)
 }
 
 func (a *appGenerator) makeSecuritySchemes() GenSecuritySchemes {

@@ -106,7 +106,7 @@ func (g *GenOpts) buildMachinery() {
 		g.LanguageOpts = language.GolangOpts(g.WithExtraInitialisms...)
 	}
 
-	g.funcMap = DefaultFuncMap(g.LanguageOpts)
+	g.funcMap = DefaultFuncMap(g.LanguageOpts) // TODO: funcmaps should depend on loaded features
 
 	// set defaults for flattening options
 	if g.FlattenOpts == nil {
