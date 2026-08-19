@@ -15,9 +15,6 @@ import (
 )
 
 // TODO: move this down to an internal package.
-// Current problem: functions that depends on types
-
-var errInvalidPlugin = errors.New("invalid template plugin")
 
 // DefaultFuncMap yields a map with default functions for use in the templates.
 // These are available in every template.

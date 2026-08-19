@@ -31,7 +31,7 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 
 	// the output path is resolved against the target, so the spec and the target are
 	// resolved here rather than left to Prepare. Both steps run exactly once.
-	if err := opts.normalize(); err != nil {
+	if err := opts.normalizePath(); err != nil {
 		return err
 	}
 	if err := opts.ensureTarget(); err != nil {

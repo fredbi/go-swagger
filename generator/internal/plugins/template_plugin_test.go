@@ -3,7 +3,7 @@
 
 //go:build !windows
 
-package generator
+package plugins
 
 import (
 	"bytes"

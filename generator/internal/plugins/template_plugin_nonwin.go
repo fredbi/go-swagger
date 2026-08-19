@@ -3,7 +3,7 @@
 
 //go:build !windows
 
-package generator
+package plugins
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"text/template"
 )
 
-// loadFuncMapPlugin returns the functions a go plugin adds to the ones templates may call.
+// LoadFuncMap returns the functions a go plugin adds to the ones templates may call.
 //
 // The plugin has to export:
 //
@@ -22,6 +22,10 @@ import (
 //
 // The plugin is handed a map of its own rather than the one the generator built, so that what it
 // contributes is known, and merged deliberately.
+func LoadFuncMap(pluginPath string) (template.FuncMap, error) {
+	return loadFuncMapPlugin(pluginPath)
+}
+
 func loadFuncMapPlugin(pluginPath string) (template.FuncMap, error) {
 	loaded, err := plugin.Open(pluginPath)
 	if err != nil {
@@ -37,7 +41,7 @@ func loadFuncMapPlugin(pluginPath string) (template.FuncMap, error) {
 	if !isFuncMapProvider {
 		return nil, fmt.Errorf(
 			"AddFuncs of the template plugin %q is a %T, want func(template.FuncMap): %w",
-			pluginPath, symbol, errInvalidPlugin,
+			pluginPath, symbol, ErrInvalidPlugin,
 		)
 	}
 
