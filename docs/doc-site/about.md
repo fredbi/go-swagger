@@ -1,6 +1,4 @@
 ---
-menu:
-  - main
 title: About this project
 weight: 10
 description: What the go-swagger project is about

@@ -1,7 +1,6 @@
 ---
-title: About using swagger as your API contract
-date: 2023-01-01T01:01:01-08:00
-weight: 80
+title: Swagger & OpenAPI
+weight: 1
 description: Questions about the swagger specification itself
 ---
 <!-- Questions about swagger specs -->

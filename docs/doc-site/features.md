@@ -1,15 +1,15 @@
 ---
-menu:
-  - main
 title: Features
 weight: 20
 description: What go-swagger and the go-openapi toolkit provide
 ---
 ## Full features list
 
+All features currently supported by `go-swagger`.
+
 {{< tabs groupid="features" >}}
 {{% tab title="Spec-first tools" %}}
-`swagger` comes as a CLI tool to work with swagger specifications (OpenAPI 2.0).
+`go-swagger` ships a `swagger` CLI tool to work with swagger specifications (OpenAPI 2.0).
 
 - [x] Serve swagger UI for any swagger spec file
 - [x] Validate a swagger spec document, with extra rules outlined [here](usage/validate.md)
@@ -25,8 +25,9 @@ description: What go-swagger and the go-openapi toolkit provide
 
 {{% tab title="Code-first tools" %}}
 
-Spec generation from go source code is provided by the [codescan package](https://github.com/go-openapi/codescan).
-For a fully detailed account, see the [code scanner documentation](https://go-openapi.github.io/codescan/).
+Spec generation from go source code is provided by the [codescan package][codescan-url].
+
+For a fully detailed account, complete reference and examples, see the [code scanner documentation][codescan-doc-url].
 
   - [x] Generate spec document based on annotated code 
     - generate meta data (top level swagger properties) from package docs
@@ -41,12 +42,18 @@ For a fully detailed account, see the [code scanner documentation](https://go-op
       - composed structs out of several embeds
       - type aliases
       - definitions for swagger polymorphic types, with subtypes detection
-  - [x] a TUI tool to explore and experiment with your code annotations
+  - [x] a TUI tool to explore and experiment with your code annotations (_released separately_)
+  - [x] a standalone CLI to explore and experiment with your code annotations (_released separately_)
+  - [x] a [playground UI][playground-url] to discover, test and verify how your spec is produced _in your browser_!
+
+[codescan-url]: https://github.com/go-openapi/codescan
+[codescan-doc-url]: https://go-openapi.github.io/codescan
+[playground-url]: https://go-openapi.github.io/codescan/playground
 {{% /tab %}}
 
 {{% tab title="Middlewares" %}}
-Middlewares are provided by our [runtime package](https://github.com/go-openapi/runtime).
-For a fully detailed account, see the [runtime documentation](https://go-openapi.github.io/runtime/).
+Middlewares are provided by our [runtime package][runtime-url]. You may also bring your own.
+For a fully detailed account and code examples, see the [runtime documentation][runtime-doc-url].
 
 - [x] serve spec
 - [x] routing
@@ -60,11 +67,18 @@ For a fully detailed account, see the [runtime documentation](https://go-openapi
   - Built-in on all generated servers at `/docs` endpoint
   - Supports both ReDoc (default) and SwaggerUI flavors
   - Serves OpenAPI 2.0 spec at `/swagger.json`
+
+[runtime-url]: https://github.com/go-openapi/runtime
+[runtime-doc-url]: https://go-openapi.github.io/runtime
 {{% /tab %}}
 
 {{% tab title="Object model" %}}
 `go-openapi` provides an object model that serializes to swagger yaml or json:
-see the [spec package](https://github.com/go-openapi/spec).
+see the [spec package][spec-url].
+
+**This model support OpenAPI 2.0 only**.
+
+[spec-url]: https://github.com/go-openapi/spec
 {{% /tab %}}
 
 {{% tab title="JSON Schema" %}}
@@ -73,15 +87,17 @@ A typed JSON Schema Draft 4 implementation.
 - [x] JSON Pointer that knows about structs
 - [x] JSON Reference that knows about structs
 - [x] Supports most JSON schema features<sup>1</sup>
-- [x] Validate JSON data against jsonschema (Draft 4), with full $ref support (see the [validate package](https://github.com/go-openapi/validate))
+- [x] Validate JSON data against jsonschema (Draft 4), with full $ref support - see the [validate package][validate-url]
 - [x] Passes JSON schema Draft 4 test suite
 
 <sup>1</sup> currently adds extra support for `additionalItems`(not part of swagger), but not `anyOf`, `oneOf` and `not`.
+
+[validate-url]: https://github.com/go-openapi/validate
 {{% /tab %}}
 {{% tab title="Formats" %}}
 JSON-schema and OpenAPI specify a few common string formats.
 
-We provide types that serialize and validate these formats (see the [strfmt package](https://github.com/go-openapi/strfmt)).
+We provide types that serialize and validate these formats - see the [strfmt package][strfmt-url].
 
 - [x] JSON-schema draft 4 formats
   - `date-time`, `email`, `hostname`, `ipv4`, `ipv6`, `uri`
@@ -97,6 +113,7 @@ We provide types that serialize and validate these formats (see the [strfmt pack
   - `duration-iso8601`
 
 `go-swagger` also supports formats for numeric types: `int32`, `int64`, `float`, `double`.
+
+[strfmt-url]: https://github.com/go-openapi/strfmt
 {{% /tab %}}
 {{< /tabs >}}
-

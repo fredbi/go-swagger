@@ -1,6 +1,6 @@
 ---
 title: swagger serve
-weight: 60
+weight: 80
 description: Serve a spec over http.
 ---
 ## Serve a documentation site
@@ -60,11 +60,11 @@ At this moment the UI can be served into 2 flavors.
 The swagger source code has a middleware for embedding Redoc.
 So for the redoc flavor we make use of that and use it with the spec you have on disk.
 
-We use the redoc JS bundle hosted at https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js
+We use the redoc JS bundle hosted at <https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js>.
 
 #### Swagger UI
 
-For the swagger flavor we use the UI bundle hostsed at https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js
+For the swagger flavor we use the UI bundle hostsed at <https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js>.
 
 #### Your own UI
 
@@ -76,10 +76,11 @@ You can also use the `--doc-url` to provide another url as base, for example
 the url to your documentation site, which would need to recognize the query param URL to load the swagger spec from,
 through the browser.
 
-### More
+### Example 
 
-There are some more options for this command which you can view with:
+```cmd
+swagger serve ./testdata/canary/petstore/swagger.json
+```
 
-```
-swagger serve --help
-```
+![Screenshot](/go-swagger/usage/serve_ui/serve_ui.png "Redoc UI petstore")
+

@@ -1,18 +1,17 @@
 ---
 title: swagger mixin
-weight: 50
+weight: 70
 description: Merge specs.
 ---
 ## Mixin several swagger specs
 
 The toolkit has a command to mix several swagger specifications into one.
 
-Mixin merges several specs into the first (primary) spec given, and issues warnings when conflicts
-are detected.
+Mixin merges several specs into the first (primary) spec given, and issues warnings when conflicts are detected.
 
 ### Usage
 
-To mixin several specifications:
+To mix several specifications:
 
 ```cmd
 Usage:
@@ -58,6 +57,8 @@ the output keeps `host: a.example.com`. If `primary.yaml` has no `host`, the out
 `host: b.example.com` from the mixin.
 
 ### Limitations
+
+#### The ordering of keys is not preserved
 
 #### YAML anchors are not preserved
 

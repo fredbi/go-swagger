@@ -7,10 +7,10 @@ params:
     goVersion: '1.25.0'
 
     # Latest release tag (from git tags)
-    latestRelease: 'v0.36.1'
+    latestRelease: 'v0.36.4'
 
     # Version message for the documentation set
     versionMessage: 'Documentation test for latest master'
 
     # Build timestamp
-    buildTime: '2026-08-03T20:25:32Z'
+    buildTime: '2026-08-16T08:59:10Z'

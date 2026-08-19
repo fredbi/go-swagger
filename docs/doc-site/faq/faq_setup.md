@@ -1,19 +1,24 @@
 ---
-title: About go-swagger setup
-date: 2023-01-01T01:01:01-08:00
-weight: 10
+title: Install & Setup
+weight: 5
 description: Installation, setup and environment questions
 ---
+
 <!-- Questions about install, setup and dependencies -->
 
 ## Installation and environment
 
 ### What is the minimal go version required?
+
 Our policy is to support the two latest versions of the go compiler.
 
-That being said, as of Dec. 2017, our CI engines currently run all tests on go 1.7, on Linux and Windows platforms.
+Given the clockwork pace of the go team, this means that it leaves you about one year before being required
+to upgrade your go compiler.
 
-You should be able to build with go **1.6**, but we won't proceed to changes in order to maintain backward compatibility with 1.6.
+Our CI is aligned to test on versions `stable` (the latest minor) and `oldstable`.
+
+Whenever a new language feature appears we guard it behind go `//go:build` directive until the required go version
+becomes the new `oldstable`.
 
 Originally from issue [#636](https://github.com/go-swagger/go-swagger/issues/636).
 

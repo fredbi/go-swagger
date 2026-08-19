@@ -1,39 +1,14 @@
 ---
-title: Generate spec
-weight: 70
-description: Generate a spec from go source
+title: swagger generate spec
+weight: 20
+description: Code-first generation of your API spec
 ---
 
-## Generate a spec from source code
+## Generating a spec from your code 
 
-The toolkit has a command that will let you generate a swagger spec document from your code.
+This is the code-first approach to generating your API spec from your API code.
 
-The command integrates with go doc comments, and makes use of structs when it needs to know of
-types.
-
-> This solution was originally based on the work from https://github.com/yvasiyarov/swagger. Many thanks for this starter!
-> We use a similar concept but with expanded annotations. It produces a swagger 2.0 spec.
-
-The goal of the syntax is to make it look as a natural part of the documentation for the application code.
-
-The generator is passed a package (not necessarily the main package) and it uses that to discover all the code in use.
-
-> NOTE: to do this it makes use of go's loader package, which requires a go compiler.
-> The same package that is used by tools like goimports to discover which files to format.
-
-Once the parser has encountered a comment that matches one of its known tags, the parser will assume that the rest of the comment block is for swagger.
-
-If it is your first time using this library for generating swagger specification, you may also take a look at 
-[this getting started guide][contrib-medium-url] on Medium to get the big picture and then return here to read more 
-about all annotations and commands provided by this package.
-
-A for a complete reference of the syntax of code annotations, examples and tutorials, see the
-[documentation of the `codescan` package][codescan-doc-url].
-
-[codescan-doc-url]: https://go-openapi.github.io/codescan/
-[contrib-medium-url]: https://medium.com/@pedram.esmaeeli/generate-swagger-specification-from-go-source-code-648615f7b9d9?source=friends_link&sk=b402acc563e8d2bfadd1ac02abddc3bb
-
-### Usage of the `generate spec` command
+### Usage
 
 ```cmd
 Usage:
@@ -80,4 +55,153 @@ Help Options:
           --prune                        with --scan-models, drop discovered definitions not transitively referenced from a path, response, parameter or input spec
           --colorized                    enable colorized diagnostics on stderr
       -q, --quiet                        mute diagnostics on stderr
+```
+
+Read more details about [all the knobs][knobs]
+
+[knobs]: ../use-cases/specgen/index.md#all-the-knobs-explained
+
+### Example
+
+```
+swagger generate spec --work-dir=./testdata/goparsing/spec .
+```
+
+```json
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "the purpose of this application is to provide an application\nthat is using plain go code to define an API",
+    "title": "API.",
+    "version": "0.0.1"
+  },
+  "host": "localhost",
+  "paths": {
+    "/admin/bookings/": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "booking"
+        ],
+        "summary": "Bookings lists all the appointments that have been made on the site.",
+        "operationId": "Bookings",
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "$ref": "#/responses/BookingResponse"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Booking": {
+      "description": "A Booking in the system",
+      "type": "object",
+      "required": [
+        "id",
+        "Subject"
+      ],
+      "properties": {
+        "Subject": {
+          "description": "Subject the subject of this booking",
+          "type": "string"
+        },
+        "id": {
+          "description": "ID the id of the booking",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ID",
+          "readOnly": true
+        }
+      },
+      "x-go-package": "github.com/go-swagger/scan-repo-boundary/makeplans"
+    },
+    "Customer": {
+      "type": "object",
+      "title": "Customer of the site.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        }
+      },
+      "x-go-package": "github.com/go-swagger/go-swagger/testdata/goparsing/spec"
+    },
+    "DateRange": {
+      "description": "DateRange represents a scheduled appointments time\nDateRange should be in definitions since it's being used in a response",
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "string",
+          "x-go-name": "End"
+        },
+        "start": {
+          "type": "string",
+          "x-go-name": "Start"
+        }
+      },
+      "x-go-package": "github.com/go-swagger/go-swagger/testdata/goparsing/spec"
+    }
+  },
+  "responses": {
+    "BookingResponse": {
+      "description": "BookingResponse represents a scheduled appointment",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "$ref": "#/definitions/Booking"
+          },
+          "customer": {
+            "$ref": "#/definitions/Customer"
+          },
+          "dates": {
+            "$ref": "#/definitions/DateRange"
+          },
+          "map": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "x-go-name": "Map",
+            "example": {
+              "key": "value"
+            }
+          },
+          "slice": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "x-go-name": "Slice",
+            "example": [
+              1,
+              2
+            ]
+          }
+        }
+      }
+    }
+  }
+}
 ```

@@ -38,7 +38,7 @@ It aims to represent the contract of your API with a language agnostic descripti
 		log.Fatal(err)
 	}
 
-	_, err = parser.AddCommand("version", "print the version", "print the version of the swagger command", &commands.PrintVersion{})
+	_, err = parser.AddCommand("version", "print the version of go-swagger", "print the version of the swagger command you're running", &commands.PrintVersion{})
 	if err != nil {
 		log.Fatal(err)
 	}

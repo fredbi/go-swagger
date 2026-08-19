@@ -120,58 +120,35 @@ params:
 # Menu configuration
 menu:
   shortcuts:
-    - name: "go-openapi toolkit"
+    - name: "The go-openapi toolkit on github"
       identifier: go-openapi
       url: "https://github.com/go-openapi"
       weight: 20
 
-  before:
-    - name: "Find go-swagger on github"
-      url: "https://github.com/go-swagger/go-swagger"
-      weight: 1
-    - name: ""
-      pre: "<hr>"
-      weight: 10
+    - name: "codegen examples"
+      identifier: examples
+      url: "https://go-openapi.github.io/examples"
+      weight: 35
 
-  after:
-    - name: ""
-      pre: "<hr>"
-      post: '<div style="color:aqua; font-weight:bold">The go-openapi toolkit</div>'
-      url: "https://github.com/go-openapi"
-      weight: 1
-    - name: "go-openapi/analysis"
-      url: "https://github.com/go-openapi/analysis"
-      weight: 10
-    - name: "go-openapi/errors"
-      url: "https://github.com/go-openapi/errors"
-      weight: 20
-    - name: "go-openapi/inflect"
-      url: "https://github.com/go-openapi/inflect"
-      weight: 25
-    - name: "go-openapi/jsonpointer"
-      url: "https://github.com/go-openapi/jsonpointer"
+    - name: "codescan docs & examples"
+      identifier: codescan
+      url: "https://go-openapi.github.io/codescan"
       weight: 30
-    - name: "go-openapi/jsonpointer"
-      url: "https://github.com/go-openapi/jsonreference"
+
+    - name: "runtime docs & examples"
+      identifier: runtime
+      url: "https://go-openapi.github.io/runtime"
+      weight: 35
+
+    - name: "testify/v2 docs"
+      identifier: testify
+      url: "https://go-openapi.github.io/testify"
       weight: 40
-    - name: "go-openapi/loads"
-      url: "https://github.com/go-openapi/loads"
-      weight: 50
-    - name: "go-openapi/runtime"
-      url: "https://github.com/go-openapi/runtime"
-      weight: 60
-    - name: "go-openapi/spec"
-      url: "https://github.com/go-openapi/spec"
-      weight: 70
-    - name: "go-openapi/strfmt"
-      url: "https://github.com/go-openapi/strfmt"
-      weight: 80
-    - name: "go-openapi/swag"
-      url: "https://github.com/go-openapi/swag"
-      weight: 90
-    - name: "go-openapi/validate"
-      url: "https://github.com/go-openapi/validate"
-      weight: 100
+
+    - name: "general docs & news"
+      identifier: github
+      url: "https://github.com/go-openapi/doc-site"
+      weight: 45
 
 # Privacy settings
 privacy:

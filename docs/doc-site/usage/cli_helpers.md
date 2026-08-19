@@ -1,6 +1,5 @@
 ---
 title: Shell completion
-date: 2023-01-01T01:01:01-08:00
 weight: 1000
 description: shell autocompletion for the go-swagger CLI
 ---

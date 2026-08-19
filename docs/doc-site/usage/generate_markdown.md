@@ -1,6 +1,5 @@
 ---
 title: swagger generate markdown
-date: 2023-01-01T01:01:01-08:00
 weight: 40
 description: Generate markdown doc from a spec.
 ---
@@ -8,8 +7,8 @@ description: Generate markdown doc from a spec.
 
 This is a command to generate a markdown document from a swagger spec.
 
-The generated doc is no substitute for advanced swagger documentation tools such as redoc:
-it provides a simple documentation for your API.
+The generated doc is no substitute for advanced swagger documentation tools such as `swaggerUI` or `redoc`:
+it provides a simple static documentation for your API.
 
 The spec is canonicalized just like for code generation: the generated markdown represents
 operations and models just like your generated code sees them.
@@ -75,3 +74,12 @@ Help Options:
           --with-enum-ci                                                                     allow case-insensitive enumerations
           --skip-tag-packages                                                                skips the generation of tag-based operation packages, resulting in a flat generation
 ```
+
+### Example
+
+```cmd
+swagger generate markdown --output petstore.md testdata/canary/petstore/swagger.json
+```
+
+See [the rendered markdown](markdown/petstore.md).
+
