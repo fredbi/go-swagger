@@ -120,21 +120,6 @@ func goswaggerFuncMap(mangler mangling.NameMangler) template.FuncMap {
 
 			return strconv.Quote(tag)
 		},
-		"flagNameVar": func(in string) string {
-			return fmt.Sprintf("flag%sName", pascalize(in))
-		},
-		"flagValueVar": func(in string) string {
-			return fmt.Sprintf("flag%sValue", pascalize(in))
-		},
-		"flagDefaultVar": func(in string) string {
-			return fmt.Sprintf("flag%sDefault", pascalize(in))
-		},
-		"flagModelVar": func(in string) string {
-			return fmt.Sprintf("flag%sModel", pascalize(in))
-		},
-		"flagDescriptionVar": func(in string) string {
-			return fmt.Sprintf("flag%sDescription", pascalize(in))
-		},
 		"printGoLiteral": func(in any) string {
 			return interfaceReplacer.Replace(fmt.Sprintf("%#v", in))
 		},

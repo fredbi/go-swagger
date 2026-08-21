@@ -352,6 +352,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		ExternalDocs:         trimExternalDoc(operation.ExternalDocs),
 		ReturnErrors:         b.GenOpts.ReturnErrors,
 		WantsGetters:         b.GenOpts.WantsGetters,
+		GenOpts:              b.GenOpts,
 	}, nil
 }
 

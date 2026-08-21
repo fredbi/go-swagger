@@ -90,7 +90,7 @@ func validateOpts(g *GenOpts) error {
 		return err
 	}
 
-	return g.normalize()
+	return g.normalizePath()
 }
 
 // assertValidOpts asserts that g passes validation and path normalization.
