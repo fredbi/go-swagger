@@ -3,7 +3,14 @@
 
 package generator
 
-import "github.com/spf13/viper"
+import (
+	"text/template"
+
+	"github.com/go-openapi/analysis"
+	templatesrepo "github.com/go-openapi/codegen/templates-repo"
+	"github.com/go-swagger/go-swagger/generator/internal/language"
+	"github.com/spf13/viper"
+)
 
 // Option configures a [GenOpts] when building it with [NewGenOpts].
 //
@@ -11,6 +18,88 @@ import "github.com/spf13/viper"
 // ...) plus a few ubiquitous setters. Anything else is set directly on the
 // exported [GenOpts] fields before the options are finalized by [GenOpts.Prepare].
 type Option func(*GenOpts)
+
+// GenOpts encapsulates the generator options.
+type GenOpts struct {
+	IncludeModel               bool
+	IncludeValidator           bool
+	IncludeHandler             bool
+	IncludeParameters          bool
+	IncludeResponses           bool
+	IncludeURLBuilder          bool
+	IncludeMain                bool
+	IncludeSupport             bool
+	IncludeCLi                 bool
+	ExcludeSpec                bool
+	DumpData                   bool
+	ValidateSpec               bool
+	FlattenOpts                *analysis.FlattenOpts
+	IsClient                   bool
+	machineryBuilt             bool // guards buildMachinery (language opts, func map)
+	sectionsResolved           bool // guards resolveSections (default render plan)
+	specNormalized             bool // guards normalize (spec path resolution)
+	targetEnsured              bool // guards ensureTarget (target directory checks)
+	prepared                   bool // guards Prepare
+	PropertiesSpecOrder        bool
+	StrictAdditionalProperties bool
+	WithGoRunGoGenerate        bool
+	NoDefaultOmitEmpty         bool
+
+	Spec                   string
+	APIPackage             string
+	ModelPackage           string
+	ServerPackage          string
+	ClientPackage          string
+	CliPackage             string
+	CliAppName             string // name of cli app. For example "dockerctl"
+	ImplementationPackage  string
+	Principal              string
+	PrincipalCustomIface   bool   // user-provided interface for Principal (non-nullable)
+	Target                 string // dir location where generated code is written to
+	Sections               SectionOpts
+	LanguageOpts           *language.Options
+	TypeMapping            map[string]string
+	Imports                map[string]string
+	DefaultScheme          string
+	DefaultProduces        string
+	DefaultConsumes        string
+	WithXML                bool
+	TemplateDir            string
+	Template               string // use registered contrib template
+	TemplatePlugin         string // TemplatePlugin names an optional Go plugin contributing template functions (not available on windows).
+	RegenerateConfigureAPI bool
+	Operations             []string
+	Models                 []string
+	Tags                   []string
+	StructTags             []string
+	Name                   string
+	FlagStrategy           string
+	CompatibilityMode      string
+	ExistingModels         string
+	Copyright              string
+	SkipTagPackages        bool
+	MainPackage            string
+	IgnoreOperations       bool
+	AllowEnumCI            bool
+	StrictResponders       bool
+	AcceptDefinitionsOnly  bool
+	WantsRootedErrorPath   bool
+	WantsStringer          bool
+	WantsGetters           bool
+	ReturnErrors           bool
+	WithCustomFormatter    bool
+	WithExtraInitialisms   []string
+	Restricted             bool
+	Rooted                 string
+	EnsureTarget           bool // create the target directory when it does not exist
+
+	// Viper carries an optional configuration (typically a `.swagger.{yml,json}` file).
+	// Its `layout:` sections are applied as overrides on top of the default render plan during Prepare.
+	Viper *viper.Viper
+
+	templates *templatesrepo.Repository
+	funcMap   template.FuncMap
+}
 
 // NewGenOpts builds a [GenOpts] and applies the given options.
 //

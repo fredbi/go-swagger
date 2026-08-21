@@ -4,6 +4,7 @@
 package generator
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -16,9 +17,24 @@ import (
 	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	"github.com/go-openapi/runtime"
 
+	codegenfuncs "github.com/go-openapi/codegen/funcmaps"
+	"github.com/go-swagger/go-swagger/generator/internal/funcmaps"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
+	"github.com/go-swagger/go-swagger/generator/internal/machinery"
 	"github.com/go-swagger/go-swagger/generator/internal/plugins"
 )
+
+// templateAssets holds the templates shipped with the generator.
+//
+// The whole tree is embedded, contrib sets included: which of them a run uses is decided when the
+// template repository is built, not here.
+//
+// The templates saying where each section writes live outside the tree of the templates they
+// place, so that neither is read as part of the other, and so that a template directory of the
+// user's own may mirror either.
+//
+//go:embed all:templates
+var templateAssets embed.FS
 
 // Prepare finalizes a set of generation options so they are ready for use.
 //
@@ -91,9 +107,8 @@ func (g *GenOpts) validate() error {
 	return nil
 }
 
-// buildMachinery builds the deterministic, infallible derived state from the
-// options: language options (including custom formatter and extra initialisms)
-// and the template func map.
+// buildMachinery builds the deterministic, infallible derived state from the options:
+// language options (including custom formatter and extra initialisms) and the template func map.
 //
 // It is guarded so the machinery is built exactly once, regardless of how many
 // times it is reached (the second call is a no-op).
@@ -109,7 +124,7 @@ func (g *GenOpts) buildMachinery() {
 		g.LanguageOpts = language.GolangOpts(g.WithExtraInitialisms...)
 	}
 
-	g.funcMap = DefaultFuncMap(g.LanguageOpts) // TODO: funcmaps should depend on loaded features
+	g.funcMap = funcmaps.DefaultFuncMap(g.LanguageOpts) // extra features for specific scopes may be merged later
 
 	// set defaults for flattening options
 	if g.FlattenOpts == nil {
@@ -150,6 +165,11 @@ func (g *GenOpts) buildMachinery() {
 
 	if len(g.WithExtraInitialisms) > 0 {
 		g.LanguageOpts.ExtraInitialisms = g.WithExtraInitialisms
+	}
+
+	if g.IncludeCLi {
+		// supplement default funcmap with extra features for CLI
+		codegenfuncs.Coalesce(g.funcMap, cliFuncMap(g.LanguageOpts.Mangler))
 	}
 
 	g.machineryBuilt = true
@@ -202,7 +222,7 @@ func (g *GenOpts) normalizePath() error {
 		return nil
 	}
 
-	pth, err := findSwaggerSpec(g.Spec)
+	pth, err := machinery.FindSwaggerSpec(g.Spec)
 	if err != nil {
 		return err
 	}
@@ -272,6 +292,17 @@ func (g *GenOpts) templateSources() ([]templatesrepo.Option, error) {
 	}
 
 	return append(sources, g.configuredPaths()...), nil
+}
+
+// contribTemplates returns the templates of a contrib set, rooted so that they override the
+// defaults they replace.
+func contribTemplates(name string) (fs.FS, error) {
+	rooted, err := fs.Sub(templateAssets, "templates/contrib/"+name)
+	if err != nil {
+		return nil, fmt.Errorf("unknown contrib template set %q: %w", name, err)
+	}
+
+	return rooted, nil
 }
 
 // mainSection and embeddedSpecSection are the two application entries that answer to a flag of
@@ -387,7 +418,7 @@ func (g *GenOpts) scope() []templatesrepo.Option {
 func shippedTemplates() []templatesrepo.Option {
 	return []templatesrepo.Option{
 		// the alternate sets are stacked by name, never read wholesale
-		templatesrepo.FromFS(embeddedTemplates(), "", templatesrepo.SkippingDirectories("contrib")),
+		templatesrepo.FromFS(embeddedTemplates(), "", templatesrepo.SkipDirectories("contrib")),
 		templatesrepo.FromFS(embeddedPaths(), ""),
 	}
 }
@@ -461,4 +492,28 @@ func (g *GenOpts) configuredPaths() []templatesrepo.Option {
 // path the configuration happens to use.
 func definedAs(name, body string) templatesrepo.Option {
 	return templatesrepo.FromTemplate(name, []byte(`{{ define "`+name+`" }}`+body+`{{ end }}`))
+}
+
+// embeddedTemplates returns the default templates, rooted at the templates directory.
+func embeddedTemplates() fs.FS {
+	return rootedAt("templates")
+}
+
+// embeddedPaths returns the templates saying where each section writes.
+//
+// They live under filepaths, mirroring the tree of the templates they place, and are rooted there
+// so that the name of one is the name of the template it places, suffixed with Target or FileName:
+// filepaths/server/parameter/target.gotmpl declares serverParameterTarget.
+func embeddedPaths() fs.FS {
+	return rootedAt("templates/filepaths")
+}
+
+// rootedAt returns a directory of the embedded templates, as a file system of its own.
+func rootedAt(dir string) fs.FS {
+	rooted, err := fs.Sub(templateAssets, dir)
+	if err != nil {
+		panic(fmt.Errorf("internal error: embedded templates are not readable: %w", err))
+	}
+
+	return rooted
 }

@@ -719,6 +719,7 @@ type GenOperation struct {
 	ExternalDocs     *spec.ExternalDocumentation
 	Produces         []string // original produces for operation (for doc)
 	Consumes         []string // original consumes for operation (for doc)
+	GenOpts          *GenOpts
 }
 
 func (g GenOperation) ErrPath() string {

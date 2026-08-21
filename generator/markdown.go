@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2015-2025 go-swagger maintainers
+// SPDX-License-Identifier: Apache-2.0
+
 package generator
 
 import (
@@ -6,6 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/go-openapi/codegen/funcmaps"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
@@ -20,10 +24,10 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 		output = "markdown.md"
 	}
 
-	// build the machinery and resolve the default sections up front, so the
-	// markdown-specific section layout below overrides a fully-defaulted plan.
-	// newAppGenerator's Prepare then keeps these (machinery/sections are built
-	// once) and only normalizes paths and loads templates.
+	// build the machinery and resolve the default sections up front,
+	// so the markdown-specific section layout below overrides a fully-defaulted plan.
+	// newAppGenerator's Prepare then keeps these (machinery/sections are built once)
+	// and only normalizes paths and loads templates.
 	opts.buildMachinery()
 	if err := opts.resolveSections(); err != nil {
 		return err
@@ -41,7 +45,11 @@ func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *Ge
 	if opts.Target != "." {
 		output = filepath.Join(opts.Target, output)
 	}
+
 	MarkdownSectionOpts(opts, output)
+
+	// supplement default funcmap with extra features for markdown
+	funcmaps.Coalesce(opts.funcMap, markdownFuncMap())
 
 	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
 	if err != nil {

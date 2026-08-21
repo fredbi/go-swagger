@@ -351,6 +351,7 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 		PrincipalIsNullable:  principalIsNullable(b.GenOpts.Principal, b.GenOpts.PrincipalCustomIface),
 		ExternalDocs:         trimExternalDoc(operation.ExternalDocs),
 		ReturnErrors:         b.GenOpts.ReturnErrors,
+		GenOpts:              b.GenOpts,
 	}, nil
 }
 
