@@ -12,7 +12,7 @@ description: Treat external OpenAPI specifications like any untrusted input
 Treat a specification like any other untrusted input: if you obtained it from a remote or untrusted location, review its contents before generating code from it.
 {{% /notice %}}
 
-The generator never executes the spec, and the generated code runs only when *you* build and import it.
+The generator **never executes the spec**, and the generated **code runs only when _you_ build and import it**.
 
 We have hardened the generators against an adversarial spec that tries to inject unwanted Go into the artifacts it produces — identifiers, struct tags, doc comments and CLI string literals are sanitized or escaped — which substantially reduces the exposure.
 
@@ -24,3 +24,5 @@ In particular:
 - **The `x-go-type` extension.** By design, this extension lets the spec choose the Go type for a field — including an arbitrary imported package. That capability *cannot easily be safeguarded*: a spec using `x-go-type` can make your generated code import and depend on a package of its choosing. Always review specs that rely on it.
 
 When in doubt, generate into a scratch directory, read the diff, and only then wire it into your build.
+
+See also [the proposed security options](./usage/reference#security-options) for ways to restrict the code generation workflow.

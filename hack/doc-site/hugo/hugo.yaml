@@ -127,7 +127,7 @@ menu:
 
     - name: "codegen examples"
       identifier: examples
-      url: "https://go-openapi.github.io/examples"
+      url: "https://goswagger.io/examples"
       weight: 35
 
     - name: "codescan docs & examples"

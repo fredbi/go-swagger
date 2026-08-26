@@ -4,7 +4,9 @@ weight: 5
 description: All swagger commands in a nutshell
 ---
 
-`swagger` is the binary CLI that ships with `go-swagger`. See also the [installation instructions](../install).
+`swagger` is the binary CLI that ships with `go-swagger`.
+
+See also the [installation instructions](../install) and the [options reference documentation](./reference).
 
 To configure shell auto-completion, please read [this](./cli_helpers.md).
 
@@ -70,6 +72,7 @@ Available commands:
 
 More documentation focused on each supported use-case.
 
+* Complete [options reference documentation](./reference).
 * `diff`, `expand`, `flatten`, `init`, `mixin` : learn more about [spec transformation use-cases](../use-cases/transform)
 * `generate [client|cli|server|model|operation|support]`: see [CLI usage](./generate_code.md) and learn more about [code generation use-cases](../use-cases/codegen)
 * `generate spec`: see [CLI usage](./generate_spec.md) and learn more about the [spec generation use-case](../use-cases/specgen)

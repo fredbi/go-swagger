@@ -1,7 +1,7 @@
 ---
 title: Contributing
 description: Contributing guide
-weight: 40
+weight: 10
 ---
 {{<forkme url="https://github.com/go-swagger/go-swagger/fork">}}
 

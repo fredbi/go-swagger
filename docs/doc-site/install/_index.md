@@ -22,4 +22,12 @@ A multi-arch docker image is published on both Quay.io and ghcr.io.
 After a successful installation, make sure that your development environment meets [the prerequisites](generate/requirements.md).
 {{% /notice %}}
 
+Feel free to post issues if you feel we should extend the list of supported platforms or distros.
+
+At this moment, we plan to extend available installations to:
+
+* brew tap (used to work, broken now)
+* apk packages for alpine linux
+* docker hub for images (on top of `gcr.io` and `quay.io`)
+
 {{< children type="card" description="true" >}}

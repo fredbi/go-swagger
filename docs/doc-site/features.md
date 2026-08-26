@@ -117,3 +117,34 @@ We provide types that serialize and validate these formats - see the [strfmt pac
 [strfmt-url]: https://github.com/go-openapi/strfmt
 {{% /tab %}}
 {{< /tabs >}}
+
+## Where help is still needed
+
+See also [our roadmap for a v2](./project/maintainers/ROADMAP.md).
+
+{{< tabs groupid="forthcoming-features" >}}
+{{% tab title="Incremental" %}}
+May be added incrementally:
+
+- [ ] Better generated server
+- [ ] More capable & secure doc serve
+- [ ] Support for more authorizers out of the box
+- [ ] Code generation hooks to insert custom validation or handler's logic
+- [ ] Better codegen CLI, possibly codegen TUI
+- [ ] ...
+{{% /tab %}}
+
+{{% tab title="Breaking" %}}
+Require a breaking change:
+
+- [ ] Support OAI v3.x & JSONSchema 2020 - that's a long awaited one. We're currently working on it - and that's a big change. Not ready for contributions yet.
+- [ ] Toolchain-free code generation
+- [ ] Cross-platform plugin, with support for custom funcmaps, format registries
+- [ ] Spec diff with overlay support
+- [ ] Spec linter
+- [ ] Modular runtime server and client
+- [ ] Required & Pointer issues in generated models
+- [ ] Generalized use of polymorphic types in generated models
+- [ ] ...
+{{% /tab %}}
+{{< /tabs >}}
