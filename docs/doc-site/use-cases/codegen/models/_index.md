@@ -1,47 +1,49 @@
 ---
 title: Generated models
-description: Generating go types from jsonschema definitions
 weight: 10
+description: Generate Go types from swagger definitions, and control how they come out.
 ---
 
-## Generate a data model from swagger spec
+`swagger generate model` turns the schemas in `#/definitions` into Go types. Each type marshals to and from JSON, and
+has a `Validate` method built from the schema's validations.
 
-The toolkit allows for generating go native structures to serialize and validate a swagger compliant model definition.
+The server and client generators produce the same models, so these pages apply to them too.
 
-The generated objects follow the specified validation rules, including extended format directives for strings and numbers.
+## Models only
 
-Generated models support most Swagger 2.0 features, including polymorphism.
+Use `generate model` when you need the data types and nothing else: to share them between services, or to describe Go
+structs with a swagger spec.
 
-Generated models support most JSON-schema draft4 features, including `AllOf`, `AdditionalProperties` and `AdditionalItems`.
+```cmd
+swagger generate model -f swagger.yaml
+```
 
-### Usage
+* `--model` (repeatable) picks the definitions to generate. The default is all of them.
+* `--model-package` sets the package, under `--target`. The default is `models`.
+* `--accept-definitions-only` accepts a document that holds only `definitions`, with no `swagger`, `info` or `paths`.
 
-`generate model -f {spec}`
+The models import `go-openapi/errors`, `go-openapi/strfmt`, `go-openapi/swag` and `go-openapi/validate`: see
+[Build requirements](../requirements.md).
 
-See the full list of available options [here](../../generate/model.md).
+For all options, see [`generate model`](../../../usage/generate_model.md) and the
+[model options](../../../usage/reference/model_options.md).
 
-### Model building rules
+## Custom extensions
 
-* [Schema generation rules](schemas.md#schema-generation-rules)
-  * [About schemas](schemas.md#about-schemas)
-  * [Interfaces](schemas.md#interfaces)
-  * [Mapping patterns](schemas.md#mapping-patterns)
-    * [Minimal use of go's reflection](schemas.md#minimal-use-of-gos-reflection)
-    * [Doc strings](schemas.md#doc-strings)
-    * [Types reusability](schemas.md#types-reusability)
-  * [Swagger vs JSONSchema](schemas.md#swagger-vs-jsonschema)
-  * [Go-swagger vs Swagger](schemas.md#go-swagger-vs-swagger)
-  * [Known limitations with go-swagger models](schemas.md#known-limitations-with-go-swagger-models)
-  * [Custom extensions](schemas.md#custom-extensions)
-  * [Primitive types](schemas.md#primitive-types)
-  * [Formatted types](schemas.md#formatted-types)
-  * [Nullability](schemas.md#nullability)
-  * [Validation](schemas.md#validation)
-  * [Type aliasing](schemas.md#type-aliasing)
-  * [Extensible types](schemas.md#extensible-types)
-    * [Objects and additional properties](schemas.md#objects-and-additional-properties)
-    * [Tuples and additional items](schemas.md#tuples-and-additional-items)
-  * [Polymorphic types](schemas.md#polymorphic-types)
-  * [Serialization interfaces](schemas.md#serialization-interfaces)
-  * [External types](schemas.md#external-types)
-  * [Customizing struct tags](schemas.md#customizing-struct-tags)
+The model generator reads these vendor extensions:
+
+| Extension | Effect | Read more |
+|---|---|---|
+| `x-go-name` | Sets the Go name of a type or field. | [Which Go type does a schema become?](mapping.md#rename-a-type-or-a-field-x-go-name) |
+| `x-go-type` | Uses a Go type you wrote instead of generating one. | [Use your own Go types](external-types.md) |
+| `x-nullable`, `x-isnullable` | Makes a field a pointer, or a value. | [Pointers and zero values](nullability.md) |
+| `x-omitempty` | Adds or removes `omitempty` on a field. | [Pointers and zero values](nullability.md#zero-values-and-omitempty) |
+| `x-go-custom-tag` | Adds struct tags to a field. | [Struct tags and field order](tags.md#write-a-tag-by-hand-x-go-custom-tag) |
+| `x-go-json-string` | Adds the `,string` option to the JSON tag. | [Struct tags and field order](tags.md#numbers-as-strings-x-go-json-string) |
+| `x-order` | Sets the order of fields in the struct. | [Struct tags and field order](tags.md#order-of-fields) |
+| `x-class` | Sets the discriminator value of a subtype. | [Base types and subtypes](polymorphism.md#change-the-discriminator-value-x-class) |
+| `x-go-enum-ci` | Validates an enum without regard to case. | [Validating models](validation.md#accept-any-case-in-an-enum) |
+
+## Topics
+
+{{< children type="card" description="true" >}}

@@ -10,7 +10,8 @@ description: Options common to code generation targets (models)
 * `--keep-spec-order`: preprocess the spec to insert `x-order` extensions, so schema properties remain in their original order.
 
 {{% notice style="warning" title="Partial implementation" %}}
-The `keep-spec-order` feature is currently incomplete: it only supports YAML specs and doesn't propagate across multi-documents linked by remote $ref's.
+The `keep-spec-order` feature is incomplete: it works on JSON and YAML specs, but generation fails with a JSON pointer error
+when the spec has a remote `$ref` to another document. It also overwrites any `x-order` already set in the spec.
 {{% /notice %}}
 
 ### Code generation options
@@ -33,12 +34,14 @@ to the native go toolchain.
 
 #### Generated content
 
-* `--strict-additional-properties`: the default behavior of generated models is to account for additional properties only when `true` or set to
-  a schema and ignore them otherwise. This flag adds the extra validation to reject extra properties when set to `true`.
+* `--strict-additional-properties`: by default, generated models keep additional properties only when `additionalProperties` is `true`
+  or a schema, and drop them otherwise. With this flag, `json.Unmarshal` rejects unknown properties when `additionalProperties` is `false`
+  or absent. `Validate` does not change.
   See the [example snippet](#strict-additional-properties) below.
 * `--struct-tags` allows for custom struct tags to be added to the generated struct fields.
   See the [example snippet](#custom-struct-tags) below.
-* `--rooted-error-path` extends validation errors with the type name instead of an empty path, in the case of arrays and maps.
+* `--rooted-error-path` puts the type name in the error path instead of an empty path, for checks on a top-level array definition
+  (e.g. `maxItems`). Element paths and maps do not change.
   See the [example snippet](#error-path) below.
 * `--with-stringer`: adds a `String() string` method on generated models, that renders as JSON.
   See the [example snippet](#stringer-models) below.

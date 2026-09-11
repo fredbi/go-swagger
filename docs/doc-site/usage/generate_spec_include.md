@@ -1,8 +1,7 @@
 ### Options
 
-Read more details about [all the knobs][knobs]
-
-[knobs]: ../use-cases/specgen/index.md#all-the-knobs-explained
+The options map to the [codescan options](https://go-openapi.github.io/codescan/). See also the
+[spec generation use case](../use-cases/specgen/_index.md).
 
 ### Example
 

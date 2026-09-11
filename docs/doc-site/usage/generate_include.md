@@ -1,6 +1,6 @@
 ### Covered use-cases
 
-Sub-commands for [code generation]({{% relref "../use-cases/codegen/_index.md" %}})
+Sub-commands for [code generation](../use-cases/codegen/_index.md)
 
 Complete generations:
 
@@ -14,11 +14,11 @@ Partial generations:
   - [`generate operation`](./generate_operation.md): only handlers
   - [`generate support`](./generate_support.md): only supporting files (API builder, main.go)
 
-Sub-commands for [spec generation]({{% relref "../use-cases/specgen/_index.md" %}})
+Sub-commands for [spec generation](../use-cases/specgen/_index.md)
 
   - [`generate spec`](./generate_spec.md): a spec from go source code
 
-Sub-commands for [doc generation]({{% relref "../use-cases/docgen/_index.md" %}})
+Sub-commands for [doc generation](../use-cases/docgen/_index.md)
 
   - [`generate markdown`](./generate_markdown.md): a single markdown file from spec
 

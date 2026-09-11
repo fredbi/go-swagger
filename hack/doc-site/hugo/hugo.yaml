@@ -55,8 +55,6 @@ module:
     # Generated documentation content
     - source: '../../../docs/doc-site'
       target: content
-      files:
-      - '**/*'
 
     # Custom SCSS (for theme customization) + logo
     - source: themes/go-swagger-assets
@@ -70,6 +68,12 @@ module:
 params:
   editURL: 'https://github.com/go-swagger/go-swagger/edit/master/'
   externalLinkTarget: _blank
+
+  # Warn about internal links and images that do not resolve
+  link:
+    errorlevel: warning
+  image:
+    errorlevel: warning
 
   # Repository info
   sourceRepository: 'https://github.com/go-swagger/go-swagger'

@@ -19,7 +19,7 @@ A multi-arch docker image is published on both Quay.io and ghcr.io.
 {{% notice style="info" %}}
 `go-swagger` works on all unix platforms as well as Windows OS.
 
-After a successful installation, make sure that your development environment meets [the prerequisites](generate/requirements.md).
+After a successful installation, make sure that your development environment meets [the prerequisites](../use-cases/codegen/requirements.md).
 {{% /notice %}}
 
 Feel free to post issues if you feel we should extend the list of supported platforms or distros.

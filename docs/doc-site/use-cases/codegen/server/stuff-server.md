@@ -48,7 +48,7 @@ The type name can be specified by package path.
 swagger generate server -P github.com/foobar/models.User
 ```
 
-See the full list of available options [for server](../generate/server.md) and [for client](../generate/client.md).
+See the full list of available options [for server](../../../usage/generate_server.md) and [for client](../../../usage/generate_client.md).
 
 When you would execute the generate step with that parameter for the security principal then the
 AddOneAuthenticatedHandler would look a bit like this:
