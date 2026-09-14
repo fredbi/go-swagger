@@ -10,7 +10,7 @@ import (
 	"text/template"
 
 	"github.com/go-openapi/codegen/funcmaps"
-	//codegenfuncs "github.com/go-openapi/codegen/funcmaps"
+	// codegenfuncs "github.com/go-openapi/codegen/funcmaps"
 	golangfuncs "github.com/go-swagger/go-swagger/generator/internal/funcmaps/golang"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
 )

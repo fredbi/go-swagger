@@ -128,7 +128,7 @@ func MakeRootCmd() (*cobra.Command, error) {
 
   // add all operation groups
 {{- range $index,$element := .OperationGroups }}
-  c{{ $index }}, err := make{{ cmdGroupName $element }}()
+  c{{ $index }}, err := make{{ .CmdGroupName }}()
   if err != nil {
     return nil, err
   }
@@ -268,8 +268,8 @@ func makeAuthInfoWriter(cmd *cobra.Command) (runtime.ClientAuthInfoWriter, error
 
 {{- range .OperationGroups -}}
 
-// make{{ cmdGroupName . }} returns a parent command to handle all operations with tag {{ printf "%q" .Name }}
-func make{{ cmdGroupName . }}() (*cobra.Command, error) {
+// make{{ .CmdGroupName }} returns a parent command to handle all operations with tag {{ printf "%q" .Name }}
+func make{{ .CmdGroupName }}() (*cobra.Command, error) {
   parent := &cobra.Command{
   Use:   {{ printf "%q" .Name }},
   Long:  `{{ escapeBackticks .Description }}`,
@@ -277,7 +277,7 @@ func make{{ cmdGroupName . }}() (*cobra.Command, error) {
 
   {{- range $index,$element := .Operations }}
 
-  sub{{ $index }}, err := make{{ cmdName $element }}()
+  sub{{ $index }}, err := make{{ .CmdName }}()
   if err != nil {
     return nil, err
   }

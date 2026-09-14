@@ -31,7 +31,7 @@ func TestBuildDiscriminatorMap_UsesDiscriminatorValue(t *testing.T) {
 	specDoc, err := loads.Spec("../testdata/bugs/3133/fixture-3133.yaml")
 	require.NoError(t, err)
 
-	di := discriminatorInfo(analysis.New(specDoc.Spec()), opts())
+	di := discriminatorInfo(analysis.New(specDoc.Spec()), opts(t))
 	assert.EqualT(t, "boolean", di.Discriminated["#/definitions/PermissionBooleanExpression"].FieldValue)
 }
 
@@ -194,7 +194,7 @@ func TestGenerateClient_OKResponseWithDiscriminator(t *testing.T) {
 	method, path, op, ok := analysis.New(specDoc.Spec()).OperationForName("modelOp")
 	require.TrueT(t, ok)
 
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	bldr := codeGenOpBuilder{
 		Name:          "modelOp",
 		Method:        method,
@@ -298,7 +298,7 @@ func TestGenerateModel_DiscriminatorAllOfBaseProperties(t *testing.T) {
 	specDoc, err := loads.Spec("../testdata/bugs/3133/fixture-3133.yaml")
 	require.NoError(t, err)
 
-	genOpts := opts()
+	genOpts := opts(t)
 	genModel, err := makeGenDefinition("PermissionExpressionEqual", "models", specDoc.Spec().Definitions["PermissionExpressionEqual"], specDoc, genOpts)
 	require.NoError(t, err)
 

@@ -41,8 +41,14 @@ func (c *Client) Execute(args []string) error {
 	return createSwagger(c, args)
 }
 
+func (c *Client) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForClient())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
-func (c Client) apply(opts *generator.GenOpts) {
+func (c *Client) apply(opts *generator.GenOpts) {
 	c.Shared.apply(opts)
 	c.Models.apply(opts)
 	c.Operations.apply(opts)
@@ -57,7 +63,6 @@ func (c Client) apply(opts *generator.GenOpts) {
 	opts.IncludeResponses = !c.SkipOperations
 	opts.Name = c.Name
 
-	opts.IsClient = true
 	opts.IncludeSupport = true
 }
 

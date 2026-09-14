@@ -26,7 +26,7 @@ const (
 	routeRemoteHTMLSpec = "/OAI/OpenAPI-Specification/blob/old-v3.2.0-dev/examples/v2.0/json/petstore.html"
 )
 
-func TestGenClient(t *testing.T) {
+func TestGenerateClient(t *testing.T) {
 	t.Parallel()
 	defer discardOutput()()
 
@@ -112,8 +112,6 @@ func TestGenClient(t *testing.T) {
 				opts := testClientGenOpts(t)
 				opts.Spec = ts.URL + routeRemoteYAMLSpec
 				opts.Target = prepareClientTarget(t, root)
-				opts.IsClient = true
-				DefaultSectionOpts(opts)
 
 				require.NoError(t,
 					GenerateClient(clientName, []string{}, []string{}, opts),
@@ -124,8 +122,6 @@ func TestGenClient(t *testing.T) {
 				opts := testClientGenOpts(t)
 				opts.Spec = filepath.Join("..", "testdata", "bugs", "2527", "swagger-fixed.yml")
 				opts.Target = prepareClientTarget(t, root)
-				opts.IsClient = true
-				DefaultSectionOpts(opts)
 
 				require.NoError(t,
 					GenerateClient(clientName, []string{}, []string{}, opts),

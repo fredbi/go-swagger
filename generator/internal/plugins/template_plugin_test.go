@@ -11,46 +11,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"testing"
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
 )
-
-// buildPlugin builds the plugin fixture and returns where it landed.
-//
-// A go plugin has to be built by the toolchain that loads it, with the same flags, which is why it
-// is built here rather than shipped.
-func buildPlugin(t *testing.T) string {
-	t.Helper()
-
-	if runtime.GOOS == winOS {
-		t.Skip("go plugins are not supported on windows")
-	}
-
-	ctx := t.Context()
-
-	if cgo, err := exec.CommandContext(ctx, "go", "env", "CGO_ENABLED").Output(); err == nil &&
-		strings.TrimSpace(string(cgo)) == "0" {
-		t.Skip("go plugins need cgo, which is disabled here")
-	}
-
-	built := filepath.Join(t.TempDir(), "funcs.so")
-
-	args := []string{"build", "-buildmode=plugin"}
-	if raceEnabled {
-		// a plugin built without the detector cannot be loaded by a program built with it
-		args = append(args, "-race")
-	}
-	args = append(args, "-o", built, "./testdata/plugins/funcs")
-
-	build := exec.CommandContext(ctx, "go", args...)
-	out, err := build.CombinedOutput()
-	require.NoErrorf(t, err, "building the plugin fixture: %s", out)
-
-	return built
-}
 
 func TestTemplatePlugin(t *testing.T) {
 	plugin := buildPlugin(t)
@@ -115,4 +80,38 @@ func TestTemplatePluginErrors(t *testing.T) {
 		require.Error(t, err)
 		assert.ErrorContains(t, err, "could not open the template plugin")
 	})
+}
+
+// buildPlugin builds the plugin fixture and returns where it landed.
+//
+// A go plugin has to be built by the toolchain that loads it, with the same flags, which is why it
+// is built here rather than shipped.
+func buildPlugin(t *testing.T) string {
+	t.Helper()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("go plugins are not supported on windows")
+	}
+
+	ctx := t.Context()
+
+	// if cgo, err := exec.CommandContext(ctx, "go", "env", "CGO_ENABLED").Output(); err == nil &&
+	//	strings.TrimSpace(string(cgo)) == "0" {
+	//	t.Skip("go plugins need cgo, which is disabled here")
+	// }
+
+	built := filepath.Join(t.TempDir(), "funcs.so")
+
+	args := []string{"build", "-buildmode=plugin"}
+	if raceEnabled {
+		// a plugin built without the detector cannot be loaded by a program built with it
+		args = append(args, "-race")
+	}
+	args = append(args, "-o", built, "./testdata/plugins/funcs")
+
+	build := exec.CommandContext(ctx, "go", args...)
+	out, err := build.CombinedOutput()
+	require.NoErrorf(t, err, "building the plugin fixture: %s", out)
+
+	return built
 }

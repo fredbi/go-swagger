@@ -15,10 +15,11 @@ import (
 	"github.com/go-openapi/spec"
 )
 
-// GenCommon contains common properties needed across
-// definitions, app and operations
-// TargetImportPath may be used by templates to import other (possibly
-// generated) packages in the generation path (e.g. relative to GOPATH).
+// GenCommon contains common properties needed across definitions, app and operations.
+//
+// TargetImportPath may be used by templates to import other (possibly generated) packages in the generation path
+// (e.g. relative to GOPATH).
+//
 // TargetImportPath is NOT used by standard templates.
 type GenCommon struct {
 	Copyright        string
@@ -26,8 +27,7 @@ type GenCommon struct {
 	RootedErrorPath  bool // wants array and map types to have a path corresponding to their type in reported errors
 }
 
-// GenDefinition contains all the properties to generate a
-// definition from a swagger spec.
+// GenDefinition contains all the properties to generate a definition from a swagger spec.
 type GenDefinition struct {
 	GenCommon
 	GenSchema
@@ -41,8 +41,9 @@ type GenDefinition struct {
 	External       bool
 }
 
-// GenDefinitions represents a list of operations to generate
-// this implements a sort by operation id.
+// GenDefinitions represents a list of operations to generate.
+//
+// It supports sorting by definition name.
 type GenDefinitions []GenDefinition
 
 func (g GenDefinitions) Len() int           { return len(g) }
@@ -204,7 +205,7 @@ func (g GenSchema) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
 }
 
-// ErrPath the quoted error location.
+// ErrPath returns a quoted error location.
 func (g GenSchema) ErrPath() string {
 	pth := g.Path
 
@@ -304,6 +305,7 @@ type GenResponse struct {
 	ReturnErrors     bool
 }
 
+// ErrPath returns a quoted error location.
 func (g GenResponse) ErrPath() string {
 	if g.Path == "" {
 		return `""`
@@ -368,6 +370,7 @@ func (h GenHeader) ToString() string {
 	return h.resolvedType.ToString(h.ValueExpression)
 }
 
+// ErrPath returns a quoted error location.
 func (h GenHeader) ErrPath() string {
 	if h.Path == "" {
 		return `""`
@@ -497,6 +500,7 @@ func (g GenParameter) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
 }
 
+// ErrPath returns a quoted error location.
 func (g GenParameter) ErrPath() string {
 	if g.Path == "" {
 		return `""`
@@ -569,6 +573,7 @@ func (g GenItems) ToString() string {
 	return g.resolvedType.ToString(g.ValueExpression)
 }
 
+// ErrPath returns a quoted error location.
 func (g GenItems) ErrPath() string {
 	if g.Path == "" {
 		return `""`
@@ -723,6 +728,7 @@ type GenOperation struct {
 	GenOpts          *GenOpts
 }
 
+// ErrPath returns a quoted error location.
 func (g GenOperation) ErrPath() string {
 	if g.Path == "" {
 		return `""`

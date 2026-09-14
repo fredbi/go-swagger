@@ -44,211 +44,33 @@ const (
 	sensibleDefaultMapAlloc = 50
 )
 
-// DefaultSectionOpts lays out what a run generates, when no configuration says otherwise.
-//
-// Where each section writes is not decided here: a target and a file name are templates like any
-// other, and a configuration replaces one by declaring it.
-//
-// They live under templates/paths, mirroring the tree of the templates they place, and are named
-// after the template they place, suffixed with Target and FileName: where
-// templates/server/parameter.gotmpl writes is templates/paths/server/parameter/target.gotmpl,
-// declaring serverParameterTarget.
-func DefaultSectionOpts(gen *GenOpts) {
-	sec := gen.Sections
-	if len(sec.Models) == 0 {
-		opts := []TemplateOpts{
-			{
-				Name:   "definition",
-				Source: "model",
-			},
-		}
-		sec.Models = opts
-	}
-
-	if len(sec.PostModels) == 0 && gen.IncludeCLi {
-		// For CLI with default formatter (goimports), we needed to postpone the generation of model-supporting source,
-		// in order for go imports to run properly in all cases.
-		// If we completely migrate own custom formatter, we don't need to postpone.
-		opts := []TemplateOpts{
-			{
-				Name:   "clidefinitionhook",
-				Source: "cliModelcli",
-			},
-		}
-		sec.PostModels = opts
-	}
-
-	if len(sec.Operations) == 0 {
-		if gen.IsClient {
-			opts := []TemplateOpts{
-				{
-					Name:   "parameters",
-					Source: "clientParameter",
-				},
-				{
-					Name:   "responses",
-					Source: "clientResponse",
-				},
-			}
-			if gen.IncludeCLi {
-				opts = append(opts, TemplateOpts{
-					Name:   "clioperation",
-					Source: "cliOperation",
-				})
-			}
-			sec.Operations = opts
-		} else {
-			ops := []TemplateOpts{}
-			if gen.IncludeParameters {
-				ops = append(ops, TemplateOpts{
-					Name:   "parameters",
-					Source: "serverParameter",
-				})
-			}
-			if gen.IncludeURLBuilder {
-				ops = append(ops, TemplateOpts{
-					Name:   "urlbuilder",
-					Source: "serverUrlbuilder",
-				})
-			}
-			if gen.IncludeResponses {
-				ops = append(ops, TemplateOpts{
-					Name:   "responses",
-					Source: "serverResponses",
-				})
-			}
-			if gen.IncludeHandler {
-				ops = append(ops, TemplateOpts{
-					Name:   "handler",
-					Source: "serverOperation",
-				})
-			}
-			sec.Operations = ops
-		}
-	}
-
-	if len(sec.OperationGroups) == 0 {
-		if gen.IsClient {
-			sec.OperationGroups = []TemplateOpts{
-				{
-					Name:   "client",
-					Source: "clientClient",
-				},
-			}
-		} else {
-			sec.OperationGroups = []TemplateOpts{}
-		}
-	}
-
-	if len(sec.Application) == 0 {
-		if gen.IsClient {
-			opts := []TemplateOpts{
-				{
-					Name:   "facade",
-					Source: "clientFacade",
-				},
-			}
-			if gen.IncludeCLi {
-				// include a commandline tool app
-				opts = append(opts, []TemplateOpts{{
-					Name:   "commandline",
-					Source: "cliCli",
-				}, {
-					Name:   "climain",
-					Source: "cliMain",
-				}, {
-					Name:   "cliAutoComplete",
-					Source: "cliCompletion",
-				}, {
-					Name:   "cliAutoDocument",
-					Source: "cliDocumentation",
-				}}...)
-			}
-			sec.Application = opts
-		} else {
-			opts := []TemplateOpts{
-				{
-					Name:   "main",
-					Source: "serverMain",
-				},
-				{
-					Name:   "embedded_spec",
-					Source: "swaggerJsonEmbed",
-				},
-				{
-					Name:   "server",
-					Source: "serverServer",
-				},
-				{
-					Name:   "builder",
-					Source: "serverBuilder",
-				},
-				{
-					Name:   "doc",
-					Source: "serverDoc",
-				},
-			}
-			if gen.ImplementationPackage != "" {
-				// Use auto configure template
-				opts = append(opts, TemplateOpts{
-					Name:   "autoconfigure",
-					Source: "serverAutoconfigureapi",
-				})
-			} else {
-				opts = append(opts, TemplateOpts{
-					Name:       "configure",
-					Source:     "serverConfigureapi",
-					SkipExists: !gen.RegenerateConfigureAPI,
-				})
-			}
-			sec.Application = opts
-		}
-	}
-	gen.Sections = sec
-}
-
 // TemplateOpts allows for codegen customization.
 type TemplateOpts struct {
 	Name       string `mapstructure:"name"`
 	Source     string `mapstructure:"source"`
-	Target     string `mapstructure:"target"`
-	FileName   string `mapstructure:"file_name"`
+	Target     string `mapstructure:"target"`    // folder construction: this either points to a path template or contains the inlined template text
+	FileName   string `mapstructure:"file_name"` // file name construction: this either points to a path template or contains the inlined template text
 	SkipExists bool   `mapstructure:"skip_exists"`
 	SkipFormat bool   `mapstructure:"skip_format"` // not a feature, but for debugging. generated code before formatting might not work because of unused imports.
 }
 
-// templateName is the template of the repository a section entry renders.
-//
-// A source names a template, and never a file: everything a run renders is read and resolved when
-// the repository is built, so there is nothing left to look for when it runs. A configuration may
-// still name a template by the file it was written in, extension and all.
-//
-// The repository names it, rather than a rule reproduced here: a second implementation would be a
-// second answer to give when the two disagree. That leaves the mangler of the language options to
-// what it is for, which is naming go identifiers and the files they land in.
-//
-// It answers before a repository stands, which is what building one in a single pass needs: the
-// names a section resolves to are what the repository is scoped to.
+// templateName is the key in the templates repository for a template to be rendered.
 func (t TemplateOpts) templateName() string {
 	return templatesrepo.TemplateName(t.Source)
 }
 
 // pathTemplates names the templates giving the directory and the file a section entry writes to.
 //
-// They are named after the template the entry renders, which is what tells them apart: two
-// sections may hold an entry of the same name, and no two of them render the same template. Those
-// shipped with the generator live under filepaths, one file each, so that a template directory may
-// replace one of them on its own.
-//
-// A configuration naming a template of its own is taken at that name instead, so that a path may be
-// written where every other template is rather than inside the configuration.
-func (t TemplateOpts) pathTemplates() (target, fileName string) {
+// This template may either be sourced from the embedded FS, a local file override or inlined in the configuration.
+func (t TemplateOpts) pathTemplates() (folder, fileName string) {
 	base := t.templateName()
 
 	return pathTemplateName(t.Target, base+"Target"), pathTemplateName(t.FileName, base+"FileName")
 }
 
-// pathTemplateName is the template a configured path resolves to, or the one derived for it.
+// pathTemplateName implements the naming convention for path templates.
+//
+// It returns the template text for inlined configured templates.
 func pathTemplateName(configured, derived string) string {
 	if !namesTemplateFile(configured) {
 		return derived
@@ -257,61 +79,24 @@ func pathTemplateName(configured, derived string) string {
 	return templatesrepo.TemplateName(configured)
 }
 
-// namesTemplateFile tells whether a configured path names a template rather than holding one.
-//
-// A path a configuration gives is a template body, which is what it has always been: "main.go"
-// writes main.go, and it holds no action at all. Naming a template instead is said by naming the
-// file it lives in, extension and all, which no path written for a file name ever ends with.
+// namesTemplateFile tells whether a configured path template points to a file or is inlined template text.
 func namesTemplateFile(configured string) bool {
 	return strings.HasSuffix(configured, templatesrepo.DefaultExtension)
 }
 
-// SectionOpts allows for specifying options to customize the templates used for generation.
-type SectionOpts struct {
-	Application     []TemplateOpts `mapstructure:"application"`
-	Operations      []TemplateOpts `mapstructure:"operations"`
-	OperationGroups []TemplateOpts `mapstructure:"operation_groups"`
-	Models          []TemplateOpts `mapstructure:"models"`
-	PostModels      []TemplateOpts `mapstructure:"post_models"`
-}
-
-// overrideWith returns the receiver with each section replaced by the
-// corresponding non-empty section from o.
-//
-// It layers a config-file `layout:` on top of the default render plan: the user
-// only specifies the sections they want to change, and the rest keep their
-// defaults.
-func (s SectionOpts) overrideWith(o SectionOpts) SectionOpts {
-	if len(o.Application) > 0 {
-		s.Application = o.Application
-	}
-	if len(o.Operations) > 0 {
-		s.Operations = o.Operations
-	}
-	if len(o.OperationGroups) > 0 {
-		s.OperationGroups = o.OperationGroups
-	}
-	if len(o.Models) > 0 {
-		s.Models = o.Models
-	}
-	if len(o.PostModels) > 0 {
-		s.PostModels = o.PostModels
-	}
-
-	return s
-}
-
 // TargetPath returns the target generation path relative to the server package.
+//
 // This method is used by templates, e.g. with {{ .TargetPath }}
 //
-// Error cases are prevented by calling Prepare beforehand.
+// Error cases are prevented by calling Prepare beforehand: an unresolved target fails
+// when options are validated, so using this from within a template is safe.
 //
-// Example:
-// Target: ${PWD}/tmp
-// ServerPackage: abc/efg
+// # Example
 //
-// Server is generated in ${PWD}/tmp/abc/efg
-// relative TargetPath returned: ../../../tmp.
+//	Target: ${PWD}/tmp
+//	ServerPackage: abc/efg
+//
+// The server is generated in ${PWD}/tmp/abc/efg and relative TargetPath returned: ../../../tmp.
 func (g *GenOpts) TargetPath() string {
 	var tgt string
 	if g.Target == "" {
@@ -319,23 +104,28 @@ func (g *GenOpts) TargetPath() string {
 	} else {
 		tgt = g.Target
 	}
+
 	tgtAbs, _ := filepath.Abs(tgt)
 	srvPkg := filepath.FromSlash(g.LanguageOpts.ManglePackagePath(g.ServerPackage, "server"))
 	srvrAbs := filepath.Join(tgtAbs, srvPkg)
+	// both paths always share a common path, hence the error case of [filepath.Rel] may be ignored here.
 	tgtRel, _ := filepath.Rel(srvrAbs, filepath.Dir(tgtAbs))
 	tgtRel = filepath.Join(tgtRel, filepath.Base(tgtAbs))
+
 	return tgtRel
 }
 
 // SpecPath returns the path to the spec relative to the server package.
-// If the spec is remote keep this absolute location.
 //
-// If spec is not relative to server (e.g. lives on a different drive on windows),
+// If the spec is remote, it keeps this absolute location.
+//
+// If spec is not relative to server (e.g. it lives on a different drive on windows),
 // then the resolved path is absolute.
 //
 // This method is used by templates, e.g. with {{ .SpecPath }}
 //
-// Error cases are prevented by calling Prepare beforehand.
+// Error cases are prevented by calling Prepare beforehand, so this method is safe to be
+// called from templates.
 func (g *GenOpts) SpecPath() string {
 	if strings.HasPrefix(g.Spec, "http://") || strings.HasPrefix(g.Spec, "https://") {
 		return g.Spec
@@ -355,17 +145,17 @@ func (g *GenOpts) SpecPath() string {
 	if err != nil {
 		return specAbs
 	}
+
 	return specRel
 }
 
-// GoGenerateCommand returns the command invoked by the //go:generate directive
-// emitted in generated server files.
+// GoGenerateCommand returns the command invoked by the //go:generate directive emitted in generated server files.
 //
-// By default this is the bare "swagger" binary, which assumes it is
-// pre-installed and available on $PATH. When WithGoRunGoGenerate is set, the
-// tool is instead invoked via "go run", following the tools.go pattern for
-// tracking build tool dependencies (see issue #3000), so `go generate` works
-// without requiring a separately installed swagger binary.
+// By default this is the bare "swagger" binary, which assumes it is pre-installed and available on $PATH.
+//
+// When WithGoRunGoGenerate is set, the tool is instead invoked via "go run", following the tools.go pattern for
+// tracking build tool dependencies (see issue #3000),
+// so `go generate` works without requiring a separately installed swagger binary.
 //
 // This method is used by templates, e.g. with {{ .GoGenerateCommand }}.
 func (g *GenOpts) GoGenerateCommand() string {
@@ -384,9 +174,11 @@ func titleOrDefault(lang *language.Options, specDoc *loads.Document, name, defau
 			name = defaultName
 		}
 	}
+
 	return lang.Mangler.ToGoName(name)
 }
 
+// mainNameOrDefault infers a name for a the server binary command (main package).
 func mainNameOrDefault(lang *language.Options, specDoc *loads.Document, name, defaultName string) string {
 	// *_test won't do as main server name
 	return strings.TrimSuffix(titleOrDefault(lang, specDoc, name, defaultName), "Test")
@@ -424,6 +216,7 @@ func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec
 			return nil, fmt.Errorf("unknown models: %s", strings.Join(unknownModels, ", "))
 		}
 	}
+
 	for k, v := range defs {
 		if mnc == 0 {
 			models[k] = v
@@ -434,6 +227,7 @@ func gatherModels(specDoc *loads.Document, modelNames []string) (map[string]spec
 			}
 		}
 	}
+
 	return models, nil
 }
 
@@ -558,11 +352,17 @@ func gatherSecuritySchemes(securitySchemes map[string]spec.SecurityScheme, appNa
 // or an operation, without any modification. This is used to generate documentation.
 func securityRequirements(orig []map[string][]string) (result []analysis.SecurityRequirement) {
 	for _, r := range orig {
+		ordered := make([]analysis.SecurityRequirement, 0, len(r))
 		for k, v := range r {
-			result = append(result, analysis.SecurityRequirement{Name: k, Scopes: v})
+			ordered = append(ordered, analysis.SecurityRequirement{Name: k, Scopes: v})
 		}
+		sort.Slice(ordered, func(i, j int) bool {
+			return ordered[i].Name < ordered[j].Name
+		})
+		slices.Grow(result, len(ordered))
+		result = append(result, ordered...)
 	}
-	// TODO(fred): sort this for stable generation
+
 	return result
 }
 

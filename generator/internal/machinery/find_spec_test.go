@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2015-2025 go-swagger maintainers
+// SPDX-License-Identifier: Apache-2.0
+
 package machinery
 
 import (
@@ -9,14 +12,21 @@ import (
 )
 
 func TestFindSwaggerSpec(t *testing.T) {
-	keepErr := func(_ string, err error) error { return err }
-	require.Error(t, keepErr(findSwaggerSpec("")))
-	require.Error(t, keepErr(findSwaggerSpec("nowhere")))
-	require.Error(t, keepErr(findSwaggerSpec(filepath.Join("..", "testdata"))))
-	require.NoError(t, keepErr(findSwaggerSpec(filepath.Join("..", "testdata", "codegen", "shipyard.yml"))))
+	t.Run("should find a spec or error", func(t *testing.T) {
+		t.Parallel()
+
+		keepErr := func(_ string, err error) error { return err }
+
+		require.Error(t, keepErr(FindSwaggerSpec("")))
+		require.Error(t, keepErr(FindSwaggerSpec("nowhere")))
+		require.Error(t, keepErr(FindSwaggerSpec(filepath.Join("..", "..", "..", "testdata"))))
+		require.NoError(t, keepErr(FindSwaggerSpec(filepath.Join("..", "..", "..", "testdata", "codegen", "shipyard.yml"))))
+	})
 
 	t.Run("a spec that is not found should be named", func(t *testing.T) {
-		_, err := findSwaggerSpec("nowhere")
+		t.Parallel()
+
+		_, err := FindSwaggerSpec("nowhere")
 		require.Error(t, err)
 		assert.StringContainsT(t, err.Error(), `"nowhere"`)
 	})

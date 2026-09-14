@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-openapi/testify/v2/assert"
 	"github.com/go-openapi/testify/v2/require"
+	"github.com/go-swagger/go-swagger/generator/internal/gentest"
 )
 
 const (
@@ -44,7 +45,7 @@ toPackageName={{ toPackageName "d-e/f-g" }}
 // This is an integration test between the template repository, the funcmap, and
 // the generator types (LanguageOpts, GenDefinition).
 func TestTemplates_FuncMap_Model(t *testing.T) {
-	defer discardOutput()()
+	defer gentest.DiscardOutput()()
 
 	opts := opts(t)
 	modelTpl := testModelTpl()

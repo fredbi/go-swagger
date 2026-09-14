@@ -135,9 +135,12 @@ func (a *appGenerator) Generate() error {
 		return dumpData(os.Stdout, app)
 	}
 
-	// NOTE: relative to previous implem with chan.
+	// NOTE(maintainers): relative to previous implem with chan.
+	//
 	// IPC removed concurrent execution because of the FuncMap that is being shared
 	// templates are now lazy loaded so there is concurrent map access I can't guard
+	//
+	// This constraint is now relieved with templates that resolve eagerly and are immutable.
 	if a.GenOpts.IncludeModel {
 		log.Printf("rendering %d models", len(app.Models))
 		for _, md := range app.Models {
@@ -200,7 +203,7 @@ func (a *appGenerator) GenerateSupport(ap *GenApp) error {
 	app.DefaultImports[pkgAlias] = serverPath
 	app.ServerPackageAlias = pkgAlias
 
-	if a.GenOpts.IncludeCLi { // no need to add this import when there is no CLI
+	if a.GenOpts.IncludeCLI { // no need to add this import when there is no CLI
 		// add client import for cli generation
 		clientPath := path.Join(baseImport,
 			a.GenOpts.LanguageOpts.ManglePackagePath(a.ClientPackage, defaultClientTarget))
@@ -234,13 +237,26 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 
 	log.Println("generation target", a.Target)
 
-	baseImport, err := a.GenOpts.LanguageOpts.BaseImport(a.Target)
-	if err != nil {
-		return GenApp{}, errTarget(a.Target, err)
-	}
-	defaultImports, err := newImportsBuilder(a.GenOpts).defaultImports()
-	if err != nil {
-		return GenApp{}, err
+	var (
+		baseImport     string
+		defaultImports map[string]string
+	)
+
+	if !a.GenOpts.skipImports {
+		// on non-go target, we skip this check on imports
+		var err error
+
+		baseImport, err = a.GenOpts.LanguageOpts.BaseImport(a.Target)
+		if err != nil {
+			return GenApp{}, errTarget(a.Target, err)
+		}
+
+		defaultImports, err = newImportsBuilder(a.GenOpts).defaultImports()
+		if err != nil {
+			return GenApp{}, err
+		}
+	} else {
+		defaultImports = map[string]string{}
 	}
 
 	imports := make(map[string]string, sensibleDefaultMapAlloc)
@@ -288,7 +304,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 		}
 	}
 
-	if err = ensureDedupedImports(defaultImports, imports); err != nil {
+	if err := ensureDedupedImports(defaultImports, imports); err != nil {
 		// guard against internal dev errors
 		return GenApp{}, err
 	}
@@ -378,7 +394,7 @@ func (a *appGenerator) makeCodegenApp() (GenApp, error) {
 			// check for possible conflicts that requires import aliasing
 			pth, aliasUsed := defaultImports[bldr.APIPackageAlias]
 			if (a.GenOpts.IsClient && bldr.APIPackageAlias == a.GenOpts.ClientPackage) || // we don't want import to shadow the current package
-				(a.GenOpts.IncludeCLi && bldr.APIPackageAlias == a.GenOpts.CliPackage) ||
+				(a.GenOpts.IncludeCLI && bldr.APIPackageAlias == a.GenOpts.CliPackage) ||
 				(aliasUsed && pth != importPath) { // was already imported with a different target
 				op.PackageAlias = renameOperationPackage(tags, bldr.APIPackageAlias)
 				bldr.APIPackageAlias = op.PackageAlias

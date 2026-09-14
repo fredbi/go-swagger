@@ -14,8 +14,8 @@ import (
   {{ imports .Imports }}
 )
 
-// make{{ cmdName . }} returns a command to handle operation {{ camelize .Name }}
-func make{{ cmdName . }}() (*cobra.Command, error) {
+// make{{ .CmdName }} returns a command to handle operation {{ camelize .Name }}
+func make{{ .CmdName }}() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   {{ printf "%q" .Name }},
 		Short: `{{ escapeBackticks .Description}}`,

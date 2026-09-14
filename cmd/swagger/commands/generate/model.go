@@ -97,8 +97,14 @@ func (m *Model) Execute(args []string) error {
 	return createSwagger(m, args)
 }
 
+func (m *Model) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForModel())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
-func (m Model) apply(opts *generator.GenOpts) {
+func (m *Model) apply(opts *generator.GenOpts) {
 	m.Shared.apply(opts)
 	m.Models.apply(opts)
 

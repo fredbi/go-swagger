@@ -40,7 +40,7 @@ func TestDefaultResponseRender(t *testing.T) {
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_all_parameters_responses.go", buf.Bytes())
@@ -243,7 +243,7 @@ func TestIssue846(t *testing.T) {
 		op, err := b.MakeOperation()
 		require.NoError(t, err)
 		var buf bytes.Buffer
-		opts := opts(t)
+		opts := testClientGenOpts(t)
 		require.NoError(t, opts.templates.MustGet("clientResponse").Execute(&buf, op))
 		ff, err := opts.LanguageOpts.FormatContent("do_empty_responses.go", buf.Bytes())
 		if err != nil {
@@ -301,17 +301,16 @@ func TestGenResponses_XGoName(t *testing.T) {
 }
 
 func TestGenResponses_Issue892(t *testing.T) {
-	b, err := methodPathOpBuilder(t, "get", "/media/search", "../testdata/bugs/982/swagger.yaml")
+	b, err := methodPathClientOpBuilder(t, "get", "/media/search", "../testdata/bugs/982/swagger.yaml")
 	require.NoError(t, err)
 
 	op, err := b.MakeOperation()
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	opts := opts(t)
 	require.NoError(t, b.GenOpts.templates.MustGet("clientResponse").Execute(&buf, op))
 
-	ff, err := opts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
+	ff, err := b.GenOpts.LanguageOpts.FormatContent("get_media_search_responses.go", buf.Bytes())
 	require.NoErrorf(t, err, buf.String())
 
 	assertInCode(t, "o.Media = aO0", string(ff))

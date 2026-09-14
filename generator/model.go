@@ -383,9 +383,14 @@ func makeGenDefinitionHierarchy(name, pkg, container string, schema spec.Schema,
 		// guard against internal dev errors
 		return nil, err
 	}
-	targetImport, err := opts.LanguageOpts.BaseImport(opts.Target)
-	if err != nil {
-		return nil, errTarget(opts.Target, err)
+
+	var targetImport string
+	if !opts.skipImports {
+		var err error
+		targetImport, err = opts.LanguageOpts.BaseImport(opts.Target)
+		if err != nil {
+			return nil, errTarget(opts.Target, err)
+		}
 	}
 
 	return &GenDefinition{

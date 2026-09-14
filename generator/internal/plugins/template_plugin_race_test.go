@@ -7,6 +7,5 @@ package plugins
 
 // raceEnabled tells whether the tests run under the race detector.
 //
-// A plugin has to be built the same way as the program loading it, so the build of the fixture
-// needs to know.
+// A plugin has to be built the same way as the program loading it, so the build of the fixture needs to know.
 const raceEnabled = true

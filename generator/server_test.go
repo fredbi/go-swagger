@@ -401,13 +401,13 @@ func TestServer_Issue1816(t *testing.T) {
 
 	t.Run("should resolve $ref from embedded spec correctly", func(t *testing.T) {
 		// fixed regression: gob encoding in $ref
-		res := doGenAppTemplate(t, "../testdata/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
+		res := doGenAppTemplateWithEmbed(t, "../testdata/bugs/1816/fixture-1816.yaml", "swaggerJsonEmbed")
 		assertNotInCode(t, `"$ref": "#"`, res)
 	})
 
 	t.Run("should resolve security requirements from embedded spec correctly", func(t *testing.T) {
 		// fixed regression: gob encoding in operation security requirements
-		res := doGenAppTemplate(t, "../testdata/bugs/1824/swagger.json", "swaggerJsonEmbed")
+		res := doGenAppTemplateWithEmbed(t, "../testdata/bugs/1824/swagger.json", "swaggerJsonEmbed")
 		assertInCode(t, `"api_key": []`, res)
 		assertNotInCode(t, `"api_key": null`, res)
 	})
@@ -449,7 +449,26 @@ func TestServer_Issue2346(t *testing.T) {
 	})
 }
 
+func testAppGeneratorWithEmbed(t *testing.T, specPath, name string) (*appGenerator, error) {
+	t.Helper()
+
+	opts := NewGenOpts(ForServer())
+	opts.Target = "."
+	opts.ExcludeSpec = false
+	ensureMachinery(t, opts)
+
+	return testAppGeneratorWithOptions(t, specPath, name, opts)
+}
+
 func testAppGenerator(t *testing.T, specPath, name string) (*appGenerator, error) {
+	t.Helper()
+
+	opts := testGenOpts(t)
+
+	return testAppGeneratorWithOptions(t, specPath, name, opts)
+}
+
+func testAppGeneratorWithOptions(t *testing.T, specPath, name string, opts *GenOpts) (*appGenerator, error) {
 	t.Helper()
 
 	specDoc, err := loads.Spec(specPath)
@@ -459,7 +478,6 @@ func testAppGenerator(t *testing.T, specPath, name string) (*appGenerator, error
 	models, err := gatherModels(specDoc, nil)
 	require.NoError(t, err)
 
-	opts := testGenOpts(t)
 	mangler := opts.LanguageOpts.Mangler
 	operations := gatherOperations(opts, analyzed, nil)
 	if len(operations) == 0 {
@@ -498,6 +516,24 @@ func doGenAppTemplate(t *testing.T, fixture, template string) string {
 	t.Helper()
 
 	gen, err := testAppGenerator(t, fixture, "generate: "+fixture)
+	require.NoError(t, err)
+
+	app, err := gen.makeCodegenApp()
+	require.NoError(t, err)
+
+	buf := bytes.NewBuffer(nil)
+	require.NoError(t, gen.GenOpts.templates.MustGet(template).Execute(buf, app))
+
+	formatted, err := app.GenOpts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+	require.NoError(t, err)
+
+	return string(formatted)
+}
+
+func doGenAppTemplateWithEmbed(t *testing.T, fixture, template string) string {
+	t.Helper()
+
+	gen, err := testAppGeneratorWithEmbed(t, fixture, "generate: "+fixture)
 	require.NoError(t, err)
 
 	app, err := gen.makeCodegenApp()

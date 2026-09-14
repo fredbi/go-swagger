@@ -23,9 +23,9 @@ import (
 	yamlv2 "gopkg.in/yaml.v2"
 )
 
-// specAnalyzer loads, validates and flattens the source spec into a document
-// ready for code generation. It embeds *GenOpts to reach Spec, FlattenOpts and
-// the related preprocessing flags.
+// specAnalyzer loads, validates and flattens the source spec into a document ready for code generation.
+//
+// It embeds *GenOpts to reach Spec, FlattenOpts and the related preprocessing flags.
 type specAnalyzer struct {
 	*GenOpts
 
@@ -86,7 +86,7 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 
 	// Flatten spec
 	//
-	// Some preprocessing is required before codegen
+	// Some preprocessing is required before codegen.
 	//
 	// This ensures at least that $ref's in the spec document are canonical,
 	// i.e all $ref are local to this file and point to some uniquely named definition.
@@ -119,12 +119,11 @@ func (g *specAnalyzer) validateAndFlattenSpec() (*loads.Document, error) {
 	}
 
 	if g.FlattenOpts.Expand {
-		// for a similar reason as the one mentioned above for validate,
-		// schema expansion alters the internal doc cache in the spec.
+		// for a similar reason as the one mentioned above for validate, schema expansion alters the internal doc cache in the spec.
 		// This nasty bug (in spec expander) affects circular references.
 		// So we need to reload the spec from a clone.
-		// Notice that since the spec inside the document has been modified, we should
-		// ensure that Pristine refreshes its row root document.
+		//
+		// Notice that since the spec inside the document has been modified, we should ensure that Pristine refreshes its row root document.
 		specDoc = specDoc.Pristine()
 	}
 
@@ -178,11 +177,10 @@ func (g *specAnalyzer) printFlattenOpts() {
 //   - go-openapi/validate via validate.WithPathLoader;
 //   - go-openapi/analysis (flatten/expand) via FlattenOpts.PathLoaderWithOptions.
 //
-// This replaces the earlier approach of mutating the package-global spec loader chain
-// (loads.SetLoaders): threading the loader per call is explicit, has no global side effects and is
-// safe for concurrent code generation. The security options are baked into the loader (appended
-// last so they win over any call-time options), so confinement holds even when a downstream stage
-// invokes the loader with no options of its own.
+// NOTE(maintainers): this replaces the earlier approach of mutating the package-global spec loader chain (loads.SetLoaders):
+// threading the loader per call is explicit, has no global side effects and is safe for concurrent code generation.
+// The security options are baked into the loader (appended last so they win over any call-time options),
+// so confinement holds even when a downstream stage invokes the loader with no options of its own.
 func (g *specAnalyzer) setLoaderOptions() {
 	loadOptions := g.securityOptions()
 
@@ -213,6 +211,8 @@ func (g *specAnalyzer) securityOptions() []loading.Option {
 
 // WithAutoXOrder amends the spec to specify property order as they appear
 // in the spec (supports yaml documents only).
+//
+// NOTE(maintainers):
 //
 //nolint:gocognit // TODO(fredbi): refactor
 func WithAutoXOrder(specPath string) string {

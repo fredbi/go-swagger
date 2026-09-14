@@ -87,8 +87,14 @@ func (o *Operation) Execute(args []string) error {
 	return createSwagger(o, args)
 }
 
+func (o *Operation) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForServer())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
-func (o Operation) apply(opts *generator.GenOpts) {
+func (o *Operation) apply(opts *generator.GenOpts) {
 	o.Shared.apply(opts)
 	o.Operations.apply(opts)
 	o.clientOptions.apply(opts)

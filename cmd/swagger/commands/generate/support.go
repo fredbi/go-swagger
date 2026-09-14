@@ -31,6 +31,12 @@ func (s *Support) Execute(args []string) error {
 	return createSwagger(s, args)
 }
 
+func (s *Support) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForServer())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
 func (s *Support) apply(opts *generator.GenOpts) {
 	s.Shared.apply(opts)

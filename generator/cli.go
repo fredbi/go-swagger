@@ -11,20 +11,25 @@ import (
 	"github.com/go-openapi/swag/mangling"
 )
 
+// Additional data model methods for CLI client templates.
+
+// CmdName builds a command's name.
 func (g GenOperation) CmdName() string {
 	mangler := g.GenOpts.LanguageOpts.Mangler
 
 	return "Operation" + mangler.ToGoName(g.Package+" "+g.Name+" Cmd")
 }
 
+// CmdGroupName builds a group name within a command.
 func (g GenOperationGroup) CmdGroupName() string {
 	mangler := g.GenOpts.LanguageOpts.Mangler
 
 	return "GroupOfOperations" + mangler.ToGoName(g.Name+" Cmd")
 }
 
-// additional funcmap for CLI client templates
+// Additional funcmap function for CLI client templates.
 
+// cliFuncMap defines several funcmap shorthands to build variable names to hold CLI flags.
 func cliFuncMap(mangler mangling.NameMangler) template.FuncMap {
 	pascalize := mangler.ToGoName
 
@@ -43,26 +48,6 @@ func cliFuncMap(mangler mangling.NameMangler) template.FuncMap {
 		},
 		"flagDescriptionVar": func(in string) string {
 			return fmt.Sprintf("flag%sDescription", pascalize(in))
-		},
-		"cmdName": func(in any) (string, error) {
-			op, isOperation := in.(GenOperation)
-			if !isOperation {
-				ptr, ok := in.(*GenOperation)
-				if !ok || ptr == nil {
-					return "", fmt.Errorf("cmdName should be called on a GenOperation, but got: %T", in)
-				}
-				op = *ptr
-			}
-
-			return op.CmdName(), nil
-		},
-		"cmdGroupName": func(in any) (string, error) {
-			opGroup, ok := in.(GenOperationGroup)
-			if !ok {
-				return "", fmt.Errorf("cmdGroupName should be called on a GenOperationGroup, but got: %T", in)
-			}
-
-			return opGroup.CmdGroupName(), nil
 		},
 	}
 }

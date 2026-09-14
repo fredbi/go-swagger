@@ -22,6 +22,7 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"github.com/kr/pretty"
 
+	"github.com/go-openapi/codegen/funcmaps"
 	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/swag/mangling"
@@ -32,12 +33,12 @@ import (
 //
 // Callers typically merge or coalesce additional entries (e.g. LanguageOpts-dependent or type-dependent functions) on top.
 //
-// NOTE: built-in functions are preserved by the [Coalesce] semantics.
+// NOTE: built-in functions are preserved by the [funcmaps.Coalesce] semantics.
 func FuncMap(mangler mangling.NameMangler) template.FuncMap {
 	f := sprig.TxtFuncMap()
 	extra := goswaggerFuncMap(mangler)
 
-	return Coalesce(extra, f)
+	return funcmaps.Coalesce(extra, f)
 }
 
 func goswaggerFuncMap(mangler mangling.NameMangler) template.FuncMap {

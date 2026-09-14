@@ -9,6 +9,7 @@ require (
 	github.com/SladkyCitron/slogcolor v1.9.0
 	github.com/creack/pty v1.1.24
 	github.com/go-openapi/analysis v1.0.0
+	github.com/go-openapi/codegen v0.0.3
 	github.com/go-openapi/codescan v0.36.4
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/inflect v1.0.0
@@ -43,10 +44,13 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
-	github.com/go-openapi/codegen/mangling v0.0.2 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/go-openapi/codegen/mangling v0.0.3 // indirect
 	github.com/go-openapi/jsonpointer v1.0.1 // indirect
 	github.com/go-openapi/jsonreference v1.0.2 // indirect
 	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
@@ -67,16 +71,13 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
+	go.opentelemetry.io/otel v1.46.0 // indirect
+	go.opentelemetry.io/otel/metric v1.46.0 // indirect
+	go.opentelemetry.io/otel/trace v1.46.0 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
-
-require github.com/go-openapi/codegen v0.0.0
-
-replace github.com/go-openapi/codegen => /home/fred/src/github.com/go-openapi/codegen
-
-replace github.com/go-openapi/codegen/mangling => /home/fred/src/github.com/go-openapi/codegen/mangling

@@ -57,6 +57,12 @@ func (s *Server) Execute(args []string) error {
 	return createSwagger(s, args)
 }
 
+func (s *Server) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForServer())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
 func (s *Server) apply(opts *generator.GenOpts) {
 	if s.WithContext {

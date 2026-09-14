@@ -4,6 +4,8 @@
 package generate
 
 import (
+	"path/filepath"
+
 	"github.com/jessevdk/go-flags"
 
 	"github.com/go-swagger/go-swagger/generator"
@@ -36,15 +38,22 @@ func (m Markdown) getConfigFile() string {
 	return string(m.Shared.ConfigFile)
 }
 
+func (m *Markdown) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForMarkdown())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
-func (m Markdown) apply(opts *generator.GenOpts) {
+func (m *Markdown) apply(opts *generator.GenOpts) {
 	m.Shared.apply(opts)
 	m.Models.apply(opts)
 	m.Operations.apply(opts)
+	opts.MarkdownOutput = filepath.Join(opts.Target, string(m.Output))
 }
 
 func (m *Markdown) generate(opts *generator.GenOpts) error {
-	return generator.GenerateMarkdown(string(m.Output), m.Models.Models, m.Operations.Operations, opts)
+	return generator.GenerateMarkdown(m.Models.Models, m.Operations.Operations, opts)
 }
 
 func (m Markdown) log(_ string) {

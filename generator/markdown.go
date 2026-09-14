@@ -8,9 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"text/template"
-
-	"github.com/go-openapi/codegen/funcmaps"
-	"github.com/go-swagger/go-swagger/generator/internal/language"
 )
 
 var docFormat = map[string]string{
@@ -18,38 +15,24 @@ var docFormat = map[string]string{
 	b64:    "byte (base64 string)",
 }
 
-// GenerateMarkdown documentation for a swagger specification.
-func GenerateMarkdown(output string, modelNames, operationIDs []string, opts *GenOpts) error {
-	if output == "." || output == "" {
-		output = "markdown.md"
+// GenerateMarkdown builds a markdown documentation from a swagger specification.
+//
+// At this moment, the whole spec generates a single target document.
+func GenerateMarkdown(modelNames, operationIDs []string, opts *GenOpts) error {
+	// sanitize folder vs filename inputs
+	if opts.MarkdownOutput == "" {
+		opts.MarkdownOutput = "markdown.md"
 	}
 
-	// build the machinery and resolve the default sections up front,
-	// so the markdown-specific section layout below overrides a fully-defaulted plan.
-	// newAppGenerator's Prepare then keeps these (machinery/sections are built once)
-	// and only normalizes paths and loads templates.
-	opts.buildMachinery()
-	if err := opts.resolveSections(); err != nil {
+	if filepath.Clean(opts.Target) != "." {
+		opts.MarkdownOutput = filepath.Join(opts.Target, opts.MarkdownOutput)
+	}
+
+	opts.Target = filepath.Dir(opts.MarkdownOutput)
+
+	if err := opts.Prepare(); err != nil {
 		return err
 	}
-
-	// the output path is resolved against the target, so the spec and the target are
-	// resolved here rather than left to Prepare. Both steps run exactly once.
-	if err := opts.normalizePath(); err != nil {
-		return err
-	}
-	if err := opts.ensureTarget(); err != nil {
-		return err
-	}
-
-	if opts.Target != "." {
-		output = filepath.Join(opts.Target, output)
-	}
-
-	MarkdownSectionOpts(opts, output)
-
-	// supplement default funcmap with extra features for markdown
-	funcmaps.Coalesce(opts.funcMap, markdownFuncMap())
 
 	generator, err := newAppGenerator("", modelNames, operationIDs, opts)
 	if err != nil {
@@ -72,33 +55,7 @@ func (a *appGenerator) GenerateMarkdown() error {
 	return newRenderer(a.GenOpts).renderApplication(&app)
 }
 
-// MarkdownOpts for rendering a spec as markdown.
-func MarkdownOpts() *language.Options {
-	opts := &language.Options{}
-	opts.Init()
-
-	return opts
-}
-
-// MarkdownSectionOpts for a given opts and output file.
-func MarkdownSectionOpts(gen *GenOpts, output string) {
-	gen.Sections.Models = nil
-	gen.Sections.PostModels = nil
-	gen.Sections.OperationGroups = nil
-	gen.Sections.Operations = nil
-	gen.LanguageOpts = MarkdownOpts()
-	gen.Sections.Application = []TemplateOpts{
-		{
-			Name:     "markdowndocs",
-			Source:   "markdownDocs",
-			Target:   filepath.Dir(output),
-			FileName: filepath.Base(output),
-		},
-	}
-}
-
-// additional funcmap for markdown documentation templates
-
+// markdownFuncMap defines additional funcmap for markdown documentation templates.
 func markdownFuncMap() template.FuncMap {
 	return template.FuncMap{
 		"paramDocType": func(param GenParameter) string {

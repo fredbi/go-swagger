@@ -282,7 +282,7 @@ func TestGenParameter_Issue195(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("get_testing.go", buf.Bytes())
@@ -370,7 +370,7 @@ func TestGenParameter_Issue249(t *testing.T) {
 
 			t.Run("should generate go code", func(t *testing.T) {
 				buf := bytes.NewBuffer(nil)
-				opts := opts(t)
+				opts := testClientGenOpts(t)
 				require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 				t.Run("should format go code", func(t *testing.T) {
@@ -574,7 +574,7 @@ func TestGenParameter_Issue731_Collection(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -601,7 +601,7 @@ func TestGenParameter_Issue731_Single(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -620,7 +620,7 @@ func TestGenParameter_Issue731_Details(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -637,7 +637,7 @@ func TestGenParameter_Issue809_Client(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_models.go", buf.Bytes())
@@ -697,7 +697,7 @@ func TestGenParameter_Issue710(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
@@ -734,7 +734,7 @@ func TestGenParameter_Issue1111(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
@@ -751,7 +751,7 @@ func TestGenParameter_Issue1462(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_clusters_elasticsearch_cluster_id_instances_instance_ids_start_parameters.go", buf.Bytes())
@@ -774,7 +774,7 @@ func TestGenParameter_Issue1199(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
@@ -793,7 +793,7 @@ func TestGenParameter_Issue1325(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("create_task_parameter.go", buf.Bytes())
@@ -972,13 +972,18 @@ func assertParams(t *testing.T, fixtureConfig map[string]map[string][]string, fi
 			op, err := gen.MakeOperation()
 			require.NoError(t, err)
 
-			opts := opts(t)
+			var o *GenOpts
 			for fixtureTemplate, expectedCode := range fixtureContents {
+				if strings.HasPrefix(fixtureTemplate, "client") {
+					o = testClientGenOpts(t)
+				} else {
+					o = opts(t)
+				}
 				buf := bytes.NewBuffer(nil)
-				require.NoErrorf(t, opts.templates.MustGet(fixtureTemplate).Execute(buf, op),
+				require.NoErrorf(t, o.templates.MustGet(fixtureTemplate).Execute(buf, op),
 					"expected generation to go well on %s with template %s", fixtureSpec, fixtureTemplate)
 
-				ff, err := opts.LanguageOpts.FormatContent("foo.go", buf.Bytes())
+				ff, err := o.LanguageOpts.FormatContent("foo.go", buf.Bytes())
 				require.NoErrorf(t, err, "unexpect format error on %s with template %s\n%s",
 					fixtureSpec, fixtureTemplate, buf.String())
 
@@ -1530,7 +1535,7 @@ func TestGenParameter_Issue1513(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("move_clusters_parameters.go", buf.Bytes())
@@ -4128,7 +4133,7 @@ func TestGenParameter_Issue2167(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("x_go_name_in_params_parameters.go", buf.Bytes())
@@ -4247,9 +4252,8 @@ func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 	assert.Len(t, op.ServerParams, 1)
 	assert.EqualT(t, "token", op.ServerParams[0].Name)
 
-	opts := opts(t)
-
 	t.Run("server binding hands the stream to the handler", func(t *testing.T) {
+		opts := opts(t)
 		buf := bytes.NewBuffer(nil)
 		require.NoError(t, opts.templates.MustGet("serverParameter").Execute(buf, op))
 
@@ -4280,6 +4284,7 @@ func TestGenParameter_StreamingMultipartForm(t *testing.T) {
 	})
 
 	t.Run("client binding remains unchanged", func(t *testing.T) {
+		opts := testClientGenOpts(t)
 		buf := bytes.NewBuffer(nil)
 		require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
@@ -4372,7 +4377,7 @@ func TestGenerateParameterGetters(t *testing.T) {
 	render := func(t *testing.T, wantsGetters bool) string {
 		t.Helper()
 
-		b, err := opBuilder("listModels", "../testdata/enhancements/generate-getters/fixture.yaml")
+		b, err := opBuilder(t, "listModels", "../testdata/enhancements/generate-getters/fixture.yaml")
 		require.NoError(t, err)
 		b.GenOpts.WantsGetters = wantsGetters
 

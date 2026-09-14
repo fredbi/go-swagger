@@ -79,10 +79,13 @@ func (c *clientGenerator) Generate() error {
 	if err != nil {
 		return err
 	}
-	app.DefaultImports["cli"] = path.Join(
-		importTarget,
-		"cli",
-	)
+
+	if c.GenOpts.IncludeCLI {
+		app.DefaultImports["cli"] = path.Join(
+			importTarget,
+			"cli",
+		)
+	}
 	app.DefaultImports["client"] = path.Join(
 		importTarget,
 		"client",
@@ -135,6 +138,7 @@ func (c *clientGenerator) Generate() error {
 					return err
 				}
 			}
+
 			if err := newRenderer(c.GenOpts).renderOperationGroup(&opg); err != nil {
 				return err
 			}

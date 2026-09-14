@@ -18,8 +18,6 @@ import (
 
 	"github.com/go-openapi/analysis"
 	"github.com/go-openapi/loads"
-
-	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 )
 
 const (
@@ -38,53 +36,34 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// ensureMachinery builds the derived generation machinery (language options,
-// func map, templates repository and the default render plan) on g, without the
-// spec-dependent finalization performed by Prepare (validation, path
-// normalization).
-//
-// It is the test-only stand-in for the former GenOpts.EnsureDefaults: the
-// single, intentional backdoor that test helpers use to obtain a
-// machinery-ready options value they can tweak before handing it to a Generate*
-// function (which performs the actual Prepare). Production code never builds the
-// machinery on its own — it goes through NewGenOpts + Prepare.
-//
-// The repository it builds holds the templates the generator ships, and nothing a run may add: no
-// contrib set, no template directory, no scoping. Prepare builds the one a run works with, so an
-// unreadable source is still reported there, and a test may reach a template its own plan leaves
-// out.
+// ensureMachinery builds the derived generation machinery (language options, func map, templates repository
+// and the default render plan) on g, without the spec-dependent validation performed by Prepare.
 func ensureMachinery(t *testing.T, g *GenOpts) {
 	t.Helper()
 
-	g.buildMachinery()
+	require.NoError(t, g.Seed())
 
-	require.NoError(t, g.resolveSections())
-	templates, err := templatesrepo.New(
-		append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))...,
-	)
-	require.NoError(t, err)
-	g.templates = templates
+	// reset the seeded state, so next run may proceed with validations
+	g.novalidate = false
+	g.prepared = false
+	g.machineryBuilt = false
+	g.sectionsResolved = false
 }
 
 func mustEnsureMachinery(g *GenOpts) {
-	g.buildMachinery()
-
-	if err := g.resolveSections(); err != nil {
-		panic("dev error could not resolve sections in test")
-	}
-
-	templates, err := templatesrepo.New(
-		append(shippedTemplates(), templatesrepo.WithFuncMap(g.funcMap))...,
-	)
+	err := g.Seed()
 	if err != nil {
 		panic("dev error could not resolve templates in test")
 	}
 
-	g.templates = templates
+	// reset the seeded state, so next run may proceed with validations
+	g.novalidate = false
+	g.prepared = false
+	g.machineryBuilt = false
+	g.sectionsResolved = false
 }
 
 // validateOpts runs the pure validation and path-normalization phases on g.
-// It is the test stand-in for the former GenOpts.CheckOpts.
 func validateOpts(g *GenOpts) error {
 	if err := g.validate(); err != nil {
 		return err
@@ -103,9 +82,7 @@ func assertValidOpts(t *testing.T, g *GenOpts) {
 func opts(t *testing.T) *GenOpts {
 	t.Helper()
 
-	g := NewGenOpts()
-	g.IncludeValidator = true
-	g.IncludeModel = true
+	g := NewGenOpts(ForServer())
 	ensureMachinery(t, g)
 
 	return g
@@ -176,8 +153,8 @@ func TestShared_CheckOpts(t *testing.T) {
 }
 
 func TestShared_EnsureDefaults(t *testing.T) {
-	opts := &GenOpts{}
-	ensureMachinery(t, opts)
+	opts := new(GenOpts)
+	require.NoError(t, opts.Seed())
 	assert.TrueT(t, opts.machineryBuilt)
 	// machinery is built once: a second pass must not overwrite values
 	opts.DefaultConsumes = "https"

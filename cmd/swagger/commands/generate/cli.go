@@ -24,10 +24,15 @@ func (c *Cli) Execute(args []string) error {
 	return createSwagger(c, args)
 }
 
+func (c *Cli) initOptions(opts ...generator.Option) *generator.GenOpts {
+	opts = append(opts, generator.ForCli())
+
+	return generator.NewGenOpts(opts...)
+}
+
 // apply options.
-func (c Cli) apply(opts *generator.GenOpts) {
+func (c *Cli) apply(opts *generator.GenOpts) {
 	c.Client.apply(opts)
-	opts.IncludeCLi = true
 	opts.CliPackage = c.CliPackage
 	opts.CliAppName = c.CliAppName
 }

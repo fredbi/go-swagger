@@ -84,6 +84,7 @@ func (f *FlattenCmdOptions) SetFlattenOptions(dflt *analysis.FlattenOpts) (res *
 }
 
 type sharedCommand interface {
+	initOptions(opts ...generator.Option) *generator.GenOpts
 	apply(options *generator.GenOpts)
 	getConfigFile() string
 	generate(options *generator.GenOpts) error
@@ -161,7 +162,7 @@ type outputOptions struct {
 	TemplateDir           flags.Filename `description:"alternative template override directory"                                            group:"shared"                                            long:"template-dir"            short:"T"`
 	ConfigFile            flags.Filename `description:"configuration file to use for overriding template options"                          group:"shared"                                            long:"config-file"             short:"C"`
 	AdditionalInitialisms []string       `description:"consecutive capitals that should be considered initialisms"                         group:"shared"                                            long:"additional-initialism"`
-	AllowTemplateOverride bool           `description:"allows overriding protected templates (deprecated)"                                              group:"shared"                                            long:"allow-template-override"`
+	AllowTemplateOverride bool           `description:"allows overriding protected templates (deprecated)"                                 group:"shared"                                            long:"allow-template-override"`
 	DumpData              bool           `description:"when present dumps the json for the template generator instead of generating files" group:"shared"                                            long:"dump-data"`
 	EnsureTarget          bool           `description:"Create the target directory if it does not already exist"                           group:"shared"                                            long:"ensure-target"`
 }
@@ -284,9 +285,8 @@ func createSwagger(s sharedCommand, args []string) error {
 		setDebug(cfg) // viper config Debug
 	}
 
-	// the config layout (if any) is applied as overrides when the generator
-	// finalizes the options in Prepare.
-	opts := generator.NewGenOpts(generator.WithViper(cfg))
+	// initialize option with the profile for that command
+	opts := s.initOptions(generator.WithViper(cfg))
 	s.apply(opts)
 
 	if err = specFromArgs(opts, args); err != nil {

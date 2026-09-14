@@ -471,7 +471,7 @@ func TestGenClientParameter_XGoNamePreserveExplicitCasing(t *testing.T) {
 	require.NoError(t, err)
 
 	buf := bytes.NewBuffer(nil)
-	opts := opts(t)
+	opts := testClientGenOpts(t)
 	require.NoError(t, opts.templates.MustGet("clientParameter").Execute(buf, op))
 
 	ff, err := opts.LanguageOpts.FormatContent("post_test_parameters.go", buf.Bytes())
@@ -2962,7 +2962,7 @@ func TestGenerateGetters(t *testing.T) {
 	}
 
 	t.Run("with WantsGetters option", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 		opts.WantsGetters = true
 
 		res := render(t, opts)
@@ -3008,7 +3008,7 @@ func TestGenerateGetters(t *testing.T) {
 	})
 
 	t.Run("without WantsGetters option (default)", func(t *testing.T) {
-		opts := opts()
+		opts := opts(t)
 
 		res := render(t, opts)
 

@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"errors"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -20,27 +22,58 @@ import (
 )
 
 func TestTemplates_CustomTemplates(t *testing.T) {
-	var buf bytes.Buffer
-	opts := opts(t)
-	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
-	require.NoError(t, err)
-	require.NoError(t, headerTempl.Execute(&buf, nil))
-	assert.EqualT(t, "\n", buf.String())
+	t.Run("should load custom template", func(t *testing.T) {
+		var buf bytes.Buffer
+		dir := t.TempDir()
+		err := os.MkdirAll(filepath.Join(dir, "server"), 0755)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(dir, "server", "custom.gotmpl"), []byte(`{{ printf "%v" "here" }}`), 0644)
+		require.NoError(t, err)
 
-	buf.Reset()
-	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customHeader)
+		opts := NewGenOpts(ForServer())
+		opts.TemplateDir = dir
+		// new template must be added to roots or it will be pruned if not used
+		opts.Sections = opts.Sections.overrideWith(SectionOpts{
+			PostModels: []TemplateOpts{
+				{
+					Name:     "custom",
+					Source:   "serverCustom",
+					Target:   `{{ print "folder" }}`,
+					FileName: `{{ print "extra.go" }}`,
+				},
+			}})
+		require.NoError(t, opts.Seed())
 
-	headerTempl, err = opts.templates.Get("serverParameterBindprimitiveparam")
-	require.NoError(t, err)
-	assert.NotNil(t, headerTempl)
-	require.NoError(t, headerTempl.Execute(&buf, nil))
-	assert.EqualT(t, "custom header", buf.String())
+		customTempl, err := opts.templates.Get("serverCustom")
+		require.NoError(t, err)
+		require.NoError(t, customTempl.Execute(&buf, nil))
+		assert.EqualT(t, "here", buf.String())
+	})
+
+	t.Run("should override existing template with a custom version", func(t *testing.T) {
+		var buf bytes.Buffer
+		dir := t.TempDir()
+		err := os.MkdirAll(filepath.Join(dir, "server"), 0755)
+		require.NoError(t, err)
+		err = os.WriteFile(filepath.Join(dir, "server", "builder.gotmpl"), []byte(`{{ printf "%v" "here" }}`), 0644)
+		require.NoError(t, err)
+
+		opts := NewGenOpts(ForServer())
+		opts.TemplateDir = dir
+		// this template is already part of the server tree: no need to add it as a root
+		require.NoError(t, opts.Seed())
+
+		builderTempl, err := opts.templates.Get("serverBuilder")
+		require.NoError(t, err)
+		require.NoError(t, builderTempl.Execute(&buf, nil))
+		assert.EqualT(t, "here", buf.String())
+	})
 }
 
 func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts(t)
-	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customMultiple)
+	withTemplate(t, opts, "server/parameter/bindprimitiveparam", `{{define "bindprimitiveparam" }}custom primitive{{end}}`)
 	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -50,8 +83,8 @@ func TestTemplates_CustomTemplatesMultiple(t *testing.T) {
 func TestTemplates_CustomNewTemplates(t *testing.T) {
 	var buf bytes.Buffer
 	opts := opts(t)
-	withTemplate(t, opts, "newtemplate", customNewTemplate)
-	withTemplate(t, opts, "server/parameter/bindprimitiveparam", customExistingUsesNew)
+	withTemplate(t, opts, "newtemplate", "new template")
+	withTemplate(t, opts, "server/parameter/bindprimitiveparam", `{{define "bindprimitiveparam" }}{{ template "newtemplate" }}{{end}}`)
 	headerTempl, err := opts.templates.Get("serverParameterBindprimitiveparam")
 	require.NoError(t, err)
 	require.NoError(t, headerTempl.Execute(&buf, nil))
@@ -311,7 +344,7 @@ func TestTemplates_Paths(t *testing.T) {
 	})
 
 	t.Run("should place every template a default section renders", func(t *testing.T) {
-		DefaultSectionOpts(opts)
+		defaultSectionOpts(opts)
 
 		for _, section := range [][]TemplateOpts{
 			opts.Sections.Application, opts.Sections.Operations, opts.Sections.OperationGroups,
@@ -325,4 +358,51 @@ func TestTemplates_Paths(t *testing.T) {
 			}
 		}
 	})
+}
+
+// withTemplate derives the repository of a run, holding one more template.
+//
+// A repository is sealed once built, so adding a template means building another one from the
+// sources of the first plus the new one. That is what a caller does, and what these tests do.
+func withTemplate(t *testing.T, opts *GenOpts, name, content string) {
+	t.Helper()
+
+	templates, err := templatesrepo.Clone(opts.templates, addedTemplate(name, content)...)
+	require.NoError(t, err)
+
+	opts.templates = templates
+}
+
+// templateError returns the error of adding a template to the repository of a run.
+func templateError(opts *GenOpts, name, content string) error {
+	_, err := templatesrepo.Clone(opts.templates, addedTemplate(name, content)...)
+
+	return err
+}
+
+// addedTemplate declares one more template, and keeps it out of the pruning where there is any.
+//
+// A repository scoped to what a run renders drops a template no root reaches, so one added here is
+// named as a root of its own. That says nothing to a repository holding every template, which is
+// what makes it the same call either way.
+func addedTemplate(name, content string) []templatesrepo.Option {
+	return []templatesrepo.Option{
+		templatesrepo.FromTemplate(name, []byte(content)),
+		templatesrepo.WithExtraRoots(name),
+	}
+}
+
+// withSectionTemplate declares what a section entry needs of the repository: the template it
+// renders, and the two placing where it writes.
+//
+// A run declares all three when it builds the repository, so a test rendering an entry of its own
+// declares them the same way. Nothing is resolved while a run goes, here no more than there.
+func withSectionTemplate(t *testing.T, opts *GenOpts, entry TemplateOpts, content string) {
+	t.Helper()
+
+	withTemplate(t, opts, entry.templateName(), content)
+
+	target, fileName := entry.pathTemplates()
+	withTemplate(t, opts, target, entry.Target)
+	withTemplate(t, opts, fileName, entry.FileName)
 }

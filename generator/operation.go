@@ -286,9 +286,13 @@ func (b *codeGenOpBuilder) MakeOperation() (GenOperation, error) {
 	originalExtraSchemes := getExtraSchemes(operation.Extensions)
 	produces := producesOrDefault(operation.Produces, swaggerSpec.Produces, b.DefaultProduces)
 	consumes := producesOrDefault(operation.Consumes, swaggerSpec.Consumes, b.DefaultConsumes)
-	importTarget, err := b.GenOpts.LanguageOpts.BaseImport(b.GenOpts.Target)
-	if err != nil {
-		return GenOperation{}, errTarget(b.GenOpts.Target, err)
+
+	var importTarget string
+	if !b.GenOpts.skipImports {
+		importTarget, err = b.GenOpts.LanguageOpts.BaseImport(b.GenOpts.Target)
+		if err != nil {
+			return GenOperation{}, errTarget(b.GenOpts.Target, err)
+		}
 	}
 
 	return GenOperation{

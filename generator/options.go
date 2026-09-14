@@ -6,17 +6,18 @@ package generator
 import (
 	"text/template"
 
+	"github.com/spf13/viper"
+
 	"github.com/go-openapi/analysis"
 	templatesrepo "github.com/go-openapi/codegen/templates-repo"
 	"github.com/go-swagger/go-swagger/generator/internal/language"
-	"github.com/spf13/viper"
 )
 
 // Option configures a [GenOpts] when building it with [NewGenOpts].
 //
-// The option surface is intentionally small: presets ([ForServer], [ForClient],
-// ...) plus a few ubiquitous setters. Anything else is set directly on the
-// exported [GenOpts] fields before the options are finalized by [GenOpts.Prepare].
+// The option surface is intentionally small: presets ([ForServer], [ForClient], ...) plus a few ubiquitous setters.
+//
+// Anything else is set directly on the exported [GenOpts] fields before the options are finalized by [GenOpts.Prepare].
 type Option func(*GenOpts)
 
 // GenOpts encapsulates the generator options.
@@ -29,12 +30,13 @@ type GenOpts struct {
 	IncludeURLBuilder          bool
 	IncludeMain                bool
 	IncludeSupport             bool
-	IncludeCLi                 bool
+	IncludeCLI                 bool
 	ExcludeSpec                bool
 	DumpData                   bool
 	ValidateSpec               bool
 	FlattenOpts                *analysis.FlattenOpts
 	IsClient                   bool
+	IsMarkdown                 bool
 	machineryBuilt             bool // guards buildMachinery (language opts, func map)
 	sectionsResolved           bool // guards resolveSections (default render plan)
 	specNormalized             bool // guards normalize (spec path resolution)
@@ -92,25 +94,31 @@ type GenOpts struct {
 	Restricted             bool
 	Rooted                 string
 	EnsureTarget           bool // create the target directory when it does not exist
+	MarkdownOutput         string
 
 	// Viper carries an optional configuration (typically a `.swagger.{yml,json}` file).
 	// Its `layout:` sections are applied as overrides on top of the default render plan during Prepare.
 	Viper *viper.Viper
 
-	templates  *templatesrepo.Repository
-	funcMap    template.FuncMap
-	novalidate bool
+	templates   *templatesrepo.Repository
+	funcMap     template.FuncMap
+	novalidate  bool
+	skipImports bool
 }
 
 // NewGenOpts builds a [GenOpts] and applies the given options.
 //
-// It performs no I/O and builds no derived state — that happens in
-// [GenOpts.Prepare], which the Generate* entry points call themselves. A typical
-// caller selects a preset, sets the spec and target, tweaks any exported fields
-// it needs and hands the result to a Generate* function:
+// It doesnt't perform any I/O and neither does it build any derived state.
+// I/O and state building occur in [GenOpts.Prepare], called by the Generate* entry points.
 //
-//	opts := generator.NewGenOpts(generator.ForServer(),
-//		generator.WithSpec("swagger.yml"), generator.WithTarget("./gen"))
+// A typical caller selects a preset, sets the spec and target, tweaks any exported fields it needs
+// then hands the result to a Generate* function, like so:
+//
+//	opts := generator.NewGenOpts(
+//		generator.ForServer(),
+//		generator.WithSpec("swagger.yml"),
+//		generator.WithTarget("./gen"),
+//	)
 //	err := generator.GenerateServer("MyAPI", models, operations, opts)
 func NewGenOpts(opts ...Option) *GenOpts {
 	g := &GenOpts{}
@@ -121,7 +129,7 @@ func NewGenOpts(opts ...Option) *GenOpts {
 	return g
 }
 
-// WithSpec sets the source spec location (a file path or an http(s) URL).
+// WithSpec sets the source spec location (a file path or an http[s] URL).
 func WithSpec(spec string) Option {
 	return func(g *GenOpts) { g.Spec = spec }
 }
@@ -185,6 +193,8 @@ func ForModel() Option {
 	return func(g *GenOpts) {
 		applyStandardLayout(g)
 		g.IncludeModel = true
+		g.IsClient = false
+		g.IsMarkdown = false
 	}
 }
 
@@ -193,7 +203,8 @@ func ForCli() Option {
 	return func(g *GenOpts) {
 		applyStandardLayout(g)
 		g.IsClient = true
-		g.IncludeCLi = true
+		g.IncludeCLI = true
+		g.IsMarkdown = false
 		g.CliPackage = defaultCliTarget
 		g.CliAppName = defaultCliTarget
 		g.IncludeModel = true
@@ -208,6 +219,9 @@ func ForCli() Option {
 func ForMarkdown() Option {
 	return func(g *GenOpts) {
 		applyStandardLayout(g)
+		g.IsClient = false
+		g.IsMarkdown = true
 		g.IncludeModel = true
+		g.skipImports = true
 	}
 }
